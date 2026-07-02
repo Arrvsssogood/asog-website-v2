@@ -30,7 +30,7 @@
                 class="rc rounded-lg border border-dark/[.06] overflow-hidden bg-white shadow-sm shadow-dark/[.04] transition-all duration-300 hover:shadow-md hover:shadow-dark/[.08] no-underline block">
                 <?php if (! empty($fac['imagePath'])): ?>
                 <div class="h-[180px] md:h-[200px] bg-[#e9e6e1]">
-                    <img src="<?= base_url($fac['imagePath']) ?>" alt="<?= esc($fac['name']) ?>"
+                    <img src="<?= base_url($fac['imagePath']) ?>" alt="<?= esc($fac['name']) ?>" width="1200" height="800"
                         class="w-full h-full object-cover">
                 </div>
                 <?php else: ?>

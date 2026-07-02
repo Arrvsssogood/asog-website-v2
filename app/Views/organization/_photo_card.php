@@ -18,8 +18,16 @@ $roleSecondary = trim((string) ($member['roleSecondary'] ?? ''));
     <div class="mx-auto aspect-square rounded-lg mb-4 p-[2px]"
         style="width:<?= esc($width ?? '220px') ?>;max-width:100%;background:<?= esc($gradient ?? 'linear-gradient(160deg, rgba(3,85,140,.58), rgba(3,85,140,.2))') ?>;">
         <div class="w-full h-full rounded-[7px] overflow-hidden">
-            <img src="<?= esc($photoUrl) ?>" alt="<?= esc($name) ?>"
-                class="w-full h-full object-cover object-center" />
+            <?php
+            $photoPath = $member['photoPath'] ?? '';
+            if (preg_match('#^https?://#i', $photoPath)) {
+                $classAttr = ' class="w-full h-full object-cover object-center"';
+                $lazyAttr = ($lazy ?? true) ? ' loading="lazy"' : '';
+                echo '<img src="' . esc($photoUrl) . '" alt="' . esc($name) . '"' . $classAttr . $lazyAttr . '>';
+            } else {
+                echo responsiveStaticImg($photoPath, 'team-org', $name, 'w-full h-full object-cover object-center', $lazy ?? true);
+            }
+            ?>
         </div>
     </div>
     <?php endif; ?>

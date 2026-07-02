@@ -13,13 +13,27 @@
         Restores them on page load ONLY when the field is still empty
         (so CI4 old() values from validation-fail redirects take priority).
   ───────────────────────────────────────────────────────────────────── */
-  var STORAGE_KEY = 'asog_apply_form_v1';
+  var form = document.getElementById('applyForm');
+  var LEGACY_STORAGE_KEY = 'asog_apply_form_v1';
+  var STORAGE_KEY = (form && form.dataset.storageKey) || 'asog_apply_form_public_v2';
+  var isRevalidationMode = !!(form && form.dataset.formMode === 'revalidation');
+  var shouldSkipDuplicateEmail = !!(form && form.dataset.skipDuplicateEmail === '1');
+  var hasExistingLeanCanvas = !!(form && form.dataset.hasExistingLeanCanvas === '1');
+  var existingTeamCvCount = parseInt((form && form.dataset.existingTeamCvCount) || '0', 10) || 0;
+  var recaptchaEnabled = !!(form && form.dataset.recaptchaEnabled === '1');
+  var recaptchaSiteKey = (form && form.dataset.recaptchaSiteKey) || '';
+  var recaptchaAction = (form && form.dataset.recaptchaAction) || (isRevalidationMode ? 'application_revalidate' : 'application_submit');
+  var recaptchaTokenField = form ? form.querySelector('[data-recaptcha-token]') : null;
   var persistIds  = [
     'applicantName', 'applicantEmail', 'contactNumber',
     'startupName', 'startupDescription',
     'mainRisk', 'shortTermGoals',
     'videoPresentationLink'
   ];
+
+  try {
+    sessionStorage.removeItem(LEGACY_STORAGE_KEY);
+  } catch (e) {}
 
   // Restore saved values (skip if field already has a server-rendered value)
   try {
@@ -46,10 +60,43 @@
     } catch (e) {}
   }
 
+  function sanitizeContactNumber(value) {
+    return String(value || '').replace(/\D+/g, '').slice(0, 11);
+  }
+
+  function syncContactNumber(el) {
+    if (!el) return;
+    var nextValue = sanitizeContactNumber(el.value);
+    if (el.value !== nextValue) {
+      el.value = nextValue;
+    }
+  }
+
   persistIds.forEach(function (id) {
     var el = document.getElementById(id);
     if (el) el.addEventListener('input', saveToStorage);
   });
+
+  var contactField = document.getElementById('contactNumber');
+  if (contactField) {
+    syncContactNumber(contactField);
+    contactField.addEventListener('input', function () {
+      syncContactNumber(contactField);
+      validate(contactField);
+      saveToStorage();
+    });
+    contactField.addEventListener('blur', function () {
+      syncContactNumber(contactField);
+      validate(contactField);
+      saveToStorage();
+    });
+    contactField.addEventListener('paste', function () {
+      setTimeout(function () {
+        syncContactNumber(contactField);
+        saveToStorage();
+      }, 0);
+    });
+  }
 
 
   /* ─────────────────────────────────────────────────────────────────
@@ -59,8 +106,8 @@
     'required': function (v) { return v.trim().length > 0 || 'This field is required.'; },
     'min:2':    function (v) { return v.trim().length >= 2  || 'Must be at least 2 characters.'; },
     'min:10':   function (v) { return v.trim().length >= 10 || 'Must be at least 10 characters.'; },
-    'email':    function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || 'Enter a valid email.'; },
-    'phone':    function (v) { return /^[0-9\s\-\+\(\)]{7,20}$/.test(v)   || 'Enter a valid phone number.'; },
+    'email':    function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || 'Please enter a valid email.'; },
+    'phone':    function (v) { return /^09[0-9]{9}$/.test(v) || 'Please enter a valid contact number.'; },
     'url':      function (v) { return /^https?:\/\/.+\..+/.test(v)         || 'Enter a valid URL (https://...).'; },
     'name':     function (v) { return /^[A-Za-z\u00C0-\u00FF\s,\.]+$/.test(v) || 'Use format: Last Name, First Name MI'; },
   };
@@ -142,6 +189,11 @@
   function setDuplicateEmailState(isDuplicate, showToast) {
     if (!emailField) return;
 
+    if (shouldSkipDuplicateEmail) {
+      emailField.dataset.dupEmail = '0';
+      return;
+    }
+
     var msg = emailField.closest('div') && emailField.closest('div').querySelector('.v-msg');
     emailField.dataset.dupEmail = isDuplicate ? '1' : '0';
 
@@ -174,7 +226,7 @@
 
     // Check duplicate-email flag
     var ef = document.getElementById('applicantEmail');
-    if (ef && ef.dataset.dupEmail === '1') {
+    if (!shouldSkipDuplicateEmail && ef && ef.dataset.dupEmail === '1') {
       ok = false;
       var emsg = ef.closest('div') && ef.closest('div').querySelector('.v-msg');
       if (emsg && emsg.classList.contains('hidden')) {
@@ -188,7 +240,7 @@
     var lcInput = document.getElementById('leanCanvas');
     var lcErr   = document.getElementById('leanCanvasErr');
     if (lcInput && lcErr) {
-      if (!lcInput.files || lcInput.files.length === 0) {
+      if ((!lcInput.files || lcInput.files.length === 0) && !hasExistingLeanCanvas) {
         lcErr.textContent = 'Please upload your completed Lean Canvas (.docx or PDF).';
         lcErr.classList.remove('hidden');
         ok = false;
@@ -217,11 +269,17 @@
   // Show server-side errors (already in DOM as .v-msg text)
   document.querySelectorAll('.v-msg').forEach(function (msg) {
     if (msg.textContent.trim()) {
+      if (shouldSkipDuplicateEmail && msg.dataset.for === 'applicantEmail' && msg.textContent.trim() === DUPLICATE_EMAIL_MESSAGE) {
+        msg.textContent = '';
+        msg.classList.add('hidden');
+        return;
+      }
+
       msg.classList.remove('hidden');
       var f = msg.closest('div') && msg.closest('div').querySelector('.v-field');
       if (f) f.classList.add('!text-red-600');
 
-      if (msg.dataset.for === 'applicantEmail' && msg.textContent.trim() === DUPLICATE_EMAIL_MESSAGE) {
+      if (!shouldSkipDuplicateEmail && msg.dataset.for === 'applicantEmail' && msg.textContent.trim() === DUPLICATE_EMAIL_MESSAGE) {
         setDuplicateEmailState(true, false);
         showHeadsUp(DUPLICATE_EMAIL_MESSAGE);
       }
@@ -232,13 +290,18 @@
   /* ─────────────────────────────────────────────────────────────────
      3. ASYNC DUPLICATE-EMAIL CHECK
   ───────────────────────────────────────────────────────────────────── */
-  var form          = document.getElementById('applyForm');
   var checkEmailUrl = (form && form.dataset.checkUrl) || '';
   var emailTimer    = null;
   var emailField    = document.getElementById('applicantEmail');
   var allowNativeSubmit = false;
+  var isSubmittingFinal = false;
 
   function runDuplicateEmailCheck(showToast) {
+    if (shouldSkipDuplicateEmail) {
+      setDuplicateEmailState(false, false);
+      return Promise.resolve(false);
+    }
+
     if (!emailField || !checkEmailUrl) {
       return Promise.resolve(false);
     }
@@ -265,7 +328,7 @@
       });
   }
 
-  if (emailField && checkEmailUrl) {
+  if (emailField && checkEmailUrl && !shouldSkipDuplicateEmail) {
     var checkDupe = function () {
       runDuplicateEmailCheck(true);
     };
@@ -329,9 +392,13 @@
   function updateCvStatus() {
     if (!cvInput || !cvStatus) return;
     var count = selectedCvFiles.length;
-    cvStatus.textContent = count === 0
-      ? 'No file chosen'
-      : count === 1 ? '1 file selected' : count + ' files selected';
+    if (count === 0) {
+      cvStatus.textContent = isRevalidationMode && existingTeamCvCount > 0
+        ? 'Keeping existing CV file' + (existingTeamCvCount === 1 ? '' : 's')
+        : 'No file chosen';
+    } else {
+      cvStatus.textContent = count === 1 ? '1 file selected' : count + ' files selected';
+    }
     if (cvChooser) {
       cvChooser.style.display = count >= maxCvFiles ? 'none' : '';
     }
@@ -409,6 +476,7 @@
   if (cvButton && cvInput) {
     cvButton.addEventListener('click', function () { cvInput.click(); });
   }
+  updateCvStatus();
 
   // ── Lean Canvas (single file) ─────────────
   var lcInput   = document.getElementById('leanCanvas');
@@ -420,7 +488,9 @@
   function updateLcStatus() {
     if (!lcInput || !lcStatus) return;
     var hasFile = lcInput.files && lcInput.files.length > 0;
-    lcStatus.textContent = 'No file chosen';
+    lcStatus.textContent = !hasFile && hasExistingLeanCanvas
+      ? 'Keeping existing Lean Canvas file'
+      : 'No file chosen';
     if (lcChooser) {
       lcChooser.style.display = hasFile ? 'none' : ''; 
     }
@@ -452,12 +522,21 @@
         '</svg>' +
         '<span class="flex-1 truncate">' + escHtml(f.name) + '</span>' +
         '<span class="text-[.65rem] text-navy/40 flex-shrink-0">' + formatBytes(f.size) + '</span>' +
-        '<button type="button" onclick="document.getElementById(\'leanCanvas\').value=\'\';document.getElementById(\'leanCanvasChooser\').style.display=\'\';document.getElementById(\'leanCanvasButton\').classList.remove(\'hidden\');document.getElementById(\'leanCanvasStatus\').textContent=\'No file chosen\';document.getElementById(\'leanCanvasStatus\').classList.remove(\'hidden\');document.getElementById(\'leanCanvasPreview\').classList.add(\'hidden\');document.getElementById(\'leanCanvasPreview\').innerHTML=\'\';" ' +
+        '<button type="button" onclick="window.asogClearLeanCanvas && window.asogClearLeanCanvas();" ' +
           'class="ml-1 text-dark/30 hover:text-red-500 transition-colors flex-shrink-0" title="Remove">' +
           '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>' +
         '</button>' +
       '</div>';
   }
+
+  window.asogClearLeanCanvas = function () {
+    if (lcInput) lcInput.value = '';
+    updateLcStatus();
+    if (lcPreview) {
+      lcPreview.classList.add('hidden');
+      lcPreview.innerHTML = '';
+    }
+  };
 
   if (lcInput) {
     lcInput.addEventListener('change', renderLcPreview);
@@ -465,6 +544,7 @@
   if (lcButton && lcInput) {
     lcButton.addEventListener('click', function () { lcInput.click(); });
   }
+  updateLcStatus();
 
   function escHtml(str) {
     var div = document.createElement('div');
@@ -528,14 +608,18 @@
     if (cvInput && pvCv) {
       pvCv.textContent = cvInput.files.length > 0
         ? Array.from(cvInput.files).map(function (f) { return f.name; }).join(', ')
-        : 'None uploaded';
+        : (isRevalidationMode && existingTeamCvCount > 0
+          ? 'Keeping existing CV file' + (existingTeamCvCount === 1 ? '' : 's')
+          : 'None uploaded');
     }
 
     // Lean Canvas file
     var lcInput = document.getElementById('leanCanvas');
     var pvLc    = document.getElementById('pv_leanCanvas');
     if (lcInput && pvLc) {
-      pvLc.textContent = lcInput.files.length > 0 ? lcInput.files[0].name : 'No file uploaded';
+      pvLc.textContent = lcInput.files.length > 0
+        ? lcInput.files[0].name
+        : (hasExistingLeanCanvas ? 'Keeping existing Lean Canvas file' : 'No file uploaded');
     }
 
     modal.classList.remove('opacity-0', 'pointer-events-none');
@@ -549,6 +633,61 @@
     if (body) { body.classList.remove('scale-100'); body.classList.add('scale-95'); }
     document.body.style.overflow = '';
     document.removeEventListener('keydown', esc);
+  }
+
+  function setFinalSubmitting(isSubmitting) {
+    isSubmittingFinal = isSubmitting;
+    if (!btnConfirm) return;
+    btnConfirm.disabled = isSubmitting;
+    btnConfirm.style.opacity = isSubmitting ? '0.72' : '';
+    btnConfirm.style.cursor = isSubmitting ? 'wait' : '';
+  }
+
+  function submitNative() {
+    if (!form) return;
+    allowNativeSubmit = true;
+    if (window.HTMLFormElement && HTMLFormElement.prototype.submit) {
+      HTMLFormElement.prototype.submit.call(form);
+      return;
+    }
+    form.submit();
+  }
+
+  function getRecaptchaToken() {
+    if (!recaptchaEnabled) {
+      return Promise.resolve('');
+    }
+
+    if (!recaptchaSiteKey || !window.grecaptcha || !window.grecaptcha.enterprise) {
+      return Promise.reject(new Error('recaptcha_unavailable'));
+    }
+
+    return new Promise(function (resolve, reject) {
+      window.grecaptcha.enterprise.ready(function () {
+        window.grecaptcha.enterprise.execute(recaptchaSiteKey, { action: recaptchaAction })
+          .then(resolve)
+          .catch(reject);
+      });
+    });
+  }
+
+  function submitWithRecaptcha() {
+    if (!form || isSubmittingFinal) return;
+
+    setFinalSubmitting(true);
+    getRecaptchaToken()
+      .then(function (token) {
+        if (recaptchaTokenField) {
+          recaptchaTokenField.value = token;
+        }
+        try { sessionStorage.removeItem(STORAGE_KEY); } catch (e) {}
+        closeModal();
+        submitNative();
+      })
+      .catch(function () {
+        showHeadsUp('We could not verify your submission. Please refresh the page and try again.');
+        setFinalSubmitting(false);
+      });
   }
 
   // Review & Submit button → validate first, then show modal
@@ -573,14 +712,7 @@
   var btnConfirm = document.getElementById('btnConfirmSubmit');
   if (btnConfirm) {
     btnConfirm.addEventListener('click', function () {
-      try { sessionStorage.removeItem(STORAGE_KEY); } catch (e) {}
-      closeModal();
-      allowNativeSubmit = true;
-      if (form && typeof form.requestSubmit === 'function') {
-        form.requestSubmit();
-        return;
-      }
-      if (form) form.submit();
+      submitWithRecaptcha();
     });
   }
 

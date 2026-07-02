@@ -108,7 +108,7 @@ $services = [
             <article class="svc-panel" data-ix="<?= $index + 1 ?>">
                 <div class="svc-row grid gap-5 py-6 md:grid-cols-12 md:items-center md:gap-7 md:py-8">
                     <div class="svc-media md:col-span-6 <?= $index % 2 === 1 ? 'md:order-2' : '' ?>">
-                        <img src="<?= base_url($service['image']) ?>" alt="<?= esc($service['alt']) ?>"
+                        <img src="<?= base_url($service['image']) ?>" alt="<?= esc($service['alt']) ?>" width="1200" height="800"
                             class="svc-image w-full" loading="lazy" decoding="async" />
                     </div>
 

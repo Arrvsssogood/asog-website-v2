@@ -138,17 +138,11 @@
                         <div class="grid grid-cols-2 gap-2 md:gap-6 mb-8 max-w-[720px] mx-auto place-items-center">
                             <div
                                 class="p-1 md:p-2 flex items-center justify-center min-h-[140px] md:min-h-[220px] w-full">
-                                <img src="<?= base_url('assets/img/ASOG TBI/PNG/ASOG-TBI_full-colored_stacked.png') ?>"
-                                    alt="ASOGTBI Full Colored Stacked Logo"
-                                    class="w-auto max-w-full h-[120px] sm:h-[140px] md:h-[190px] object-contain block select-none"
-                                    loading="lazy" decoding="async" />
+                                <?= responsiveStaticImg('assets/img/ASOG TBI/WebP/ASOG-TBI_full-colored_stacked', 'default', 'ASOGTBI Full Colored Stacked Logo', 'w-auto max-w-full h-[120px] sm:h-[140px] md:h-[190px] object-contain block select-none', true) ?>
                             </div>
                             <div
                                 class="p-1 md:p-2 flex items-center justify-center min-h-[140px] md:min-h-[220px] w-full">
-                                <img src="<?= base_url('assets/img/ASOG TBI/PNG/ASOG-TBI_seal.png') ?>"
-                                    alt="ASOG TBI Seal"
-                                    class="w-auto max-w-full h-[120px] sm:h-[140px] md:h-[190px] object-contain block select-none"
-                                    loading="lazy" decoding="async" />
+                                <?= responsiveStaticImg('assets/img/ASOG TBI/WebP/ASOG-TBI_seal', 'default', 'ASOG TBI Seal', 'w-auto max-w-full h-[120px] sm:h-[140px] md:h-[190px] object-contain block select-none', true) ?>
                             </div>
                         </div>
 

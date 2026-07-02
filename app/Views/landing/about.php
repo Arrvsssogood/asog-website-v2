@@ -47,18 +47,15 @@
                 <div class="flex flex-wrap items-end gap-4 sm:gap-5 md:gap-6">
                     <a href="https://pcieerd.dost.gov.ph/" target="_blank" rel="noopener" title="PCIEERD"
                         class="inline-flex items-center justify-center touch-manipulation w-16 h-11 sm:w-[72px] sm:h-[50px] md:w-[88px] md:h-[62px] transition-transform duration-300 md:hover:scale-105">
-                        <img src="<?= base_url('assets/img/partners/pcieerd.png') ?>" alt="PCIEERD"
-                            class="w-full h-full object-contain">
+                        <?= responsiveStaticImg('assets/img/partners/pcieerd', 'partner', 'PCIEERD', 'w-full h-full object-contain', true) ?>
                     </a>
                     <a href="https://region5.dost.gov.ph/" target="_blank" rel="noopener" title="DOST Region V"
                         class="inline-flex items-center justify-center touch-manipulation w-16 h-11 sm:w-[72px] sm:h-[50px] md:w-[88px] md:h-[62px] transition-transform duration-300 md:hover:scale-105">
-                        <img src="<?= base_url('assets/img/partners/dost-region5.png') ?>" alt="DOST Region V"
-                            class="w-full h-full object-contain">
+                        <?= responsiveStaticImg('assets/img/partners/dost-region5', 'partner', 'DOST Region V', 'w-full h-full object-contain', true) ?>
                     </a>
                     <a href="https://cspc.edu.ph/" target="_blank" rel="noopener" title="CSPC"
                         class="inline-flex items-center justify-center touch-manipulation w-16 h-11 sm:w-[72px] sm:h-[50px] md:w-[88px] md:h-[62px] transition-transform duration-300 md:hover:scale-105">
-                        <img src="<?= base_url('assets/img/partners/cspc.png') ?>" alt="CSPC"
-                            class="w-full h-full object-contain">
+                        <?= responsiveStaticImg('assets/img/partners/cspc', 'partner', 'CSPC', 'w-full h-full object-contain', true) ?>
                     </a>
                 </div>
             </div>

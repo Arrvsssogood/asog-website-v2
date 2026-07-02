@@ -1,7 +1,10 @@
 <link rel="stylesheet" href="<?= base_url('assets/css/adminPosts.css') ?>">
 
-<div class="toolbar">
-    <span class="count"><?= $total ?? count($posts ?? []) ?> posts</span>
+<div class="posts-admin-toolbar">
+    <div>
+        <span class="posts-admin-count"><?= $total ?? count($posts ?? []) ?> posts</span>
+        <p>Manage news and updates shown across the public website.</p>
+    </div>
     <div class="toolbar-actions">
         <?php if (!empty($supportsSortOrder)): ?>
             <button type="button" class="btn btn-o" id="featuredOrderBtn">Order featured</button>

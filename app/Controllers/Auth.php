@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\GmailMailer;
 use App\Models\AdminModel;
 use Google\Client as GoogleClient;
 use Google\Service\Oauth2;
@@ -184,16 +185,15 @@ class Auth extends BaseController
 
             $resetUrl = site_url('asog-admin/reset-password/' . $token);
 
-            $emailService = \Config\Services::email();
-            $config = config('Email');
-            $emailService->setFrom($config->fromEmail, $config->fromName);
-            $emailService->setTo($email);
-            $emailService->setSubject('Password Reset — ASOG TBI Admin');
-            $emailService->setMessage(view('emails/password_reset', [
+            $gmail = new GmailMailer();
+            $sent = $gmail->send($email, 'Password Reset - ASOG TBI Admin', view('emails/password_reset', [
                 'resetUrl' => $resetUrl,
                 'adminName' => $admin['fullName'],
             ]));
-            $emailService->send(false);
+
+            if (! $sent) {
+                log_message('error', 'Password reset email failed via Gmail API for admin #' . $admin['id'] . '.');
+            }
         }
 
         $resetAttempts[] = time();

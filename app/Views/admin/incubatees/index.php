@@ -62,14 +62,19 @@
 
 <script src="<?= base_url('assets/js/admin/incubatees/index.js') ?>"></script>
 
-<div class="toolbar">
-    <span class="count"><?= count($incubatees ?? []) ?> incubatees</span>
-    <div class="toolbar-actions">
-        <button type="button" class="cm-manage-btn" id="cmManageBtn">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-            Add Cohort
-        </button>
-        <a href="<?= site_url('admin/incubatees/create') ?>" class="btn btn-p">New incubatee</a>
+<div class="inc-admin-toolbar">
+    <div>
+        <span class="inc-admin-count"><?= count($incubatees ?? []) ?> incubatees</span>
+        <p>Manage startups and MSMEs shown on the public Incubatees page.</p>
+    </div>
+    <div class="inc-admin-toolbar-actions">
+        <div class="toolbar-actions">
+            <button type="button" class="cm-manage-btn" id="cmManageBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                Add Cohort
+            </button>
+            <a href="<?= site_url('admin/incubatees/create') ?>" class="btn btn-p">New incubatee</a>
+        </div>
     </div>
 </div>
 
@@ -82,14 +87,14 @@
             </button>
         <?php endforeach; ?>
     </div>
-    <span class="reorder-status" id="reorderStatus">Drag rows to reorder. Changes save automatically.</span>
+    <button type="button" class="btn btn-o reorder-mode-btn" id="incReorderBtn">Re-order</button>
 </div>
 
 <table class="inc-tbl" id="incubateeTable">
     <thead>
         <tr>
             <th class="drag-col"></th>
-            <th></th>
+            <th>Logo</th>
             <th>Company</th>
             <th>Cohort</th>
             <th>Status</th>
@@ -106,7 +111,7 @@
         </tr>
     <?php else: ?>
         <?php foreach ($incubatees as $inc): ?>
-            <tr class="drag-row" draggable="true" data-id="<?= (int) $inc['id'] ?>" data-cohort="<?= esc((string) ($inc['cohort'] ?? '')) ?>">
+            <tr class="drag-row" data-id="<?= (int) $inc['id'] ?>" data-cohort="<?= esc((string) ($inc['cohort'] ?? '')) ?>">
                 <td class="drag-cell">
                     <span class="drag-handle" title="Drag to reorder" aria-label="Drag to reorder">⋮⋮</span>
                 </td>

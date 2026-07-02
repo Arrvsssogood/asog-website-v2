@@ -5,12 +5,8 @@
     <div class="max-w-[900px] mx-auto px-6 md:px-10 lg:px-14">
         <article>
             <div class="flex flex-wrap items-center justify-center gap-5 md:gap-8 mb-8 md:mb-10">
-                <img src="<?= base_url('assets/img/ASOG TBI/PNG/ASOG-TBI_full-colored_stacked.png') ?>"
-                    alt="ASOG-TBI Full Colored Stacked Logo"
-                    class="w-[160px] md:w-[210px] h-auto block select-none" loading="lazy" decoding="async" />
-                <img src="<?= base_url('assets/img/ASOG TBI/PNG/ASOG-TBI_seal.png') ?>"
-                    alt="ASOG-TBI Seal"
-                    class="w-[140px] md:w-[185px] h-auto block select-none" loading="lazy" decoding="async" />
+                <?= responsiveStaticImg('assets/img/ASOG TBI/WebP/ASOG-TBI_full-colored_stacked', 'default', 'ASOG-TBI Full Colored Stacked Logo', 'w-[160px] md:w-[210px] h-auto block select-none', true) ?>
+                <?= responsiveStaticImg('assets/img/ASOG TBI/WebP/ASOG-TBI_seal', 'default', 'ASOG-TBI Seal', 'w-[140px] md:w-[185px] h-auto block select-none', true) ?>
             </div>
 
             <div class="space-y-7 max-w-[720px] mx-auto">

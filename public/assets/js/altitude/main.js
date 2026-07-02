@@ -1,4 +1,4 @@
-﻿/* =====================================================================
+/* =====================================================================
    ALTITUDE 3D — Wilderness-Zoom Transition + Three.js Mountain
    ===================================================================== */
 import * as THREE from 'https://esm.sh/three@0.170.0';
@@ -149,7 +149,7 @@ function spawnParticles() {
   }
 }
 
-function openWildernessZoom() {
+export function openWildernessZoom() {
   if (zoomOvl.classList.contains('active') || overlay.classList.contains('active') || isClosingOverlay) {
     return;
   }

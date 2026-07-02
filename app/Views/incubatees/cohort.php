@@ -6,7 +6,7 @@ $incubatees    = $incubatees ?? [];
 $hasIncubatees = ! empty($incubatees);
 $count         = count($incubatees);
 $cohortLabel   = $cohortLabel ?? 'Cohort';
-$sealUrl       = base_url('assets/img/ASOG TBI/PNG/ASOG-TBI-stacked-v2.png');
+$sealUrl       = base_url('assets/img/ASOG TBI/WebP/ASOG-TBI-stacked-v2.webp');
 ?>
 
 <link rel="stylesheet" href="<?= base_url('assets/css/incubatees.css') ?>">

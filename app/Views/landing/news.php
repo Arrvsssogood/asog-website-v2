@@ -11,7 +11,7 @@
 
             return character_limiter($plain, $limit, '...');
         };
-        $fallbackNewsImage = base_url('assets/img/incubatees.jpg');
+        $fallbackNewsImage = base_url('assets/img/incubatees.webp');
         ?>
 
         <!-- Header -->
@@ -38,9 +38,11 @@
                     class="rc group block no-underline">
                     <div class="aspect-[16/10] bg-[#e5e2dc] overflow-hidden">
                         <?php if (! empty($featured['imagePath'])): ?>
-                            <?php $featuredImage = is_file(FCPATH . $featured['imagePath']) ? site_url($featured['imagePath']) : $fallbackNewsImage; ?>
-                            <img src="<?= esc($featuredImage) ?>" alt="<?= esc($featured['title']) ?>"
-                                 class="w-full h-full object-cover"/>
+                            <?php if (is_file(FCPATH . $featured['imagePath'])): ?>
+                                <?= responsiveUploadImg($featured['imagePath'], 'posts', $featured['title'], 'w-full h-full object-cover', false) ?>
+                            <?php else: ?>
+                                <img src="<?= esc($fallbackNewsImage) ?>" alt="<?= esc($featured['title']) ?>" width="400" height="267" class="w-full h-full object-cover"/>
+                            <?php endif; ?>
                         <?php else: ?>
                             <span class="flex items-center justify-center w-full h-full text-[.55rem] font-semibold tracking-[.2em] uppercase text-dark/12">Image</span>
                         <?php endif; ?>
@@ -73,9 +75,11 @@
                                 </div>
                                 <div class="w-[100px] h-[78px] shrink-0 bg-[#e5e2dc] overflow-hidden">
                                     <?php if (! empty($post['imagePath'])): ?>
-                                        <?php $postImage = is_file(FCPATH . $post['imagePath']) ? site_url($post['imagePath']) : $fallbackNewsImage; ?>
-                                        <img src="<?= esc($postImage) ?>" alt="<?= esc($post['title']) ?>"
-                                             class="w-full h-full object-cover"/>
+                                        <?php if (is_file(FCPATH . $post['imagePath'])): ?>
+                                            <?= responsiveUploadImg($post['imagePath'], 'posts-thumb', $post['title'], 'w-full h-full object-cover', true) ?>
+                                        <?php else: ?>
+                                            <img src="<?= esc($fallbackNewsImage) ?>" alt="<?= esc($post['title']) ?>" width="100" height="67" class="w-full h-full object-cover"/>
+                                        <?php endif; ?>
                                     <?php else: ?>
                                         <span class="flex items-center justify-center w-full h-full text-[.45rem] font-semibold tracking-[.15em] uppercase text-dark/10">IMG</span>
                                     <?php endif; ?>

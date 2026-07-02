@@ -14,14 +14,17 @@
     </div>
 </div>
 
-<div class="org-admin-tabs">
-    <?php foreach (($sectionLabels ?? []) as $sectionKey => $sectionLabel): ?>
-        <a href="<?= site_url('admin/organization?section=' . $sectionKey) ?>"
-           class="org-admin-tab <?= ($activeSection ?? '') === $sectionKey ? 'on' : '' ?>">
-            <?= esc($sectionLabel) ?>
-            <span><?= count($membersBySection[$sectionKey] ?? []) ?></span>
-        </a>
-    <?php endforeach; ?>
+<div class="org-admin-tab-row">
+    <div class="org-admin-tabs">
+        <?php foreach (($sectionLabels ?? []) as $sectionKey => $sectionLabel): ?>
+            <a href="<?= site_url('admin/organization?section=' . $sectionKey) ?>"
+               class="org-admin-tab <?= ($activeSection ?? '') === $sectionKey ? 'on' : '' ?>">
+                <?= esc($sectionLabel) ?>
+                <span><?= count($membersBySection[$sectionKey] ?? []) ?></span>
+            </a>
+        <?php endforeach; ?>
+    </div>
+    <button type="button" class="btn btn-o org-reorder-mode-btn" id="orgReorderBtn">Re-order</button>
 </div>
 
 <?php if (($activeSection ?? '') === 'mentor'): ?>
@@ -59,18 +62,21 @@
     const reorderUrl = reorderConfig?.dataset?.reorderUrl || '';
     const csrfName = reorderConfig?.dataset?.csrfTokenName || '';
     const csrfValue = reorderConfig?.dataset?.csrfTokenValue || '';
+    const reorderBtn = document.getElementById('orgReorderBtn');
 
     let draggedCard = null;
     let dragContainer = null;
+    let isReorderMode = false;
+    const changedContainers = new Set();
 
     const saveOrder = (container) => {
-        if (!reorderUrl || !container) return;
+        if (!reorderUrl || !container) return Promise.resolve(false);
 
         const section = container.getAttribute('data-section') || '';
         const category = container.getAttribute('data-category') || '';
 
         const formData = new FormData();
-        container.querySelectorAll('.org-drag-row[draggable="true"]').forEach((row) => {
+        container.querySelectorAll('.org-drag-row.is-reorderable').forEach((row) => {
             formData.append('order[]', row.getAttribute('data-id'));
         });
         formData.append('section', section);
@@ -79,7 +85,7 @@
             formData.append(csrfName, csrfValue);
         }
 
-        fetch(reorderUrl, {
+        return fetch(reorderUrl, {
             method: 'POST',
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             body: formData,
@@ -88,10 +94,13 @@
             .then((d) => {
                 if (!d.ok) {
                     showOrgToast('error', d.error || 'Unable to save order.');
+                    return false;
                 }
+                return true;
             })
             .catch(() => {
                 showOrgToast('error', 'Network error while saving order.');
+                return false;
             });
     };
 
@@ -107,7 +116,70 @@
         toast.style.cssText = `background:${tone.bg};color:${tone.fg};border:1px solid ${tone.border}`;
         toast.textContent = message;
         document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3200);
+        requestAnimationFrame(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0)';
+        });
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-8px)';
+            setTimeout(() => toast.remove(), 250);
+        }, 3500);
+    };
+
+    const reorderContainers = () => Array.from(document.querySelectorAll('[data-org-reorder-list]'));
+
+    const reorderableRows = (container) => Array.from(
+        container.querySelectorAll('.org-drag-row[data-reorderable="1"]')
+    );
+
+    const setReorderMode = (enabled) => {
+        isReorderMode = enabled;
+        document.body.classList.toggle('org-reorder-mode', enabled);
+
+        if (reorderBtn) {
+            reorderBtn.textContent = enabled ? 'Save order' : 'Re-order';
+            reorderBtn.classList.toggle('btn-p', enabled);
+            reorderBtn.classList.toggle('btn-o', !enabled);
+        }
+
+        reorderContainers().forEach((container) => {
+            const rows = reorderableRows(container);
+            const canReorder = enabled && rows.length > 1;
+            container.classList.toggle('is-org-reorder-active', canReorder);
+            rows.forEach((row) => {
+                row.draggable = canReorder;
+                row.classList.toggle('is-reorderable', canReorder);
+            });
+        });
+    };
+
+    const updateReorderAvailability = () => {
+        if (!reorderBtn) return;
+        const canReorder = reorderContainers().some((container) => reorderableRows(container).length > 1);
+        reorderBtn.disabled = !canReorder;
+        reorderBtn.title = canReorder ? '' : 'At least two reorderable members are needed.';
+        if (!canReorder && isReorderMode) {
+            setReorderMode(false);
+        } else {
+            setReorderMode(isReorderMode);
+        }
+    };
+
+    const saveChangedOrders = async () => {
+        const containers = Array.from(changedContainers).filter((container) => document.body.contains(container));
+        if (containers.length === 0) {
+            showOrgToast('info', 'No order changes to save.');
+            return true;
+        }
+
+        const results = await Promise.all(containers.map((container) => saveOrder(container)));
+        const allSaved = results.every(Boolean);
+        if (allSaved) {
+            changedContainers.clear();
+            showOrgToast('success', 'Order saved.');
+        }
+        return allSaved;
     };
 
     const memberIdFromUrl = (url) => {
@@ -157,13 +229,13 @@
         });
     };
 
-    const insertRow = (listSelector, rowHtml) => {
+    const insertRow = (listSelector, rowHtml, section = '', category = '') => {
         const container = document.querySelector(listSelector);
         if (!container || !rowHtml) return;
 
         const empty = container.querySelector('.org-admin-empty');
         if (empty) {
-            empty.outerHTML = `<div class="org-admin-list">${rowHtml}</div>`;
+            empty.outerHTML = `<div class="org-admin-list" data-org-reorder-list data-section="${escapeAttr(section)}" data-category="${escapeAttr(category)}">${rowHtml}</div>`;
             return;
         }
 
@@ -183,6 +255,14 @@
         }
     };
 
+    const escapeAttr = (value) => String(value).replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;',
+    }[char]));
+
     const applySaveResult = (data) => {
         updateSectionCounts(data.sectionCounts, data.totalCount);
 
@@ -192,10 +272,10 @@
                 row.outerHTML = data.rowHtml;
             }
         } else if (data.action === 'insert') {
-            insertRow(data.listSelector, data.rowHtml);
+            insertRow(data.listSelector, data.rowHtml, data.section || '', data.category || '');
         } else if (data.action === 'relocate') {
             document.getElementById(`org-member-row-${data.memberId}`)?.remove();
-            insertRow(data.listSelector, data.rowHtml);
+            insertRow(data.listSelector, data.rowHtml, data.section || '', data.category || '');
             applyListEmpty(data.listEmpty);
         }
 
@@ -204,6 +284,8 @@
         if (data.memberId) {
             modalCache.delete(String(data.memberId));
         }
+
+        updateReorderAvailability();
     };
 
     const attachModalHandlers = () => {
@@ -221,6 +303,7 @@
         const sectionField = modal.querySelector('#orgSection');
         const roleFields = modal.querySelector('#orgRoleFields');
         const mentorField = modal.querySelector('#orgMentorCategoryField');
+        const mentorSelect = modal.querySelector('#orgMentorCategory');
         const photoField = modal.querySelector('#orgPhotoField');
         const featuredField = modal.querySelector('#orgFeaturedField');
 
@@ -229,6 +312,10 @@
             const isMentor = sectionValue === 'mentor';
             roleFields?.classList.toggle('is-hidden', isMentor);
             mentorField?.classList.toggle('is-hidden', !isMentor);
+            if (mentorSelect) {
+                mentorSelect.required = isMentor;
+                mentorSelect.disabled = !isMentor;
+            }
             photoField?.classList.toggle('is-hidden', isMentor);
             featuredField?.classList.toggle('is-hidden', isMentor);
         };
@@ -363,9 +450,33 @@
         }
     });
 
+    if (reorderBtn) {
+        reorderBtn.addEventListener('click', async () => {
+            if (reorderBtn.disabled) return;
+
+            if (!isReorderMode) {
+                setReorderMode(true);
+                return;
+            }
+
+            reorderBtn.disabled = true;
+            reorderBtn.textContent = 'Saving...';
+            const saved = await saveChangedOrders();
+            if (saved) {
+                setReorderMode(false);
+            } else {
+                setReorderMode(true);
+            }
+            updateReorderAvailability();
+        });
+    }
+
     document.addEventListener('dragstart', (event) => {
-        const row = event.target.closest('.org-drag-row[draggable="true"]');
-        if (!row) return;
+        const row = event.target.closest('.org-drag-row');
+        if (!isReorderMode || !row || !row.classList.contains('is-reorderable')) {
+            event.preventDefault();
+            return;
+        }
         draggedCard = row;
         dragContainer = row.closest('[data-org-reorder-list]');
         row.classList.add('is-dragging');
@@ -385,7 +496,7 @@
         const target = event.target.closest('.org-drag-row');
         if (!target || target === draggedCard) return;
         if (target.closest('[data-org-reorder-list]') !== dragContainer) return;
-        if (target.getAttribute('draggable') !== 'true') return;
+        if (!target.classList.contains('is-reorderable')) return;
 
         event.preventDefault();
 
@@ -407,9 +518,11 @@
         event.preventDefault();
         document.querySelectorAll('.org-drag-over').forEach((el) => el.classList.remove('org-drag-over'));
         draggedCard.classList.remove('is-dragging');
-        saveOrder(dragContainer);
+        changedContainers.add(dragContainer);
         draggedCard = null;
         dragContainer = null;
     });
+
+    updateReorderAvailability();
 })();
 </script>

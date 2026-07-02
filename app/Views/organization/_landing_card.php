@@ -16,8 +16,16 @@ $displayRole = $roleSecondary !== '' ? $roleSecondary : $rolePrimary;
         style="width:165px;max-width:100%;background:linear-gradient(160deg, rgba(150,208,255,.7), rgba(3,85,140,.5));">
         <div class="w-full h-full rounded-[7px] overflow-hidden"
             style="background:linear-gradient(160deg, rgba(150,208,255,.2), rgba(3,85,140,.25));">
-            <img src="<?= esc($photoUrl) ?>" alt="<?= esc($name) ?>"
-                class="w-full h-full object-contain object-center" />
+            <?php
+            $photoPath = $member['photoPath'] ?? '';
+            if (preg_match('#^https?://#i', $photoPath)) {
+                $classAttr = ' class="w-full h-full object-contain object-center"';
+                $lazyAttr = ($lazy ?? true) ? ' loading="lazy"' : '';
+                echo '<img src="' . esc($photoUrl) . '" alt="' . esc($name) . '"' . $classAttr . $lazyAttr . '>';
+            } else {
+                echo responsiveStaticImg($photoPath, 'team-landing', $name, 'w-full h-full object-contain object-center', $lazy ?? true);
+            }
+            ?>
         </div>
     </div>
     <?php endif; ?>

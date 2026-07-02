@@ -13,7 +13,7 @@
 <section id="cta"
     class="relative overflow-hidden py-20 md:py-28 px-6 md:px-10 lg:px-14 flex flex-col items-center text-center">
     <div class="absolute inset-0 bg-cover bg-center scale-105"
-        style="background-image:url('<?= base_url('assets/img/incubatees.jpg') ?>');">
+        style="background-image:url('<?= base_url('assets/img/incubatees.webp') ?>');">
     </div>
     <div class="absolute inset-0 bg-[rgba(3,33,52,.82)]"></div>
     <div class="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[.06] to-transparent">

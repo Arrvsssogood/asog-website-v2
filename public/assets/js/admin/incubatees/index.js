@@ -204,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var table = document.getElementById('incubateeTable');
     var filterButtons = document.querySelectorAll('#cohortFilterBtns .filter-btn');
-    var status = document.getElementById('reorderStatus');
+    var reorderBtn = document.getElementById('incReorderBtn');
 
     if (!table) {
         return;
@@ -212,29 +212,98 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var body = table.querySelector('tbody');
     var draggedRow = null;
+    var isReorderMode = false;
+    var activeFilter = 'all';
+    var reorderSnapshot = '';
 
     function getRows() {
         return Array.from(body.querySelectorAll('tr.drag-row'));
     }
 
-    function setStatus(message, isError) {
-        if (!status) return;
-        status.textContent = message;
-        status.style.color = isError ? '#dc2626' : '#94a3b8';
+    function getVisibleRows() {
+        return getRows().filter(function (row) {
+            return row.style.display !== 'none';
+        });
+    }
+
+    function rowsForCurrentScope() {
+        return activeFilter === 'all' ? getRows() : getVisibleRows();
+    }
+
+    function currentOrderSignature() {
+        return rowsForCurrentScope().map(function (row) {
+            return row.dataset.id || '';
+        }).join('|');
+    }
+
+    function showAdminToast(type, message) {
+        var styles = {
+            success: { bg: '#f0fdf4', fg: '#166534', border: '#bbf7d0' },
+            error: { bg: '#fef2f2', fg: '#991b1b', border: '#fecaca' },
+            warning: { bg: '#fffbeb', fg: '#92400e', border: '#fde68a' },
+            info: { bg: '#f0f7ff', fg: '#1e40af', border: '#bfdbfe' }
+        };
+        var tone = styles[type] || styles.info;
+        var toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;top:1.1rem;right:1.1rem;z-index:9999;background:' + tone.bg + ';border:1px solid ' + tone.border + ';padding:.55rem .9rem;border-radius:.3rem;font-size:.78rem;font-family:\'DM Sans\',sans-serif;color:' + tone.fg + ';max-width:340px;opacity:0;transform:translateY(-8px);transition:opacity .25s,transform .25s';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        requestAnimationFrame(function () {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0)';
+        });
+        setTimeout(function () {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-8px)';
+            setTimeout(function () { toast.remove(); }, 250);
+        }, 3500);
+    }
+
+    function setReorderMode(enabled) {
+        isReorderMode = enabled;
+        reorderSnapshot = enabled ? currentOrderSignature() : '';
+        table.classList.toggle('is-reorder-mode', enabled);
+        if (reorderBtn) {
+            reorderBtn.textContent = enabled ? 'Save order' : 'Re-order';
+            reorderBtn.classList.toggle('btn-p', enabled);
+            reorderBtn.classList.toggle('btn-o', !enabled);
+        }
+
+        filterButtons.forEach(function (button) {
+            button.disabled = enabled && (button.dataset.filter || 'all') !== activeFilter;
+        });
+
+        getRows().forEach(function (row) {
+            var canDrag = enabled && row.style.display !== 'none';
+            row.draggable = canDrag;
+            row.classList.toggle('is-reorderable', canDrag);
+        });
+    }
+
+    function updateReorderAvailability() {
+        if (!reorderBtn) return;
+        var canReorder = getVisibleRows().length > 1;
+        reorderBtn.disabled = !canReorder;
+        reorderBtn.title = canReorder ? '' : 'At least two visible incubatees are needed to reorder.';
+        if (!canReorder && isReorderMode) {
+            setReorderMode(false);
+        } else {
+            setReorderMode(isReorderMode);
+        }
     }
 
     function saveOrder() {
-        if (!reorderUrl) return;
+        if (!reorderUrl) return Promise.resolve(false);
 
         var formData = new FormData();
-        getRows().forEach(function (row) {
+        var rowsToSave = rowsForCurrentScope();
+        rowsToSave.forEach(function (row) {
             formData.append('order[]', row.dataset.id);
         });
+        formData.append('cohort', activeFilter);
         formData.append(csrfName, csrfValue);
 
-        setStatus('Saving order...', false);
-
-        fetch(reorderUrl, {
+        return fetch(reorderUrl, {
             method: 'POST',
             headers: {'X-Requested-With': 'XMLHttpRequest'},
             body: formData
@@ -242,13 +311,15 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(function (response) { return response.json(); })
         .then(function (data) {
             if (data.ok) {
-                setStatus('Order saved.', false);
-            } else {
-                setStatus(data.error || 'Unable to save order.', true);
+                showAdminToast('success', 'Order saved.');
+                return true;
             }
+            showAdminToast('error', data.error || 'Unable to save order.');
+            return false;
         })
         .catch(function () {
-            setStatus('Network error while saving order.', true);
+            showAdminToast('error', 'Network error while saving order.');
+            return false;
         });
     }
 
@@ -257,6 +328,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function applyFilter(filterName) {
+        activeFilter = filterName || 'all';
         var wanted = normalizeCohort(filterName);
         var visibleCount = 0;
         getRows().forEach(function (row) {
@@ -270,10 +342,15 @@ document.addEventListener('DOMContentLoaded', function () {
         if (emptyState) {
             emptyState.style.display = visibleCount === 0 ? '' : 'none';
         }
+
+        updateReorderAvailability();
     }
 
     filterButtons.forEach(function (button) {
         button.addEventListener('click', function () {
+            if (isReorderMode) {
+                return;
+            }
             filterButtons.forEach(function (btn) {
                 btn.classList.remove('active');
             });
@@ -282,9 +359,41 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
+    if (reorderBtn) {
+        reorderBtn.addEventListener('click', function () {
+            if (reorderBtn.disabled) return;
+
+            if (!isReorderMode) {
+                setReorderMode(true);
+                return;
+            }
+
+            if (currentOrderSignature() === reorderSnapshot) {
+                showAdminToast('info', 'No order changes to save.');
+                setReorderMode(false);
+                updateReorderAvailability();
+                return;
+            }
+
+            reorderBtn.disabled = true;
+            reorderBtn.textContent = 'Saving...';
+            saveOrder().then(function (saved) {
+                if (saved) {
+                    setReorderMode(false);
+                } else {
+                    setReorderMode(true);
+                }
+                updateReorderAvailability();
+            });
+        });
+    }
+
     body.addEventListener('dragstart', function (event) {
         var row = event.target.closest('tr.drag-row');
-        if (!row) return;
+        if (!isReorderMode || !row || !row.classList.contains('is-reorderable')) {
+            event.preventDefault();
+            return;
+        }
         draggedRow = row;
         row.classList.add('dragging');
         event.dataTransfer.effectAllowed = 'move';
@@ -301,9 +410,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     body.addEventListener('dragover', function (event) {
+        if (!isReorderMode || !draggedRow) return;
         event.preventDefault();
         var targetRow = event.target.closest('tr.drag-row');
-        if (!targetRow || !draggedRow || targetRow === draggedRow) return;
+        if (!targetRow || !targetRow.classList.contains('is-reorderable') || targetRow === draggedRow) return;
 
         var targetRect = targetRow.getBoundingClientRect();
         var after = (event.clientY - targetRect.top) > (targetRect.height / 2);
@@ -321,6 +431,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     body.addEventListener('drop', function (event) {
+        if (!isReorderMode) return;
         event.preventDefault();
         body.querySelectorAll('.drop-target').forEach(function (row) {
             row.classList.remove('drop-target');
@@ -328,7 +439,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (draggedRow) {
             draggedRow.classList.remove('dragging');
         }
-        saveOrder();
         draggedRow = null;
     });
 

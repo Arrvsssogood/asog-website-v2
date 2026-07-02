@@ -1,5 +1,6 @@
-.toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
-.toolbar .count{font-size:.78rem;color:#94a3b8}
+.posts-admin-toolbar{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1rem}
+.posts-admin-count{display:block;font-size:.78rem;font-weight:700;color:#1e293b}
+.posts-admin-toolbar p{margin:.2rem 0 0;font-size:.72rem;color:#64748b;max-width:520px}
 .toolbar-actions{display:flex;align-items:center;gap:.5rem}
 .btn-disabled{opacity:.55;cursor:not-allowed;pointer-events:none}
 

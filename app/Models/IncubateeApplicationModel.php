@@ -31,6 +31,10 @@ class IncubateeApplicationModel extends Model
         'contactNumber',
         'applicationStatus',
         'statusRemark',
+        'revalidationTokenHash',
+        'revalidationTokenExpiresAt',
+        'revalidationRequestedAt',
+        'revalidatedAt',
         'isArchived',
     ];
 
@@ -44,7 +48,7 @@ class IncubateeApplicationModel extends Model
         'videoPresentationLink'    => 'required|valid_url|max_length[500]',
         'applicantName'            => 'required|regex_match[/^[A-Za-z\s,\.]+$/]|max_length[255]',
         'applicantEmail'           => 'required|valid_email|max_length[255]',
-        'contactNumber'            => 'required|regex_match[/^[0-9\s\-\+\(\)]+$/]|max_length[20]',
+        'contactNumber'            => 'required|regex_match[/^09[0-9]{9}$/]|max_length[11]',
         'statusRemark'             => 'permit_empty|max_length[2000]',
     ];
 
@@ -77,9 +81,31 @@ class IncubateeApplicationModel extends Model
         'contactNumber' => [
             'required'     => 'Contact number is required.',
             'regex_match'  => 'Please enter a valid contact number.',
-            'max_length'   => 'Contact number cannot exceed 20 characters.',
+            'max_length'   => 'Contact number cannot exceed 11 digits.',
         ],
     ];
+
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_FOR_REVALIDATION = 'for_revalidation';
+    public const STATUS_ACCEPTED = 'accepted';
+    public const STATUS_REJECTED = 'rejected';
+
+    public const STATUS_LABELS = [
+        self::STATUS_PENDING => 'For Review',
+        self::STATUS_FOR_REVALIDATION => 'For Revalidation',
+        self::STATUS_ACCEPTED => 'Accepted',
+        self::STATUS_REJECTED => 'Rejected',
+    ];
+
+    public static function allowedStatuses(): array
+    {
+        return array_keys(self::STATUS_LABELS);
+    }
+
+    public static function statusLabel(string $status): string
+    {
+        return self::STATUS_LABELS[$status] ?? ucfirst(str_replace('_', ' ', $status));
+    }
 
     // ─── Query Helpers ────────────────────────────────────
 
@@ -89,12 +115,13 @@ class IncubateeApplicationModel extends Model
     public function getCounts(): array
     {
         $total    = $this->where('isArchived', 0)->countAllResults();
-        $pending  = $this->where('isArchived', 0)->where('applicationStatus', 'pending')->countAllResults();
-        $accepted = $this->where('isArchived', 0)->where('applicationStatus', 'accepted')->countAllResults();
-        $rejected = $this->where('isArchived', 0)->where('applicationStatus', 'rejected')->countAllResults();
+        $pending  = $this->where('isArchived', 0)->where('applicationStatus', self::STATUS_PENDING)->countAllResults();
+        $forRevalidation = $this->where('isArchived', 0)->where('applicationStatus', self::STATUS_FOR_REVALIDATION)->countAllResults();
+        $accepted = $this->where('isArchived', 0)->where('applicationStatus', self::STATUS_ACCEPTED)->countAllResults();
+        $rejected = $this->where('isArchived', 0)->where('applicationStatus', self::STATUS_REJECTED)->countAllResults();
         $archived = $this->where('isArchived', 1)->countAllResults();
 
-        return compact('total', 'pending', 'accepted', 'rejected', 'archived');
+        return compact('total', 'pending', 'forRevalidation', 'accepted', 'rejected', 'archived');
     }
 
     /**  
@@ -172,7 +199,7 @@ class IncubateeApplicationModel extends Model
     **/
     public function getPending(int $limit = 0)
     {
-        $builder = $this->where('applicationStatus', 'pending')
+        $builder = $this->where('applicationStatus', self::STATUS_PENDING)
                         ->orderBy('createdAt', 'DESC');
 
         return $limit > 0 ? $builder->findAll($limit) : $builder->findAll();
@@ -205,7 +232,24 @@ class IncubateeApplicationModel extends Model
         return $this->builder()
             ->select('id')
             ->where('LOWER(applicantEmail)', $email)
-            ->where('applicationStatus !=', 'rejected')
+            ->where('applicationStatus !=', self::STATUS_REJECTED)
+            ->limit(1)
+            ->get()
+            ->getRowArray() !== null;
+    }
+
+    public function emailExistsExcept(string $email, int $exceptId): bool
+    {
+        $email = strtolower(trim($email));
+        if ($email === '') {
+            return false;
+        }
+
+        return $this->builder()
+            ->select('id')
+            ->where('LOWER(applicantEmail)', $email)
+            ->where('id !=', $exceptId)
+            ->where('applicationStatus !=', self::STATUS_REJECTED)
             ->limit(1)
             ->get()
             ->getRowArray() !== null;
@@ -237,13 +281,12 @@ class IncubateeApplicationModel extends Model
     /**  
      * Set the applicationStatus of a given record.
      * @param  int    $id     Primary-key ID
-     * @param  string $status One of: pending, accepted, rejected
+     * @param  string $status One of the STATUS_* constants.
      * @return bool
     **/
     public function updateStatus(int $id, string $status, ?string $remark = null): bool
     {
-        $allowed = ['pending', 'accepted', 'rejected'];
-        if (! in_array($status, $allowed, true)) {
+        if (! in_array($status, self::allowedStatuses(), true)) {
             return false;
         }
 
@@ -251,5 +294,41 @@ class IncubateeApplicationModel extends Model
             'applicationStatus' => $status,
             'statusRemark'      => $remark !== null && trim($remark) !== '' ? trim($remark) : null,
         ]);
+    }
+
+    public function findByRevalidationToken(string $token): ?array
+    {
+        $token = trim($token);
+        if ($token === '') {
+            return null;
+        }
+
+        $hash = hash('sha256', $token);
+
+        return $this->builder()
+            ->where('revalidationTokenHash', $hash)
+            ->where('applicationStatus', self::STATUS_FOR_REVALIDATION)
+            ->where('isArchived', 0)
+            ->limit(1)
+            ->get()
+            ->getRowArray() ?: null;
+    }
+
+    public function isRevalidationLinkUsable(array $app): bool
+    {
+        if (($app['applicationStatus'] ?? null) !== self::STATUS_FOR_REVALIDATION) {
+            return false;
+        }
+
+        if (! empty($app['isArchived'])) {
+            return false;
+        }
+
+        $expiresAt = (string) ($app['revalidationTokenExpiresAt'] ?? '');
+        if ($expiresAt === '') {
+            return false;
+        }
+
+        return strtotime($expiresAt) !== false && strtotime($expiresAt) >= time();
     }
 }

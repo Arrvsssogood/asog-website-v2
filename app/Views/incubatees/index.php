@@ -7,7 +7,7 @@ $cohorts        = $cohorts ?? [];
 $allIncubatees  = $allIncubatees ?? [];
 $hasIncubatees  = ! empty($allIncubatees);
 $hasCohorts     = ! empty($cohorts);
-$sealUrl        = base_url('assets/img/ASOG TBI/PNG/ASOG-TBI-stacked-v2.png');
+$sealPath       = 'assets/img/ASOG TBI/WebP/ASOG-TBI-stacked-v2';
 $firstCohort    = $hasCohorts ? $cohorts[0]['name'] : '';
 ?>
 
@@ -48,7 +48,7 @@ $firstCohort    = $hasCohorts ? $cohorts[0]['name'] : '';
                         <div class="ib-portrait w-full flex-1 flex items-center justify-center relative">
                             <div class="ib-logo-box">
                                 <?php if (! empty($inc['logoPath'])): ?>
-                                <img src="<?= base_url(esc($inc['logoPath'])) ?>" alt="<?= esc($inc['companyName']) ?>">
+                                <?= responsiveUploadImg($inc['logoPath'], 'incubatees', $inc['companyName'], '', true) ?>
                                 <?php else: ?>
                                 <span class="ib-init"><?= strtoupper(substr($inc['companyName'], 0, 1)) ?></span>
                                 <?php endif; ?>
@@ -89,8 +89,7 @@ $firstCohort    = $hasCohorts ? $cohorts[0]['name'] : '';
         <div id="ibComingSoon" class="text-center py-16"
             style="display:<?= ($hasCohorts && $cohorts[0]['_count'] === 0) ? 'block' : 'none' ?>">
             <div class="mb-6">
-                <img src="<?= site_url('assets/img/icons8-rocket-launch-94.png') ?>" alt="Coming Soon"
-                    class="w-128 h-128 mx-auto opacity-50" />
+                <?= responsiveStaticImg('assets/img/icons8-rocket-launch-94', 'default', 'Coming Soon', 'w-128 h-128 mx-auto opacity-50', true) ?>
             </div>
             <h3 class="font-display text-2xl text-dark mb-3">
                 <span id="ibCSLabel"><?= esc($firstCohort) ?></span> — Coming Soon
@@ -118,7 +117,7 @@ $firstCohort    = $hasCohorts ? $cohorts[0]['name'] : '';
 </section>
 
 <?php if ($hasIncubatees): ?>
-<?= view('incubatees/partials/_overlay', ['sealUrl' => $sealUrl]) ?>
+<?= view('incubatees/partials/_overlay', ['sealUrl' => base_url($sealPath . '.webp')]) ?>
 <?= view('incubatees/partials/_panel') ?>
 
 <!-- Mobile Preview Modal -->

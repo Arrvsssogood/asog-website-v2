@@ -26,7 +26,7 @@ class ContactMessageModel extends Model
     protected $validationRules = [
         'name'    => 'required|min_length[2]|max_length[100]',
         'email'   => 'required|valid_email|max_length[150]',
-        'message' => 'required|min_length[10]|max_length[2000]',
+        'message' => 'required',
     ];
 
     protected $validationMessages = [
@@ -42,8 +42,6 @@ class ContactMessageModel extends Model
         ],
         'message' => [
             'required'   => 'Message is required.',
-            'min_length' => 'Message must be at least 10 characters.',
-            'max_length' => 'Message cannot exceed 2000 characters.',
         ],
     ];
 

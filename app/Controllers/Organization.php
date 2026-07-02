@@ -17,6 +17,10 @@ class Organization extends BaseController
         $tbiStaff = $memberModel->getPublishedBySection(OrganizationMemberModel::SECTION_TBI_STAFF);
         $interns = $memberModel->getPublishedBySection(OrganizationMemberModel::SECTION_INTERN);
         $mentors = $memberModel->getPublishedBySection(OrganizationMemberModel::SECTION_MENTOR);
+        helper('image');
+        
+        $settingModel = new LandingSettingModel();
+        $raw = trim((string) $settingModel->getValue(LandingSettingModel::KEY_SHOW_INTERNS, '1'));
 
         $data = [
             'title'               => 'Organization - ASOG TBI',

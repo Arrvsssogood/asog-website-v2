@@ -102,6 +102,7 @@ class IncubateesAdmin extends BaseController
     public function saveOrder()
     {
         $orderedIds = $this->request->getPost('order');
+        $cohort = trim((string) ($this->request->getPost('cohort') ?? 'all'));
 
         if (! is_array($orderedIds) || $orderedIds === []) {
             return $this->response->setJSON([
@@ -110,17 +111,53 @@ class IncubateesAdmin extends BaseController
             ]);
         }
 
+        $normalizedIds = [];
+        foreach (array_values($orderedIds) as $id) {
+            $incubateeId = (int) $id;
+            if ($incubateeId > 0) {
+                $normalizedIds[] = $incubateeId;
+            }
+        }
+
+        if ($normalizedIds === []) {
+            return $this->response->setJSON([
+                'ok' => false,
+                'error' => 'No valid incubatee order received.',
+            ]);
+        }
+
         $this->db->transStart();
 
-        foreach (array_values($orderedIds) as $index => $id) {
-            $incubateeId = (int) $id;
-            if ($incubateeId <= 0) {
-                continue;
-            }
+        if ($cohort !== '' && strtolower($cohort) !== 'all') {
+            $currentRows = $this->db->table('incubatees')
+                ->select('id, sortOrder')
+                ->where('cohort', $cohort)
+                ->orderBy('sortOrder', 'ASC')
+                ->orderBy('createdAt', 'DESC')
+                ->get()
+                ->getResultArray();
 
-            $this->db->table('incubatees')
-                ->where('id', $incubateeId)
-                ->update(['sortOrder' => $index + 1]);
+            $allowedIds = array_fill_keys(array_map(static fn ($row) => (int) $row['id'], $currentRows), true);
+            $sortSlots = array_map(static fn ($row) => (int) $row['sortOrder'], $currentRows);
+            $position = 0;
+
+            foreach ($normalizedIds as $incubateeId) {
+                if (! isset($allowedIds[$incubateeId], $sortSlots[$position])) {
+                    continue;
+                }
+
+                $this->db->table('incubatees')
+                    ->where('id', $incubateeId)
+                    ->update(['sortOrder' => $sortSlots[$position]]);
+
+                $position++;
+            }
+        } else {
+            foreach ($normalizedIds as $index => $incubateeId) {
+                $this->db->table('incubatees')
+                    ->where('id', $incubateeId)
+                    ->update(['sortOrder' => $index + 1]);
+            }
         }
 
         $this->db->transComplete();

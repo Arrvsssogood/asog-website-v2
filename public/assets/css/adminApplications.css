@@ -1,7 +1,7 @@
 /* ── Stats row ─────────────────────────── */
 .grid-stats {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: .85rem;
     margin-bottom: 1.8rem
 }
@@ -185,6 +185,11 @@
 .tag-accepted {
     background: #ecfdf5;
     color: #065f46
+}
+
+.tag-for_revalidation {
+    background: #fff7ed;
+    color: #c2410c
 }
 
 .tag-rejected {

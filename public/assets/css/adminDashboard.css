@@ -291,6 +291,11 @@
     color: #065f46;
 }
 
+.tag-for_revalidation {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
 .tag-rejected {
     background: #fef2f2;
     color: #991b1b;

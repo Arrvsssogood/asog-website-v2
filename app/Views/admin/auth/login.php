@@ -277,8 +277,7 @@
 <body>
 
     <div class="brand">
-        <img src="<?= base_url('assets/img/ASOG TBI/PNG/ASOG-TBI_full-colored_stacked-white.png') ?>" alt="ASOG TBI"
-            style="width:160px;margin-bottom:1.4rem">
+        <?= responsiveStaticImg('assets/img/ASOG TBI/WebP/ASOG-TBI_full-colored_stacked-white', 'default', 'ASOG TBI', 'block w-[160px] mb-[1.4rem]', false) ?>
         <h1>ASOG Technology<br>Business Incubator</h1>
         <p>Content management system for the ASOG TBI website. Sign in to manage posts and site content.</p>
     </div>

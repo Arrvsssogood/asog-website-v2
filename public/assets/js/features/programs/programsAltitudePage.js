@@ -10,10 +10,38 @@
   var programModal = document.getElementById('altitudeProgramModal');
   var programModalClose = document.getElementById('altitudeProgramModalClose');
 
-  var showProgramPage = function () {
-    // Skip intermediate program page and fire the 3D experience directly.
-    var card = document.getElementById('altitudeExploreCard');
-    if (card) card.click();
+  var isLoaded = false;
+  var isImporting = false;
+  var showProgramPage = async function () {
+    if (isLoaded) {
+      var card = document.getElementById('altitudeExploreCard');
+      if (card) card.click();
+      return;
+    }
+    if (isImporting) return;
+    isImporting = true;
+
+    if (enterBtn) {
+      enterBtn.textContent = 'Loading 3D Experience...';
+      enterBtn.disabled = true;
+    }
+
+    try {
+      var module = await import(window.altitude3DScriptUrl || '/assets/js/altitude/main.js');
+      isLoaded = true;
+      if (enterBtn) {
+        enterBtn.textContent = 'Explore the Program';
+        enterBtn.disabled = false;
+      }
+      module.openWildernessZoom();
+    } catch (err) {
+      console.error('Failed to load 3D experience:', err);
+      if (enterBtn) {
+        enterBtn.textContent = 'Failed to load. Click to retry';
+        enterBtn.disabled = false;
+      }
+      isImporting = false;
+    }
   };
 
   var hideProgramModal = function () {

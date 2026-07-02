@@ -22,12 +22,12 @@
 <?php if (! empty($coreTeamMembers)): ?>
 <?php [$coreFeatured, $coreRegular] = $splitFeatured($coreTeamMembers); ?>
 <!-- ── THE CORE TEAM ── -->
-<section id="core-team" class="relative bg-off py-16 md:py-20 px-6 md:px-10 lg:px-14">
+<section id="core-team" class="relative bg-off py-12 md:py-16 px-6 md:px-10 lg:px-14">
     <div class="ai-grid"></div>
     <div class="ai-grid-fade"></div>
 
     <div class="max-w-[1100px] mx-auto relative z-[2]">
-        <div class="text-center mb-12 md:mb-16 reveal">
+        <div class="text-center mb-8 md:mb-10 reveal">
             <div class="flex items-center justify-center gap-2 mb-4">
                 <span class="block w-[18px] h-[1.5px] bg-gold"></span>
                 <span class="text-[.55rem] font-semibold tracking-[.2em] uppercase text-gold">Leadership</span>
@@ -38,7 +38,7 @@
                 guiding ASOG TBI's mission of empowering startups through AI and engineering innovation.</p>
         </div>
 
-        <div class="reveal-group max-w-[980px] mx-auto flex flex-col items-center gap-10 md:gap-10">
+        <div class="reveal-group max-w-[980px] mx-auto flex flex-col items-center gap-6 md:gap-8">
             <?php foreach ($coreFeatured as $member): ?>
                 <?= view('organization/_photo_card', [
                     'member' => $member,
@@ -46,6 +46,7 @@
                     'maxWidth' => '280px',
                     'gradient' => 'linear-gradient(160deg, rgba(3,85,140,.58), rgba(3,85,140,.2))',
                     'primaryClass' => 'text-[.68rem] font-semibold tracking-[.08em] uppercase text-dark mt-1.5 block',
+                    'lazy' => false,
                 ]) ?>
             <?php endforeach; ?>
 
@@ -71,12 +72,12 @@
 <?php if (! empty($tbiStaffMembers)): ?>
 <?php [$staffFeatured, $staffRegular] = $splitFeatured($tbiStaffMembers); ?>
 <!-- ── TBI STAFF ── -->
-<section id="tbi-staff" class="relative bg-white py-16 md:py-20 px-6 md:px-10 lg:px-14">
+<section id="tbi-staff" class="relative bg-white py-12 md:py-16 px-6 md:px-10 lg:px-14">
     <div class="ai-grid"></div>
     <div class="ai-grid-fade"></div>
 
     <div class="max-w-[1100px] mx-auto relative z-[2]">
-        <div class="text-center mb-12 md:mb-16 reveal">
+        <div class="text-center mb-8 md:mb-10 reveal">
             <div class="flex items-center justify-center gap-2 mb-4">
                 <span class="block w-[18px] h-[1.5px] bg-navy"></span>
                 <span class="text-[.55rem] font-semibold tracking-[.2em] uppercase text-navy">Operations</span>
@@ -87,7 +88,7 @@
                 running the day-to-day operations and supporting our incubatees.</p>
         </div>
 
-        <div class="flex flex-col items-center gap-8 md:gap-10 reveal-group max-w-[800px] mx-auto">
+        <div class="flex flex-col items-center gap-6 md:gap-8 reveal-group max-w-[800px] mx-auto">
             <?php foreach ($staffFeatured as $member): ?>
                 <?= view('organization/_photo_card', [
                     'member' => $member,
@@ -120,12 +121,12 @@
 
 <?php if (! empty($showInternsSection) && ! empty($internMembers)): ?>
 <!-- ── INTERNS ── -->
-<section id="interns" class="relative bg-off py-16 md:py-20 px-6 md:px-10 lg:px-14">
+<section id="interns" class="relative bg-off py-12 md:py-16 px-6 md:px-10 lg:px-14">
     <div class="ai-grid"></div>
     <div class="ai-grid-fade"></div>
 
     <div class="max-w-[1100px] mx-auto relative z-[2]">
-        <div class="text-center mb-12 md:mb-16 reveal">
+        <div class="text-center mb-8 md:mb-10 reveal">
             <div class="flex items-center justify-center gap-2 mb-4">
                 <span class="block w-[18px] h-[1.5px] bg-sky"></span>
                 <span class="text-[.55rem] font-semibold tracking-[.2em] uppercase text-sky">Support Team</span>
@@ -153,12 +154,12 @@
 
 <?php if (! empty($mentorGroups)): ?>
 <!-- ── MENTORS ── -->
-<section id="mentors" class="relative bg-off py-16 md:py-20 px-6 md:px-10 lg:px-14">
+<section id="mentors" class="relative bg-off py-12 md:py-16 px-6 md:px-10 lg:px-14">
     <div class="ai-grid"></div>
     <div class="ai-grid-fade"></div>
 
     <div class="max-w-[1100px] mx-auto relative z-[2]">
-        <div class="text-center mb-12 md:mb-16 reveal">
+        <div class="text-center mb-8 md:mb-10 reveal">
             <div class="flex items-center justify-center gap-2 mb-4">
                 <span class="block w-[18px] h-[1.5px] bg-sky"></span>
                 <span class="text-[.55rem] font-semibold tracking-[.2em] uppercase text-sky">Experts</span>

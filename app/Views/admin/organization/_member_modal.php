@@ -76,7 +76,7 @@ $errors = $formErrors ?? [];
 
             <label class="org-admin-field <?= $isMentor ? '' : 'is-hidden' ?>" id="orgMentorCategoryField">
                 <span>Mentor category</span>
-                <select name="mentorCategory" class="lf-select" required>
+                <select name="mentorCategory" id="orgMentorCategory" class="lf-select" <?= $isMentor ? 'required' : 'disabled' ?>>
                     <option value="">Select category</option>
                     <?php foreach (($mentorCategories ?? []) as $category): ?>
                         <option value="<?= esc($category) ?>" <?= $selectedCategory === $category ? 'selected' : '' ?>>
@@ -119,7 +119,14 @@ $errors = $formErrors ?? [];
 
             <div class="org-admin-form-actions">
                 <a href="<?= esc($closeUrl) ?>" data-org-modal-close class="btn btn-o">Cancel</a>
-                <button type="submit" class="btn btn-p"><?= $isEdit ? 'Save changes' : 'Add member' ?></button>
+                <button type="submit" class="btn btn-p">
+                    <?php if ($isEdit): ?>
+                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                    <?php endif; ?>
+                    <?= $isEdit ? 'Save changes' : 'Add member' ?>
+                </button>
             </div>
         </form>
     </div>

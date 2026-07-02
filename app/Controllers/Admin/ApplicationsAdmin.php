@@ -3,6 +3,8 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Libraries\GmailMailer;
+use App\Models\IncubateeApplicationModel;
 use App\Models\LandingSettingModel;
 
 /**
@@ -111,20 +113,47 @@ class ApplicationsAdmin extends BaseController
         $status = $payload['status'] ?? '';
         $remark = $this->normalizeRemark($payload['remark'] ?? null);
 
-        if (! $this->applicationModel->updateStatus($id, $status, $remark)) {
+        if ($status === IncubateeApplicationModel::STATUS_FOR_REVALIDATION && $remark === null) {
+            return $this->response->setStatusCode(422)->setJSON([
+                'error' => 'Please add a remark explaining what the applicant needs to update.',
+            ]);
+        }
+
+        if (! in_array($status, IncubateeApplicationModel::allowedStatuses(), true)) {
             return $this->response->setStatusCode(422)->setJSON(['error' => 'Invalid status value.']);
+        }
+
+        $revalidationUrl = null;
+        $updateData = [
+            'applicationStatus' => $status,
+            'statusRemark' => $remark,
+            'revalidationTokenHash' => null,
+            'revalidationTokenExpiresAt' => null,
+            'revalidationRequestedAt' => null,
+        ];
+
+        if ($status === IncubateeApplicationModel::STATUS_FOR_REVALIDATION) {
+            $token = bin2hex(random_bytes(32));
+            $updateData['revalidationTokenHash'] = hash('sha256', $token);
+            $updateData['revalidationTokenExpiresAt'] = date('Y-m-d H:i:s', strtotime('+14 days'));
+            $updateData['revalidationRequestedAt'] = date('Y-m-d H:i:s');
+            $revalidationUrl = site_url('apply/revalidate/' . $token);
+        }
+
+        if (! $this->applicationModel->update($id, $updateData)) {
+            return $this->response->setStatusCode(422)->setJSON(['error' => 'Unable to update application status.']);
         }
 
         $app = $this->applicationModel->find($id);
         try {
-            $this->sendStatusEmail($app, $status, $remark);
+            $this->sendStatusEmail($app, $status, $remark, $revalidationUrl);
         } catch (\Throwable $e) {
             log_message('error', '[ApplicationsAdmin] sendStatusEmail failed: ' . $e->getMessage());
         }
 
         return $this->response->setJSON([
             'success' => true,
-            'message' => 'Application marked as ' . $status . '.',
+            'message' => 'Application marked as ' . IncubateeApplicationModel::statusLabel($status) . '.',
         ]);
     }
 
@@ -180,6 +209,9 @@ class ApplicationsAdmin extends BaseController
             $this->applicationModel->whereIn('id', $ids)->set([
                 'applicationStatus' => $action,
                 'statusRemark'      => null,
+                'revalidationTokenHash' => null,
+                'revalidationTokenExpiresAt' => null,
+                'revalidationRequestedAt' => null,
             ])->update();
             foreach ($apps as $app) {
                 try {
@@ -203,24 +235,24 @@ class ApplicationsAdmin extends BaseController
      *
      * Silently skips if SMTP credentials are not configured in .env.
      */
-    private function sendStatusEmail(array $app, string $newStatus, ?string $remark = null): void
+    private function sendStatusEmail(array $app, string $newStatus, ?string $remark = null, ?string $revalidationUrl = null): void
     {
-        $emailSvc = \Config\Services::email();
-        $config   = new \Config\Email();
-
-        if (empty($config->SMTPUser) || $config->SMTPUser === 'your-email@gmail.com') {
-            log_message('info', 'Status email skipped — SMTP credentials not configured in .env');
-            return;
-        }
-
         $statusMap = [
             'pending'  => [
-                'label'     => 'Under Review',
+                'label'     => 'For Review',
                 'badgeBg'   => '#eef2ff',
                 'badgeColor'=> '#4f46e5',
-                'message'   => 'Your application has been received and is currently under review by our team. We appreciate your patience as we evaluate all submissions.',
+                'message'   => 'Your application has been received and is ready for review by our team. We appreciate your patience as we evaluate all submissions.',
                 'nextSteps' => 'Our team will review your application in the coming days. You will receive another email once a final decision has been made. Please keep this email for your reference.',
                 'subject'   => 'ASOG TBI — Application Status Update',
+            ],
+            'for_revalidation' => [
+                'label'     => 'For Revalidation',
+                'badgeBg'   => '#fff7ed',
+                'badgeColor'=> '#c2410c',
+                'message'   => 'Your application is not rejected, but our review team needs you to update or correct some details before we can continue evaluating it.',
+                'nextSteps' => 'Please review the remarks below and use the update link to revise your existing application within 14 days. After you resubmit, your application will return to For Review.',
+                'subject'   => 'ASOG TBI - Please Update Your Application',
             ],
             'accepted' => [
                 'label'     => 'Accepted',
@@ -254,16 +286,14 @@ class ApplicationsAdmin extends BaseController
                 'message'       => $info['message'],
                 'nextSteps'     => $info['nextSteps'],
                 'statusRemark'  => $remark,
+                'revalidationUrl' => $revalidationUrl,
+                'revalidationExpiresAt' => $app['revalidationTokenExpiresAt'] ?? null,
             ]);
 
-            $emailSvc->setFrom($config->fromEmail, $config->fromName);
-            $emailSvc->setTo($app['applicantEmail']);
-            $emailSvc->setSubject($info['subject']);
-            $emailSvc->setMessage($body);
-            $emailSvc->setMailType('html');
+            $gmail = new GmailMailer();
 
-            if (! $emailSvc->send(false)) {
-                log_message('error', 'Status email failed for app #' . $app['id'] . ': ' . $emailSvc->printDebugger(['headers']));
+            if (! $gmail->send($app['applicantEmail'], $info['subject'], $body)) {
+                log_message('error', 'Status email failed via Gmail API for app #' . $app['id'] . '.');
             } else {
                 log_message('info', 'Status email sent to: ' . $app['applicantEmail'] . ' (status: ' . $newStatus . ')');
             }

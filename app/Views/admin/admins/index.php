@@ -24,8 +24,11 @@ function sortClass(string $col, string $currentSort, string $currentDir): string
 }
 ?>
 
-<div class="toolbar">
-    <span class="count"><?= $total ?> account<?= $total !== 1 ? 's' : '' ?></span>
+<div class="accounts-admin-toolbar">
+    <div>
+        <span class="accounts-admin-count"><?= $total ?> account<?= $total !== 1 ? 's' : '' ?></span>
+        <p>Manage admin access, roles, Google links, and account status.</p>
+    </div>
     <div class="toolbar-actions">
         <a href="<?= site_url('admin/accounts/create') ?>" class="btn btn-p">New Account</a>
     </div>

@@ -33,8 +33,9 @@
                             </p>
 
                             <p style="margin:0 0 24px;font-size:15px;color:#1e293b;line-height:1.6">
-                                Thank you for applying to the ASOG TBI Incubation Program! Here is a copy of your
-                                submitted responses for your records.
+                                <?= ! empty($isUpdate)
+                                    ? 'Thank you for updating your ASOG TBI Incubation Program application! Here is a copy of your updated responses for your records.'
+                                    : 'Thank you for applying to the ASOG TBI Incubation Program! Here is a copy of your submitted responses for your records.' ?>
                             </p>
 
                             <!-- Responses table -->
@@ -98,15 +99,16 @@
                                     <td>
                                         <span
                                             style="display:inline-block;background:#f0f4ff;color:#3730a3;font-size:13px;font-weight:700;padding:6px 16px;border-radius:4px;letter-spacing:.04em">
-                                            Under Review
+                                            For Review
                                         </span>
                                     </td>
                                 </tr>
                             </table>
 
                             <p style="margin:0 0 20px;font-size:14px;color:#64748b;line-height:1.6">
-                                Our team will review your application and get back to you. Please keep this email for
-                                your reference.
+                                <?= ! empty($isUpdate)
+                                    ? 'Your updated application is now back in the review queue. Our team will review it and get back to you. Please keep this email for your reference.'
+                                    : 'Our team will review your application and get back to you. Please keep this email for your reference.' ?>
                             </p>
 
                             <p style="margin:0;font-size:14px;color:#64748b;line-height:1.6">

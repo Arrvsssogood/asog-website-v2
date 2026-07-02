@@ -16,6 +16,20 @@
             $privacyAccepted = $inputValue('privacyAgreement') === '1';
             $serverPostMaxSize = trim((string) ($serverPostMaxSize ?? ''));
             $serverUploadMaxFilesize = trim((string) ($serverUploadMaxFilesize ?? ''));
+            $isRevalidation = ! empty($isRevalidation);
+            $formAction = $isRevalidation ? ($revalidationAction ?? current_url()) : site_url('apply/form');
+            $existingTeamCvPath = trim((string) ($existingTeamCvPath ?? ''));
+            $existingLeanCanvasPath = trim((string) ($existingLeanCanvasPath ?? ''));
+            $existingTeamCvPaths = $existingTeamCvPath !== '' ? array_values(array_filter(array_map('trim', explode(',', $existingTeamCvPath)))) : [];
+            $existingTeamCvCount = count($existingTeamCvPaths);
+            $existingLeanCanvasName = $existingLeanCanvasPath !== '' ? basename($existingLeanCanvasPath) : '';
+            $fileUrl = static fn (string $path): string => base_url(ltrim($path, '/'));
+            $storageKey = $isRevalidation
+                ? 'asog_apply_form_revalidation_' . (string) ($formInput['id'] ?? 'unknown')
+                : 'asog_apply_form_public_v2';
+            $recaptcha = config('Recaptcha');
+            $recaptchaEnabled = $recaptcha->enabled && $recaptcha->siteKey !== '';
+            $recaptchaAction = $isRevalidation ? 'application_revalidate' : 'application_submit';
         ?>
 
         <?php if ($formError): ?>
@@ -25,9 +39,19 @@
             </div>
         <?php endif; ?>
 
-        <form id="applyForm" action="<?= site_url('apply/form') ?>" method="post" enctype="multipart/form-data"
-            data-check-url="<?= site_url('apply/form/check-email') ?>">
+        <form id="applyForm" action="<?= esc($formAction) ?>" method="post" enctype="multipart/form-data"
+            data-check-url="<?= site_url('apply/form/check-email') ?>"
+            data-skip-duplicate-email="<?= $isRevalidation ? '1' : '0' ?>"
+            data-form-mode="<?= $isRevalidation ? 'revalidation' : 'public' ?>"
+            data-storage-key="<?= esc($storageKey) ?>"
+            data-has-existing-lean-canvas="<?= $isRevalidation && $existingLeanCanvasPath !== '' ? '1' : '0' ?>"
+            data-existing-team-cv-count="<?= esc((string) $existingTeamCvCount) ?>"
+            data-recaptcha-enabled="<?= $recaptchaEnabled ? '1' : '0' ?>"
+            data-recaptcha-site-key="<?= esc($recaptcha->siteKey) ?>"
+            data-recaptcha-action="<?= esc($recaptchaAction) ?>">
             <?= csrf_field() ?>
+            <input type="hidden" name="recaptchaToken" data-recaptcha-token value="">
+            <input type="hidden" name="recaptchaAction" value="<?= esc($recaptchaAction) ?>">
 
             <!-- ═══════════════════════════════════════════════════════
                  WELCOME INTRO
@@ -37,9 +61,8 @@
                     <span class="block w-[18px] h-[2px] bg-gold"></span>
                     <span class="text-[.52rem] font-bold tracking-[.2em] uppercase text-gold">ASOG TBI</span>
                 </div>
-                <h2 class="font-display text-[1.4rem] md:text-[1.7rem] text-dark leading-snug mb-2">Startup Application
-                    Form</h2>
-                <p class="text-[.92rem] font-medium text-dark/85 mb-3">Welcome, Future Innovator!</p>
+                <h2 class="font-display text-[1.4rem] md:text-[1.7rem] text-dark leading-snug mb-2"><?= $isRevalidation ? 'Update Your Startup Application' : 'Startup Application Form' ?></h2>
+                <p class="text-[.92rem] font-medium text-dark/85 mb-3"><?= $isRevalidation ? 'Welcome back, Future Innovator!' : 'Welcome, Future Innovator!' ?></p>
                 <p class="text-[.84rem] font-normal leading-[1.65] text-black max-w-[640px] mb-2 text-justify">
                     Thank you for your interest in joining the ASOG Technology Business Incubator (TBI). We're excited
                     to support passionate startups like yours in turning bold ideas into real-world solutions —
@@ -127,9 +150,10 @@
                             class="text-[.52rem] font-bold tracking-[.18em] uppercase text-[#102033]/85 block mb-1.5">
                             Contact Number <span class="text-red-400">*</span>
                         </label>
-                        <input type="tel" id="contactNumber" name="contactNumber" maxlength="20" data-v="required|phone"
+                        <input type="tel" id="contactNumber" name="contactNumber" maxlength="11" inputmode="numeric" pattern="[0-9]*" data-v="required|phone"
                             class="v-field w-full bg-transparent border-none p-0 text-[.88rem] text-dark font-normal outline-none placeholder:text-dark/25"
                             placeholder="09XX XXX XXXX" value="<?= esc($inputValue('contactNumber')) ?>" required>
+                        <!-- <span class="text-[.58rem] text-dark/60 block mt-2">11 digits only, start with 09</span> -->
                         <span class="v-msg text-[.62rem] text-red-500 block mt-1 hidden"
                             data-for="contactNumber"><?= $errs['contactNumber'] ?? '' ?></span>
                     </div>
@@ -167,7 +191,7 @@
                         </label>
                         <textarea id="startupDescription" name="startupDescription" rows="4" maxlength="2000"
                             data-v="required|min:10"
-                            class="v-field w-full bg-transparent border-none p-0 text-[.88rem] text-dark font-normal outline-none resize-none placeholder:text-dark/25"
+                            class="v-field guidelines-scroll w-full bg-transparent border-none p-0 text-[.88rem] text-dark font-normal outline-none resize-none placeholder:text-dark/25"
                             placeholder="Describe your solution, target market, and what makes it unique..."
                             required><?= esc($inputValue('startupDescription')) ?></textarea>
                         <span class="v-msg text-[.62rem] text-red-500 block mt-1 hidden"
@@ -181,7 +205,7 @@
                                 Main Risk for Your Startup
                             </label>
                             <textarea id="mainRisk" name="mainRisk" rows="3" maxlength="1000"
-                                class="w-full bg-transparent border-none p-0 text-[.88rem] text-dark font-normal outline-none resize-none placeholder:text-dark/25"
+                                class="guidelines-scroll w-full bg-transparent border-none p-0 text-[.88rem] text-dark font-normal outline-none resize-none placeholder:text-dark/25"
                                 placeholder="Describe potential challenges..."><?= esc($inputValue('mainRisk')) ?></textarea>
                         </div>
                         <div class="p-4 md:p-5">
@@ -190,7 +214,7 @@
                                 Short-term Goals (3–5 months)
                             </label>
                             <textarea id="shortTermGoals" name="shortTermGoals" rows="3" maxlength="1000"
-                                class="w-full bg-transparent border-none p-0 text-[.88rem] text-dark font-normal outline-none resize-none placeholder:text-dark/25"
+                                class="guidelines-scroll w-full bg-transparent border-none p-0 text-[.88rem] text-dark font-normal outline-none resize-none placeholder:text-dark/25"
                                 placeholder="What do you plan to achieve?..."><?= esc($inputValue('shortTermGoals')) ?></textarea>
                         </div>
                     </div>
@@ -215,8 +239,8 @@
                                 class="text-[.52rem] font-bold tracking-[.18em] uppercase text-[#102033]/85 block mb-1.5">
                                 Team Members' CV
                             </label>
-                            <span class="text-[.58rem] text-navy/30 block mb-3">Upload PDFs · Max 10 files · 100 MB
-                                each<?= ($serverUploadMaxFilesize !== '' || $serverPostMaxSize !== '') ? ' · Server cap: ' . esc($serverUploadMaxFilesize !== '' ? $serverUploadMaxFilesize : 'current limit') . '/file' . ($serverPostMaxSize !== '' ? ', ' . esc($serverPostMaxSize) . ' total' : '') : '' ?></span>
+                                <span class="text-[.58rem] text-navy/30 block mb-3">Upload PDFs · Max 10 files · 100 MB
+                                    each</span>
                             <div id="teamCvChooser" class="inline-flex items-center gap-3">
                                 <button type="button" id="teamCvButton" class="file-upload-button">
                                     Choose File
@@ -224,6 +248,23 @@
                                 <span id="teamCvStatus" class="text-[.78rem] text-dark/60">No file chosen</span>
                                 <input type="file" id="teamCv" name="teamCv[]" multiple accept=".pdf" class="hidden">
                             </div>
+                            <?php if ($isRevalidation && $existingTeamCvPath !== ''): ?>
+                                <div class="mt-3 space-y-2">
+                                    <p class="text-[.58rem] font-bold tracking-[.16em] uppercase text-navy/45 m-0">Current CV file<?= $existingTeamCvCount === 1 ? '' : 's' ?></p>
+                                    <div class="flex flex-wrap gap-2">
+                                        <?php foreach ($existingTeamCvPaths as $path): ?>
+                                            <a href="<?= esc($fileUrl($path)) ?>" target="_blank" rel="noopener"
+                                                class="inline-flex items-center gap-2 text-[.72rem] text-dark/70 bg-off/60 border border-navy/10 rounded-sm px-3 py-1.5 no-underline hover:border-navy/30 hover:text-navy transition-colors">
+                                                <svg class="w-3.5 h-3.5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H4zm7 1.5L16.5 9H12a1 1 0 01-1-1V3.5z"/>
+                                                </svg>
+                                                <span class="max-w-[220px] truncate"><?= esc(basename($path)) ?></span>
+                                            </a>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <p class="text-[.62rem] text-navy/50 m-0">Leave blank to keep <?= $existingTeamCvCount === 1 ? 'this file' : 'these files' ?>.</p>
+                                </div>
+                            <?php endif; ?>
                             <!-- File preview list -->
                             <ul id="teamCvList" class="mt-3 space-y-2.5 list-none p-0 m-0 hidden"></ul>
                             <span id="teamCvNotice" class="text-[.62rem] text-red-500 block mt-1.5 hidden"></span>
@@ -296,6 +337,19 @@
                                 accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                                 class="hidden">
                         </div>
+                        <?php if ($isRevalidation && $existingLeanCanvasPath !== ''): ?>
+                            <div class="mt-3 space-y-2">
+                                <p class="text-[.58rem] font-bold tracking-[.16em] uppercase text-navy/45 m-0">Current Lean Canvas</p>
+                                <a href="<?= esc($fileUrl($existingLeanCanvasPath)) ?>" target="_blank" rel="noopener"
+                                    class="inline-flex items-center gap-2 text-[.72rem] text-dark/70 bg-off/60 border border-navy/10 rounded-sm px-3 py-1.5 no-underline hover:border-navy/30 hover:text-navy transition-colors">
+                                    <svg class="w-3.5 h-3.5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H4zm7 1.5L16.5 9H12a1 1 0 01-1-1V3.5z"/>
+                                    </svg>
+                                    <span class="max-w-[260px] truncate"><?= esc($existingLeanCanvasName) ?></span>
+                                </a>
+                                <p class="text-[.62rem] text-navy/50 m-0">Leave blank to keep this file.</p>
+                            </div>
+                        <?php endif; ?>
                         <!-- File preview -->
                         <div id="leanCanvasPreview" class="hidden"></div>
                         <span class="v-msg text-[.62rem] text-red-500 block mt-1.5 hidden"
@@ -311,7 +365,7 @@
                 <div class="flex items-center gap-3">
                     <button type="button" id="btnPreview"
                         class="font-body text-[.62rem] font-bold tracking-[.14em] uppercase text-white bg-navy px-8 py-3.5 rounded-sm border-none cursor-pointer transition-all duration-200 hover:bg-dark">
-                        Review &amp; Submit →
+                        <?= $isRevalidation ? 'Review &amp; Update' : 'Review &amp; Submit →' ?>
                     </button>
                     <button type="button" data-open-guidelines
                         class="font-body text-[.6rem] font-bold tracking-[.13em] uppercase text-navy/50 bg-transparent px-4 py-3.5 rounded-sm border border-navy/15 cursor-pointer transition-all duration-200 hover:text-navy hover:border-navy/30">
@@ -341,8 +395,8 @@
         <!-- Header -->
         <div class="sticky top-0 bg-white z-10 px-7 py-5 border-b border-navy/10 flex items-center justify-between">
             <div>
-                <h3 class="font-display text-[1.25rem] text-dark m-0">Review Your Application</h3>
-                <p class="text-[.68rem] text-dark/40 mt-0.5">Please confirm the details below before submitting.</p>
+                <h3 class="font-display text-[1.25rem] text-dark m-0"><?= $isRevalidation ? 'Review Your Updates' : 'Review Your Application' ?></h3>
+                <p class="text-[.68rem] text-dark/40 mt-0.5"><?= $isRevalidation ? 'Please confirm the updates below before resubmitting.' : 'Please confirm the details below before submitting.' ?></p>
             </div>
             <button id="btnClosePreview"
                 class="w-8 h-8 rounded-full bg-off flex items-center justify-center text-dark/40 hover:text-dark hover:bg-navy/10 transition-colors cursor-pointer border-none">
@@ -461,196 +515,16 @@
             </button>
             <button id="btnConfirmSubmit"
                 class="font-body text-[.62rem] font-bold tracking-[.14em] uppercase text-white bg-navy px-8 py-3.5 rounded-sm border-none cursor-pointer transition-all duration-200 hover:bg-dark">
-                Confirm &amp; Submit
+                <?= $isRevalidation ? 'Confirm &amp; Update' : 'Confirm &amp; Submit' ?>
             </button>
         </div>
     </div>
 </div>
 
+<?php if ($recaptchaEnabled): ?>
+    <script src="https://www.google.com/recaptcha/enterprise.js?render=<?= rawurlencode($recaptcha->siteKey) ?>"></script>
+<?php endif; ?>
 <script src="<?= base_url('assets/js/features/forms/applyForm.js') ?>?v=<?= filemtime(FCPATH . 'assets/js/features/forms/applyForm.js') ?>"></script>
-
-<!-- ═══ (validation + modal logic lives in public/js/apply_form.js) ═══ -->
-<!--
-(function(){
-  /* ── Validation rules ── */
-  const rules = {
-    required: v => v.trim().length > 0 || 'This field is required.',
-    'min:2':  v => v.trim().length >= 2  || 'Must be at least 2 characters.',
-    'min:10': v => v.trim().length >= 10 || 'Must be at least 10 characters.',
-    email:    v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) || 'Enter a valid email.',
-    phone:    v => /^[0-9\s\-\+\(\)]{7,20}$/.test(v) || 'Enter a valid phone number.',
-    url:      v => /^https?:\/\/.+\..+/.test(v) || 'Enter a valid URL.',
-    name:     v => /^[A-Za-zÀ-ÿ\s,\.]+$/.test(v) || 'Use format: Last Name, First Name MI',
-  };
-
-  function validate(el){
-    const checks = (el.dataset.v || '').split('|').filter(Boolean);
-    const val = el.value;
-    const msg = el.closest('div').querySelector('.v-msg');
-    if(!msg) return true;
-    if(!val.trim() && !checks.includes('required')){
-      msg.classList.add('hidden'); msg.textContent = '';
-      el.classList.remove('!text-red-600'); return true;
-    }
-    for(const c of checks){
-      const fn = rules[c]; if(!fn) continue;
-      const result = fn(val);
-      if(result !== true){
-        msg.textContent = result; msg.classList.remove('hidden');
-        el.classList.add('!text-red-600'); return false;
-      }
-    }
-    msg.classList.add('hidden'); msg.textContent = '';
-    el.classList.remove('!text-red-600'); return true;
-  }
-
-  function validateAll(){
-    let ok = true;
-    document.querySelectorAll('.v-field[data-v]').forEach(el => {
-      if(!validate(el)) ok = false;
-    });
-    // Also block if duplicate email was flagged
-    const ef = document.getElementById('applicantEmail');
-    if(ef && ef.dataset.dupEmail === '1'){
-      ok = false;
-      const msg = ef.closest('div').querySelector('.v-msg');
-      if(msg && msg.classList.contains('hidden')){
-        msg.textContent = 'This email has already been used in a previous application.';
-        msg.classList.remove('hidden');
-        ef.classList.add('!text-red-600');
-      }
-    }
-    if(!ok){
-      const first = document.querySelector('.v-msg:not(.hidden)');
-      if(first) first.scrollIntoView({behavior:'smooth', block:'center'});
-    }
-    return ok;
-  }
-
-  // Attach field listeners
-  document.querySelectorAll('.v-field').forEach(el => {
-    el.addEventListener('blur', () => validate(el));
-    el.addEventListener('input', () => {
-      const msg = el.closest('div').querySelector('.v-msg');
-      if(msg && !msg.classList.contains('hidden')) validate(el);
-    });
-  });
-
-  /* ── Async duplicate-email check ── */
-  let emailTimer = null;
-  const emailField = document.getElementById('applicantEmail');
-  if(emailField){
-    const checkDupe = () => {
-      if(!validate(emailField)) return;           // skip if basic validation fails
-      const val = emailField.value.trim();
-      if(!val) return;
-      const msg = emailField.closest('div').querySelector('.v-msg');
-      const checkUrl = document.querySelector('form')?.dataset.checkUrl || '<?= site_url("apply/form/check-email") ?>';
-      fetch(checkUrl + '?email=' + encodeURIComponent(val))
-        .then(r => r.json())
-        .then(d => {
-          if(d.exists){
-            if(msg){
-              msg.textContent = 'This email has already been used in a previous application.';
-              msg.classList.remove('hidden');
-            }
-            emailField.classList.add('!text-red-600');
-            emailField.dataset.dupEmail = '1';
-          } else {
-            emailField.dataset.dupEmail = '0';
-          }
-        })
-        .catch(() => {});  // silently ignore network errors
-    };
-    emailField.addEventListener('blur', () => { clearTimeout(emailTimer); emailTimer = setTimeout(checkDupe, 150); });
-    emailField.addEventListener('input', () => { emailField.dataset.dupEmail = '0'; });
-  }
-
-  // Show server errors on load
-  document.querySelectorAll('.v-msg').forEach(msg => {
-    if(msg.textContent.trim()){
-      msg.classList.remove('hidden');
-      const f = msg.closest('div').querySelector('.v-field');
-      if(f) f.classList.add('!text-red-600');
-    }
-  });
-
-  /* ── Preview Modal ── */
-  const modal    = document.getElementById('previewModal');
-  const body     = document.getElementById('previewBody');
-  const form     = document.querySelector('form');
-  const esc      = e => { if(e.key === 'Escape') closeModal(); };
-
-  function openModal(){
-    // Populate preview fields
-    const fields = ['applicantName','applicantEmail','contactNumber',
-                    'startupName','startupDescription','mainRisk','shortTermGoals'];
-    fields.forEach(id => {
-      const el = document.getElementById(id);
-      const pv = document.getElementById('pv_' + id);
-      if(el && pv) pv.textContent = el.value.trim() || '—';
-    });
-
-    // Video link
-    const vLink = document.getElementById('videoPresentationLink');
-    const pvLink = document.getElementById('pv_videoPresentationLink');
-    if(vLink && pvLink){
-      const url = vLink.value.trim();
-      pvLink.textContent = url || '—';
-      pvLink.href = url || '#';
-    }
-
-    // CV files
-    const cvInput = document.getElementById('teamCv');
-    const pvCv = document.getElementById('pv_teamCv');
-    if(cvInput && pvCv){
-      const files = cvInput.files;
-      if(files.length > 0){
-        pvCv.textContent = Array.from(files).map(f => f.name).join(', ');
-      } else {
-        pvCv.textContent = 'None uploaded';
-      }
-    }
-
-    // Show
-    modal.classList.remove('opacity-0','pointer-events-none');
-    body.classList.remove('scale-95');
-    body.classList.add('scale-100');
-    document.body.style.overflow = 'hidden';
-    document.addEventListener('keydown', esc);
-  }
-
-  function closeModal(){
-    modal.classList.add('opacity-0','pointer-events-none');
-    body.classList.remove('scale-100');
-    body.classList.add('scale-95');
-    document.body.style.overflow = '';
-    document.removeEventListener('keydown', esc);
-  }
-
-  // Review button → validate, then show modal
-  document.getElementById('btnPreview')?.addEventListener('click', () => {
-    if(validateAll()) openModal();
-  });
-
-  // Close modal buttons
-  document.getElementById('btnClosePreview')?.addEventListener('click', closeModal);
-  document.getElementById('btnBackEdit')?.addEventListener('click', closeModal);
-  document.getElementById('previewBackdrop')?.addEventListener('click', closeModal);
-
-  // Confirm → actually submit
-  document.getElementById('btnConfirmSubmit')?.addEventListener('click', () => {
-    closeModal();
-    form?.submit();
-  });
-
-  // Block native submit (Enter key) — route through preview
-  form?.addEventListener('submit', function(e){
-    e.preventDefault();
-    if(validateAll()) openModal();
-  });
-})();
--->
 
 <!-- ═══ GUIDELINES MODAL (reusable) ═══ -->
 <?= view('incubatees/partials/_guidelines_modal') ?>

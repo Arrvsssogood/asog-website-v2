@@ -34,6 +34,8 @@ $routes->get('/apply/form', 'Incubatees::applyForm');
 $routes->post('/apply/form', 'Incubatees::applyFormStore');
 $routes->get('/apply/form/check-email', 'Incubatees::checkEmail');
 $routes->get('/apply/form/thank-you', 'Incubatees::applyFormThankYou');
+$routes->get('/apply/revalidate/(:segment)', 'Incubatees::revalidateForm/$1');
+$routes->post('/apply/revalidate/(:segment)', 'Incubatees::revalidateFormStore/$1');
 
 // Legacy apply paths: keep working but redirect to canonical /apply URLs
 $routes->addRedirect('/incubatees/apply', '/apply', 301);
@@ -79,6 +81,12 @@ $routes->get('/asog-admin', 'Auth::login');
 $routes->post('/asog-admin', 'Auth::authenticate');
 $routes->get('/asog-admin/google', 'Auth::google');
 $routes->get('/asog-admin/google/callback', 'Auth::googleCallback');
+$routes->group('asog-admin/gmail-api', ['filter' => 'auth'], function ($routes) {
+    $routes->group('', ['filter' => 'role:superadmin'], function ($routes) {
+        $routes->get('connect', 'Admin\GmailApiSetup::connect');
+        $routes->get('callback', 'Admin\GmailApiSetup::callback');
+    });
+});
 $routes->get('/asog-admin/logout', 'Auth::logout');
 $routes->get('/asog-admin/forgot-password', 'Auth::forgotPassword');
 $routes->post('/asog-admin/forgot-password', 'Auth::sendResetLink');

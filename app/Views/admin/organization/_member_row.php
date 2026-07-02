@@ -7,14 +7,21 @@ $id = (int) $member['id'];
 $isMentor = ($activeSection ?? '') === 'mentor';
 $isFeatured = ! $isMentor && ! empty($member['isFeatured']);
 $isReorderable = ! $isFeatured;
+$roleText = trim((string) ($member['rolePrimary'] ?? ''));
+if (! empty($member['roleSecondary'])) {
+    $roleText = trim($roleText . ' - ' . (string) $member['roleSecondary']);
+}
 ?>
-<article class="org-admin-item org-drag-row" id="org-member-row-<?= $id ?>" data-id="<?= $id ?>" <?= $isReorderable ? 'draggable="true"' : '' ?>>
+<article class="org-admin-item org-drag-row" id="org-member-row-<?= $id ?>" data-id="<?= $id ?>" data-reorderable="<?= $isReorderable ? '1' : '0' ?>">
     <div class="org-admin-item-head">
         <div class="org-admin-item-meta">
+            <?php if ($isReorderable): ?>
+                <span class="org-drag-handle" title="Drag to reorder" aria-label="Drag to reorder">⋮⋮</span>
+            <?php endif; ?>
             <?php if (! $isMentor && ! empty($member['photoPath'])): ?>
                 <img src="<?= esc(org_photo_url($member['photoPath'])) ?>" alt="" class="org-admin-thumb">
             <?php elseif (! $isMentor): ?>
-                <span class="org-admin-thumb org-admin-thumb-empty">—</span>
+                <span class="org-admin-thumb org-admin-thumb-empty">-</span>
             <?php endif; ?>
             <div>
                 <strong><?= esc($member['fullName']) ?></strong>
@@ -25,14 +32,11 @@ $isReorderable = ! $isFeatured;
                     <span class="org-admin-badge">Featured</span>
                 <?php endif; ?>
                 <?php if (! $isMentor): ?>
-                    <span class="org-admin-meta"><?= esc(trim(($member['rolePrimary'] ?? '') . ($member['roleSecondary'] ? ' · ' . $member['roleSecondary'] : ''))) ?></span>
+                    <span class="org-admin-meta"><?= esc($roleText) ?></span>
                 <?php endif; ?>
             </div>
         </div>
         <div class="org-admin-item-actions">
-            <?php if ($isReorderable): ?>
-                <span class="org-drag-handle" title="Drag to reorder" aria-label="Drag to reorder">⋮⋮</span>
-            <?php endif; ?>
             <div class="acts">
                 <?php $editUrl = site_url('admin/organization/modal/' . $id); ?>
                 <a href="<?= $editUrl ?>" class="act-btn edit js-org-modal-trigger" data-modal-url="<?= $editUrl ?>" data-member-updated-at="<?= esc((string) ($member['updatedAt'] ?? '')) ?>" title="Edit" aria-label="Edit member">

@@ -29,8 +29,8 @@
 
 .inc-logo-item {
   flex-shrink: 0;
-  width: clamp(132px, 42vw, 220px);
-  height: clamp(82px, 24vw, 130px);
+  width: clamp(110px, 36vw, 180px);
+  height: clamp(72px, 22vw, 110px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -48,8 +48,8 @@
 }
 
 .inc-logo-item img {
-  max-width: clamp(112px, 35vw, 190px);
-  max-height: clamp(68px, 20vw, 110px);
+  max-width: 110px;
+  max-height: 110px;
   object-fit: contain;
 }
 

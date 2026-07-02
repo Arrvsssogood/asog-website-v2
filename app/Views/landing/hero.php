@@ -9,7 +9,7 @@ $heroSlides = $heroSlides ?? [];
 $hasSlides  = ! empty($heroSlides);
 $dotCount   = $hasSlides ? count($heroSlides) : 3;
 $heroPageTotal = $hasSlides ? count($heroSlides) : 3;
-$fallbackHeroImage = base_url('assets/img/incubatees.jpg');
+$fallbackHeroImage = base_url('assets/img/incubatees.webp');
 ?>
 <section id="hero" class="hero-rect-mobile relative w-full overflow-hidden" data-navhint="blue">
 

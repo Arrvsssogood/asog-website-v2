@@ -7,7 +7,7 @@
 <?php
 $all = $incubatees ?? [];
 $hasIncubatees = ! empty($all);
-$fallbackIncubateeImage = base_url('assets/img/incubatees.jpg');
+$fallbackIncubateeImage = base_url('assets/img/incubatees.webp');
 
 $selectedFilter = trim((string) ($landingIncubateesFilter ?? 'all'));
 $headingMain = 'All Cohorts';
@@ -54,14 +54,7 @@ if ($selectedFilter !== '' && strtolower($selectedFilter) !== 'all') {
                     <div class="inc-logo-item"
                         title="<?= esc(html_entity_decode($inc['companyName'], ENT_QUOTES, 'UTF-8')) ?>">
                         <?php if (! empty($inc['logoPath'])): ?>
-                        <?php $logoFile = FCPATH . $inc['logoPath']; ?>
-                        <?php if (is_file($logoFile)): ?>
-                        <img src="<?= base_url(esc($inc['logoPath'])) ?>"
-                            alt="<?= esc(html_entity_decode($inc['companyName'], ENT_QUOTES, 'UTF-8')) ?>">
-                        <?php else: ?>
-                        <span
-                            class="inc-initials"><?= strtoupper(substr(html_entity_decode($inc['companyName'], ENT_QUOTES, 'UTF-8'), 0, 2)) ?></span>
-                        <?php endif; ?>
+                        <?= responsiveUploadImg($inc['logoPath'], 'incubatees', html_entity_decode($inc['companyName'], ENT_QUOTES, 'UTF-8'), '', true) ?>
                         <?php else: ?>
                         <span
                             class="inc-initials"><?= strtoupper(substr(html_entity_decode($inc['companyName'], ENT_QUOTES, 'UTF-8'), 0, 2)) ?></span>

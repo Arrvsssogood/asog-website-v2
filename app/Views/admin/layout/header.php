@@ -16,7 +16,7 @@
 
     <aside class="side">
         <div class="side-brand">
-            <img src="<?= base_url('assets/img/ASOG TBI/PNG/ASOG-TBI_seal.png') ?>" alt="ASOG TBI" class="side-logo">
+            <?= responsiveStaticImg('assets/img/ASOG TBI/WebP/ASOG-TBI_seal', 'default', 'ASOG TBI', 'side-logo') ?>
             <div class="side-brand-text">
                 <h2>ASOG TBI</h2>
                 <span>Content Manager</span>

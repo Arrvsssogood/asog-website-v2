@@ -1,20 +1,30 @@
 /* Admin Management Styles */
 
 /* Toolbar */
-.toolbar {
+.accounts-admin-toolbar {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    gap: 1rem;
+    flex-wrap: wrap;
     background: transparent;
-    padding: 0 0 1rem 0;
-    margin-bottom: 0.5rem;
+    padding: 0;
+    margin-bottom: 1rem;
     border: none;
 }
 
-.toolbar .count {
-    font-size: 0.875rem;
+.accounts-admin-count {
+    display: block;
+    font-size: .78rem;
+    color: #1e293b;
+    font-weight: 700;
+}
+
+.accounts-admin-toolbar p {
+    margin: .2rem 0 0;
+    font-size: .72rem;
     color: #64748b;
-    font-weight: 500;
+    max-width: 520px;
 }
 
 .toolbar-actions {

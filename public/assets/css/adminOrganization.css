@@ -2,7 +2,12 @@
 .org-admin-count{display:block;font-size:.78rem;font-weight:700;color:#1e293b}
 .org-admin-toolbar p{margin:.2rem 0 0;font-size:.72rem;color:#64748b;max-width:520px}
 .org-admin-toolbar-actions{display:flex;gap:.5rem;flex-wrap:wrap}
-.org-admin-tabs{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.85rem}
+.org-admin-tab-row{display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin-bottom:.85rem}
+.org-admin-tabs{display:flex;flex-wrap:wrap;gap:.4rem}
+.org-reorder-mode-btn{margin-left:auto;justify-content:center;border:1px solid #e4e2dd;background:#fff;color:#64748b;font-size:.66rem;font-weight:600;padding:.42rem .7rem;border-radius:.3rem;line-height:1.2}
+.org-reorder-mode-btn:hover:not(:disabled){border-color:#03558C;color:#03558C;background:#edf5fc}
+.org-reorder-mode-btn.btn-p{border-color:#03558C;background:#03558C;color:#fff}
+.org-reorder-mode-btn:disabled{opacity:.55;cursor:not-allowed}
 .org-admin-tab{display:inline-flex;align-items:center;gap:.35rem;border:1px solid #e4e2dd;background:#fff;color:#64748b;font-size:.66rem;font-weight:600;padding:.42rem .7rem;border-radius:.3rem;text-decoration:none}
 .org-admin-tab span{background:#f1f5f9;color:#64748b;border-radius:99px;padding:.05rem .4rem;font-size:.58rem}
 .org-admin-tab.on,.org-admin-tab:hover{border-color:#03558C;color:#03558C;background:#edf5fc}
@@ -10,10 +15,12 @@
 .org-admin-empty{border:1px dashed #e2e8f0;border-radius:12px;padding:2rem;text-align:center;color:#94a3b8;display:grid;gap:.25rem}
 .org-admin-list{display:grid;gap:.65rem}
 .org-admin-item{border:1px solid #eceae6;border-radius:10px;background:#fff;padding:.75rem .85rem}
-.org-drag-row[draggable="true"]{cursor:grab}
-.org-drag-row.is-dragging{opacity:.75;cursor:grabbing}
-.org-drag-row.org-drag-over{outline:2px solid rgba(3,85,140,.22);outline-offset:2px}
-.org-drag-handle{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid #e4e2dd;border-radius:.3rem;background:#fff;color:#64748b;font-size:1rem;line-height:1;user-select:none}
+.org-drag-row.is-reorderable{cursor:grab}
+.org-drag-row.is-reorderable:active{cursor:grabbing}
+.org-drag-row.is-dragging{opacity:.65;cursor:grabbing;background:#f8fbff}
+.org-drag-row.org-drag-over{outline:2px solid rgba(3,85,140,.25);outline-offset:2px}
+.org-drag-handle{display:none;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid #e4e2dd;border-radius:.3rem;background:#fff;color:#64748b;font-size:1rem;line-height:1;user-select:none;flex-shrink:0}
+.is-org-reorder-active .org-drag-row.is-reorderable .org-drag-handle{display:inline-flex}
 .org-drag-handle:hover{border-color:#03558C;color:#03558C;background:#edf5fc}
 .org-admin-item-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap}
 .org-admin-item-meta{display:flex;align-items:center;gap:.65rem;min-width:0}
@@ -56,6 +63,7 @@
 .org-admin-photo-preview span{font-size:.68rem;color:#64748b}
 .org-admin-form-actions{display:flex;justify-content:flex-end;gap:.65rem;padding-top:.4rem}
 .org-admin-form-actions .btn{min-width:122px;justify-content:center}
+.org-admin-form-actions .btn-p svg{width:14px;height:14px;stroke:currentColor}
 .org-admin-modal{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;padding:1rem}
 .org-admin-modal-backdrop{position:absolute;inset:0;background:rgba(15,23,42,.5)}
 .org-admin-modal-dialog{position:relative;z-index:1;width:min(100%,720px);max-height:calc(100vh - 2rem);overflow:auto;border:1px solid #e2e8f0;border-radius:16px;background:#fff;box-shadow:0 24px 60px -24px rgba(15,23,42,.45);padding:1rem 1rem 1.15rem}
@@ -76,4 +84,4 @@
 .org-admin-empty-compact{padding:1rem;font-size:.75rem}
 .org-modal-open{overflow:hidden}
 .is-hidden{display:none !important}
-.org-admin-toast{position:fixed;top:1.1rem;right:1.1rem;z-index:9999;padding:.55rem .9rem;border-radius:.3rem;font-size:.78rem;font-family:'DM Sans',sans-serif;max-width:340px}
+.org-admin-toast{position:fixed;top:1.1rem;right:1.1rem;z-index:9999;padding:.55rem .9rem;border-radius:.3rem;font-size:.78rem;font-family:'DM Sans',sans-serif;max-width:340px;opacity:0;transform:translateY(-8px);transition:opacity .25s,transform .25s}

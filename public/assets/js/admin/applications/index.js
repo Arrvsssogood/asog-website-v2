@@ -328,7 +328,7 @@
         } else if (status === 'pending') {
             btnAccept.style.display = 'inline-flex';
             btnReject.style.display = 'inline-flex';
-            btnChange.style.display = 'none';
+            btnChange.style.display = 'inline-flex';
             if (btnArchModal) btnArchModal.style.display = 'inline-flex';
             if (btnRestoreModal) btnRestoreModal.style.display = 'none';
             if (statusRemarkWrap) statusRemarkWrap.style.display = 'flex';
@@ -432,10 +432,17 @@
     btnSaveStatus.addEventListener('click', function () {
         var newStatus = statusPickerValue;
         if (!newStatus || !currentId) return;
+        var remark = statusRemarkInput ? statusRemarkInput.value.trim() : '';
 
         if (newStatus === (currentAppData && currentAppData.applicationStatus)) {
             hideChangeMode();
             btnChange.style.display = 'inline-flex';
+            return;
+        }
+
+        if (newStatus === 'for_revalidation' && !remark) {
+            showToast('Please add a remark before marking this application for revalidation.', 'error');
+            if (statusRemarkInput) statusRemarkInput.focus();
             return;
         }
 
@@ -797,6 +804,7 @@
     function updateStatCounts(from, to) {
         var elMap = {
             pending:  document.getElementById('statPending'),
+            for_revalidation: document.getElementById('statForRevalidation'),
             accepted: document.getElementById('statAccepted'),
             rejected: document.getElementById('statRejected'),
             archived: document.getElementById('statArchived'),
@@ -851,7 +859,7 @@
     function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
 
     function statusLabel(s) {
-        var map = { pending: 'Under Review', accepted: 'Accepted', rejected: 'Rejected' };
+        var map = { pending: 'For Review', for_revalidation: 'For Revalidation', accepted: 'Accepted', rejected: 'Rejected' };
         return map[s] || capitalize(s);
     }
 

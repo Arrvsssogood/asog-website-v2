@@ -149,7 +149,7 @@
                     <strong><?= esc($a['startupName']) ?></strong>
                     <span><?= esc($a['applicantName']) ?> · <?= date('M j', strtotime($a['createdAt'])) ?></span>
                 </div>
-                <?php $statusLabels = ['pending' => 'Under Review', 'accepted' => 'Accepted', 'rejected' => 'Rejected', 'reviewed' => 'Reviewed']; ?>
+                <?php $statusLabels = ['pending' => 'For Review', 'for_revalidation' => 'For Revalidation', 'accepted' => 'Accepted', 'rejected' => 'Rejected', 'reviewed' => 'Reviewed']; ?>
                 <span class="tag tag-<?= esc($a['applicationStatus']) ?>"><?= esc($statusLabels[$a['applicationStatus']] ?? ucfirst($a['applicationStatus'])) ?></span>
             </div>
             <?php endforeach; ?>
@@ -178,7 +178,7 @@
                     <strong><?= esc($a['startupName']) ?></strong>
                     <span><?= esc($a['applicantName']) ?> · <?= date('M j', strtotime($a['createdAt'])) ?></span>
                 </div>
-                <?php $statusLabels = ['pending' => 'Under Review', 'accepted' => 'Accepted', 'rejected' => 'Rejected', 'reviewed' => 'Reviewed']; ?>
+                <?php $statusLabels = ['pending' => 'For Review', 'for_revalidation' => 'For Revalidation', 'accepted' => 'Accepted', 'rejected' => 'Rejected', 'reviewed' => 'Reviewed']; ?>
                 <span class="tag tag-<?= esc($a['applicationStatus']) ?>"><?= esc($statusLabels[$a['applicationStatus']] ?? ucfirst($a['applicationStatus'])) ?></span>
             </div>
             <?php endforeach; ?>
