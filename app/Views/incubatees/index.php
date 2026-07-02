@@ -8,6 +8,7 @@ $allIncubatees  = $allIncubatees ?? [];
 $hasIncubatees  = ! empty($allIncubatees);
 $hasCohorts     = ! empty($cohorts);
 $sealPath       = 'assets/img/ASOG TBI/WebP/ASOG-TBI-stacked-v2';
+$sealUrl        = base_url($sealPath . '.webp');
 $firstCohort    = $hasCohorts ? $cohorts[0]['name'] : '';
 ?>
 
