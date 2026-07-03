@@ -6,8 +6,7 @@
     return Math.min(max, Math.max(min, value));
   }
 
-  function updateFocus(root) {
-    var items = Array.prototype.slice.call(root.querySelectorAll('.inc-logo-item'));
+  function updateFocus(root, items, itemCenters, currentOffset) {
     if (!items.length) return;
 
     if (reduceMotion) {
@@ -17,13 +16,11 @@
       return;
     }
 
-    var rect = root.getBoundingClientRect();
-    var center = rect.left + rect.width / 2;
-    var focusRange = Math.max(160, rect.width * 0.32);
+    var center = root.clientWidth / 2;
+    var focusRange = Math.max(160, root.clientWidth * 0.32);
 
-    items.forEach(function (item) {
-      var itemRect = item.getBoundingClientRect();
-      var itemCenter = itemRect.left + itemRect.width / 2;
+    items.forEach(function (item, index) {
+      var itemCenter = (itemCenters[index] || 0) - currentOffset;
       var distance = Math.abs(center - itemCenter);
       var normalized = 1 - clamp(distance / focusRange, 0, 1);
       var eased = normalized * normalized * (3 - 2 * normalized);
@@ -40,11 +37,15 @@
     var startTime = 0;
     var offset = 0;
     var loopWidth = 0;
+    var itemCenters = [];
     var isVisible = false;
     var isPausedByHover = false;
 
     function measureLoop() {
       loopWidth = track ? Math.max(0, track.scrollWidth / 2) : 0;
+      itemCenters = items.map(function (item) {
+        return item.offsetLeft + item.offsetWidth / 2;
+      });
     }
 
     function tick(now) {
@@ -57,10 +58,10 @@
       if (track && loopWidth > 0) {
         var speed = loopWidth / 30;
         offset = ((now - startTime) / 1000 * speed) % loopWidth;
-        track.style.transform = 'translate3d(' + (-offset).toFixed(2) + 'px, 0, 0)';
+        track.style.transform = 'translate3d(' + -offset + 'px, 0, 0)';
       }
 
-      updateFocus(root);
+      updateFocus(root, items, itemCenters, offset);
       frame = window.requestAnimationFrame(tick);
     }
 
@@ -87,15 +88,22 @@
       }
     }
 
-    updateFocus(root);
+    if (!items.length) {
+      return;
+    }
 
-    if (!track || !items.length || reduceMotion) {
+    if (reduceMotion) {
+      updateFocus(root, items, itemCenters, offset);
+      return;
+    }
+
+    if (!track) {
       return;
     }
 
     root.classList.add('is-enhanced');
     measureLoop();
-    updateFocus(root);
+    updateFocus(root, items, itemCenters, offset);
 
     if ('IntersectionObserver' in window) {
       var observer = new IntersectionObserver(function (entries) {
@@ -114,7 +122,7 @@
     root.addEventListener('pointerenter', function () {
       isPausedByHover = true;
       syncRunningState();
-      updateFocus(root);
+      updateFocus(root, items, itemCenters, offset);
     });
 
     root.addEventListener('pointerleave', function () {
@@ -124,7 +132,7 @@
 
     window.addEventListener('resize', function () {
       measureLoop();
-      updateFocus(root);
+      updateFocus(root, items, itemCenters, offset);
     }, { passive: true });
   }
 

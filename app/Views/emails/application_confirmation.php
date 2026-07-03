@@ -1,133 +1,116 @@
+<?php
+$logoUrl = trim((string) env('emailBrand.logoUrl', ''));
+$logoUrl = $logoUrl !== ''
+    ? $logoUrl
+    : base_url('assets/img/ASOG TBI/PNG/ASOG-TBI_full-colored_landscape.png');
+$logoUrl = str_replace(' ', '%20', $logoUrl);
+
+$isUpdated = ! empty($isUpdate);
+$emailTitle = $isUpdated ? 'Updated Application Received' : 'Application Received';
+$introCopy = $isUpdated
+    ? 'Your updated application is back with the review team. The details below reflect the latest version we received.'
+    : 'Your application is now with the ASOG TBI review team. The details below are included for your records.';
+$closingCopy = $isUpdated
+    ? 'We will review the updated information and reach out once there is a new decision or request.'
+    : 'We will review your application and reach out once there is a new decision or request.';
+?>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 </head>
 
-<body style="margin:0;padding:0;background:#f4f3f0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f3f0;padding:32px 16px">
+<body style="margin:0;padding:0;background:#03558C;font-family:'DM Sans','Aptos','Segoe UI',Tahoma,sans-serif;color:#213142">
+    <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#03558C;background-image:linear-gradient(135deg,#03558C 0%,#0A6EA4 54%,#43A7DB 100%);padding:34px 12px">
         <tr>
             <td align="center">
-                <table width="580" cellpadding="0" cellspacing="0"
-                    style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06)">
-
-                    <!-- Header -->
+                <table width="660" cellpadding="0" cellspacing="0" role="presentation" style="width:100%;max-width:660px;background:#F8F6F2;border-radius:10px;overflow:hidden">
                     <tr>
-                        <td style="background:#03558C;padding:28px 32px;text-align:center">
-                            <h1 style="margin:0;font-size:22px;font-weight:700;color:#fff;letter-spacing:.02em">ASOG TBI
+                        <td style="padding:30px 32px 24px;text-align:center;background:#F8F6F2">
+                            <img src="<?= esc($logoUrl) ?>" width="230" alt="ASOG Technology Business Incubator" style="display:block;width:230px;max-width:84%;height:auto;border:0;margin:0 auto 24px">
+                            <h1 style="margin:0;font-family:'DM Serif Display',Georgia,serif;font-size:36px;line-height:1.08;font-weight:400;color:#082F49">
+                                <?= esc($emailTitle) ?>
                             </h1>
-                            <p
-                                style="margin:6px 0 0;font-size:12px;color:rgba(255,255,255,.7);letter-spacing:.08em;text-transform:uppercase">
-                                Application Confirmation
-                            </p>
+                            <table cellpadding="0" cellspacing="0" role="presentation" align="center" style="margin:18px auto 0">
+                                <tr>
+                                    <td style="width:52px;height:3px;background:#F8AF21;font-size:0;line-height:0">&nbsp;</td>
+                                    <td style="width:52px;height:3px;background:#43A7DB;font-size:0;line-height:0">&nbsp;</td>
+                                </tr>
+                            </table>
                         </td>
                     </tr>
-
-                    <!-- Body -->
                     <tr>
-                        <td style="padding:32px 32px 24px">
-                            <p style="margin:0 0 20px;font-size:15px;color:#1e293b;line-height:1.6">
-                                Hi <strong><?= esc($applicantName) ?></strong>,
-                            </p>
-
-                            <p style="margin:0 0 24px;font-size:15px;color:#1e293b;line-height:1.6">
-                                <?= ! empty($isUpdate)
-                                    ? 'Thank you for updating your ASOG TBI Incubation Program application! Here is a copy of your updated responses for your records.'
-                                    : 'Thank you for applying to the ASOG TBI Incubation Program! Here is a copy of your submitted responses for your records.' ?>
-                            </p>
-
-                            <!-- Responses table -->
-                            <table width="100%" cellpadding="0" cellspacing="0"
-                                style="margin-bottom:24px;border:1px solid #eceae6;border-radius:6px;overflow:hidden">
+                        <td style="padding:0 32px 32px">
+                            <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="background:#FFFFFF;border:1px solid #E4DED2;border-radius:8px">
                                 <tr>
-                                    <td style="background:#fafaf9;padding:10px 16px;border-bottom:1px solid #eceae6">
-                                        <span
-                                            style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8">Applicant
-                                            Information</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding:0">
-                                        <table width="100%" cellpadding="0" cellspacing="0">
-                                            <?= view('emails/_row', ['label' => 'Full Name', 'value' => $applicantName]) ?>
-                                            <?= view('emails/_row', ['label' => 'Email Address', 'value' => $applicantEmail]) ?>
-                                            <?= view('emails/_row', ['label' => 'Contact Number', 'value' => $contactNumber]) ?>
+                                    <td style="padding:24px 24px 6px">
+                                        <p style="margin:0 0 18px;font-size:15px;line-height:1.75;color:#334155">
+                                            Hi <strong style="color:#082F49"><?= esc($applicantName) ?></strong>, <?= esc(lcfirst($introCopy)) ?>
+                                        </p>
+
+                                        <table cellpadding="0" cellspacing="0" role="presentation" style="margin:0 0 20px">
+                                            <tr>
+                                                <td style="background:#FFF6DF;border:1px solid #E9C66F;border-radius:999px;padding:7px 12px">
+                                                    <span style="font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#7C4A03">For Review</span>
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <p style="margin:0 0 10px;font-family:'DM Serif Display',Georgia,serif;font-size:22px;line-height:1.2;color:#03558C">
+                                            Applicant details
+                                        </p>
+                                        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                                            <?= view('emails/_row', ['label' => 'Full Name', 'value' => esc($applicantName)]) ?>
+                                            <?= view('emails/_row', ['label' => 'Email Address', 'value' => esc($applicantEmail)]) ?>
+                                            <?= view('emails/_row', ['label' => 'Contact Number', 'value' => esc($contactNumber)]) ?>
                                         </table>
                                     </td>
                                 </tr>
                             </table>
 
-                            <table width="100%" cellpadding="0" cellspacing="0"
-                                style="margin-bottom:24px;border:1px solid #eceae6;border-radius:6px;overflow:hidden">
+                            <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:18px;background:#FFFFFF;border:1px solid #E4DED2;border-radius:8px">
                                 <tr>
-                                    <td style="background:#fafaf9;padding:10px 16px;border-bottom:1px solid #eceae6">
-                                        <span
-                                            style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8">Startup
-                                            Details</span>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding:0">
-                                        <table width="100%" cellpadding="0" cellspacing="0">
-                                            <?= view('emails/_row', ['label' => 'Startup Name', 'value' => $startupName]) ?>
-                                            <?= view('emails/_row', ['label' => 'Description', 'value' => $startupDescription]) ?>
+                                    <td style="padding:24px 24px 6px">
+                                        <p style="margin:0 0 10px;font-family:'DM Serif Display',Georgia,serif;font-size:22px;line-height:1.2;color:#03558C">
+                                            Startup snapshot
+                                        </p>
+                                        <table width="100%" cellpadding="0" cellspacing="0" role="presentation">
+                                            <?= view('emails/_row', ['label' => 'Startup Name', 'value' => esc($startupName)]) ?>
+                                            <?= view('emails/_row', ['label' => 'Description', 'value' => esc($startupDescription)]) ?>
                                             <?php if (! empty($mainRisk)): ?>
-                                            <?= view('emails/_row', ['label' => 'Main Risk', 'value' => $mainRisk]) ?>
+                                                <?= view('emails/_row', ['label' => 'Main Risk', 'value' => esc($mainRisk)]) ?>
                                             <?php endif; ?>
                                             <?php if (! empty($shortTermGoals)): ?>
-                                            <?= view('emails/_row', ['label' => 'Short-term Goals', 'value' => $shortTermGoals]) ?>
+                                                <?= view('emails/_row', ['label' => 'Short-term Goals', 'value' => esc($shortTermGoals)]) ?>
                                             <?php endif; ?>
                                             <?php if (! empty($videoPresentationLink)): ?>
-                                            <?= view('emails/_row', ['label' => 'Video Presentation', 'value' => '<a href="' . esc($videoPresentationLink) . '" style="color:#03558C;text-decoration:none">' . esc($videoPresentationLink) . '</a>']) ?>
+                                                <?= view('emails/_row', ['label' => 'Video Presentation', 'value' => '<a href="' . esc($videoPresentationLink) . '" style="color:#03558C;text-decoration:none;font-weight:800">' . esc($videoPresentationLink) . '</a>']) ?>
                                             <?php endif; ?>
                                         </table>
                                     </td>
                                 </tr>
                             </table>
 
-                            <!-- Status note -->
-                            <table cellpadding="0" cellspacing="0" style="margin:0 0 24px">
+                            <table width="100%" cellpadding="0" cellspacing="0" role="presentation" style="margin-top:18px;background:#EEF7FC;border:1px solid #CAE6F3;border-radius:8px">
                                 <tr>
-                                    <td
-                                        style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#64748b;padding-bottom:6px">
-                                        Application Status
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <span
-                                            style="display:inline-block;background:#f0f4ff;color:#3730a3;font-size:13px;font-weight:700;padding:6px 16px;border-radius:4px;letter-spacing:.04em">
-                                            For Review
-                                        </span>
+                                    <td style="padding:18px 20px">
+                                        <p style="margin:0;font-size:14px;color:#29445A;line-height:1.7">
+                                            <?= esc($closingCopy) ?> Keep this email as your copy of the submitted information.
+                                        </p>
                                     </td>
                                 </tr>
                             </table>
 
-                            <p style="margin:0 0 20px;font-size:14px;color:#64748b;line-height:1.6">
-                                <?= ! empty($isUpdate)
-                                    ? 'Your updated application is now back in the review queue. Our team will review it and get back to you. Please keep this email for your reference.'
-                                    : 'Our team will review your application and get back to you. Please keep this email for your reference.' ?>
-                            </p>
-
-                            <p style="margin:0;font-size:14px;color:#64748b;line-height:1.6">
+                            <p style="margin:24px 0 0;font-size:14px;color:#526577;line-height:1.7">
                                 Warm regards,<br>
-                                <strong style="color:#1e293b">ASOG TBI Team</strong>
+                                <strong style="color:#082F49">ASOG TBI Team</strong>
                             </p>
                         </td>
                     </tr>
-
-                    <!-- Footer -->
-                    <tr>
-                        <td style="background:#fafaf9;border-top:1px solid #eceae6;padding:20px 32px;text-align:center">
-                            <p style="margin:0;font-size:11px;color:#94a3b8;line-height:1.5">
-                                This is an automated confirmation from the ASOG TBI application portal.<br>
-                                Please do not reply directly to this email.
-                            </p>
-                        </td>
-                    </tr>
-
+                    <?= view('emails/_footer') ?>
                 </table>
             </td>
         </tr>
