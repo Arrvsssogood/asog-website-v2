@@ -19,7 +19,7 @@
 .org-admin-card-grid{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));align-items:stretch;gap:.85rem}
 .org-admin-item{border:1px solid #eceae6;border-radius:10px;background:#fff;padding:.75rem .85rem}
 .org-admin-member-card{display:grid;gap:0;min-height:158px;padding:0;border-color:#e4e2dd;border-radius:.55rem;overflow:hidden;transition:border-color .15s,box-shadow .15s,background .15s}
-.org-admin-member-card:hover{border-color:#d8d4cd;box-shadow:0 16px 32px -28px rgba(15,23,42,.6)}
+.org-admin-member-card:hover{border-color:#43A7DB;background:#fbfdff;box-shadow:0 0 0 3px rgba(67,167,219,.12)}
 .org-drag-row.is-reorderable{cursor:grab}
 .org-drag-row.is-reorderable:active{cursor:grabbing}
 .org-drag-row.is-dragging{opacity:.65;cursor:grabbing;background:#f8fbff}
@@ -33,9 +33,9 @@
 .org-admin-thumb{width:42px;height:42px;border-radius:8px;object-fit:cover;border:1px solid #eceae6;flex-shrink:0}
 .org-admin-card-media .org-admin-thumb{width:54px;height:54px;border-radius:.45rem}
 .org-admin-thumb-empty{display:inline-flex;align-items:center;justify-content:center;background:#edf5fc;color:#03558C;font-size:.72rem;font-weight:700}
-.org-admin-status{display:inline-block;font-size:.56rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-top:.15rem}
-.org-admin-status.is-live{color:#03558C}
-.org-admin-status.is-hidden{color:#94a3b8}
+.org-admin-status{display:inline-block;width:max-content;font-size:.56rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-top:.15rem;padding:.18rem .44rem;border-radius:99px;background:#f1f5f9}
+.org-admin-status.is-live{background:#ecfdf5;color:#047857}
+.org-admin-status.is-hidden{background:#f1f5f9;color:#64748b}
 .org-admin-badge{display:inline-block;margin-left:.35rem;font-size:.56rem;font-weight:700;color:#b45309;background:#fff7ed;border-radius:99px;padding:.1rem .4rem}
 .org-admin-meta{display:block;font-size:.68rem;color:#64748b;margin-top:.1rem}
 .org-admin-item-actions{display:flex;align-items:center;gap:.35rem}
@@ -46,8 +46,8 @@
 .org-admin-card-name-row{display:flex;align-items:flex-start;gap:.42rem;min-width:0;flex-wrap:wrap}
 .org-admin-card-name-row strong{color:#1e293b;font-size:.86rem;line-height:1.25}
 .org-admin-member-card .org-admin-meta{margin:0;color:#64748b;font-size:.69rem;line-height:1.42}
-.org-admin-member-card .org-admin-status{width:max-content;margin-top:.18rem;padding:.18rem .44rem;border-radius:99px;background:#f1f5f9}
-.org-admin-member-card .org-admin-status.is-live{background:#edf5fc;color:#03558C}
+.org-admin-member-card .org-admin-status{margin-top:.18rem}
+.org-admin-member-card .org-admin-status.is-live{background:#ecfdf5;color:#047857}
 .org-admin-member-card .org-admin-status.is-hidden{background:#f1f5f9;color:#64748b}
 .org-admin-member-card .org-admin-badge{margin-left:0}
 .org-admin-member-card .acts{gap:.32rem}
@@ -95,8 +95,8 @@
 .org-admin-modal .csel-ctx--lf-select .csel-trigger{font-size:.8rem;padding:.5rem .65rem}
 .org-admin-modal .csel-ctx--lf-select .csel-opt{font-size:.8rem;padding:.48rem .7rem}
 .org-admin-errors{display:grid;gap:.3rem;border:1px solid #fecaca;background:#fff1f2;color:#9f1239;border-radius:.5rem;padding:.55rem .7rem;margin-bottom:.85rem;font-size:.72rem}
-.org-admin-mentor-groups{display:grid;gap:1rem}
-.org-admin-mentor-group{border:1px solid #e2e8f0;border-radius:12px;background:#fff;padding:.9rem 1rem;scroll-margin-top:1rem}
+.org-admin-mentor-groups{column-count:2;column-gap:1rem}
+.org-admin-mentor-group{display:inline-block;width:100%;margin:0 0 1rem;border:1px solid #e2e8f0;border-radius:12px;background:#fff;padding:.9rem 1rem;scroll-margin-top:1rem;break-inside:avoid}
 .org-admin-mentor-group.is-focused{box-shadow:0 0 0 2px rgba(3,85,140,.12);border-color:#03558C}
 .org-admin-mentor-head{display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;margin-bottom:.7rem;flex-wrap:wrap}
 .org-admin-mentor-kicker{display:block;font-size:.56rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#94a3b8}
@@ -105,3 +105,7 @@
 .org-modal-open{overflow:hidden}
 .is-hidden{display:none !important}
 .org-admin-toast{position:fixed;top:1.1rem;right:1.1rem;z-index:9999;padding:.55rem .9rem;border-radius:.3rem;font-size:.78rem;font-family:'DM Sans',sans-serif;max-width:340px;opacity:0;transform:translateY(-8px);transition:opacity .25s,transform .25s}
+
+@media (max-width: 980px){
+  .org-admin-mentor-groups{column-count:1}
+}

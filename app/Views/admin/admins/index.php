@@ -161,7 +161,7 @@ function sortClass(string $col, string $currentSort, string $currentDir): string
                             <a href="<?= site_url('admin/accounts/' . $admin['id'] . '/edit') ?>" title="Edit">
                                 <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zM19.5 7.125L16.862 4.487"/><path stroke-linecap="round" stroke-linejoin="round" d="M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"/></svg>
                             </a>
-                            <form action="<?= site_url('admin/accounts/' . $admin['id']) ?>" method="POST" onsubmit="return confirm('Delete this account?')">
+                            <form action="<?= site_url('admin/accounts/' . $admin['id']) ?>" method="POST" data-admin-delete-confirm data-confirm-title="Delete account?" data-confirm-message="This removes the admin login for <?= esc($admin['fullName'], 'attr') ?>. They will lose dashboard access immediately. This action cannot be undone.">
                                 <?= csrf_field() ?>
                                 <input type="hidden" name="_method" value="DELETE">
                                 <button type="submit" class="del" title="Delete">

@@ -142,47 +142,58 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function deleteCohort(id, name, rowEl) {
         if (!deleteBaseUrl) return;
-        if (!confirm('Delete ' + name + '?\nThis cannot be undone.')) {
-            return;
-        }
 
-        var payload = {};
-        payload[csrfName] = csrfValue;
+        // Change note: cohort deletes are AJAX, so they use the shared modal promise before fetch.
+        var confirmDelete = window.AdminDeleteConfirm
+            ? window.AdminDeleteConfirm.ask({
+                title: 'Delete cohort?',
+                message: 'This removes the "' + name + '" cohort from the cohort filters and manager. This action cannot be undone.',
+            })
+            : Promise.resolve(confirm('Delete ' + name + '?\nThis cannot be undone.'));
 
-        fetch(deleteBaseUrl + id + '/delete', {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(function (response) { return response.json(); })
-        .then(function (data) {
-            if (!data.ok) {
-                alert(data.error || 'Failed to delete');
+        confirmDelete.then(function (confirmed) {
+            if (!confirmed) {
                 return;
             }
 
-            if (rowEl) {
-                rowEl.remove();
-            }
+            var payload = {};
+            payload[csrfName] = csrfValue;
 
-            updateCohortCount();
-
-            if (getCohortCount() === 0) {
-                var body = document.querySelector('.cm-modal-body');
-                if (body && !document.getElementById('cmEmptyState')) {
-                    var empty = document.createElement('div');
-                    empty.className = 'cm-empty-state';
-                    empty.id = 'cmEmptyState';
-                    empty.textContent = 'No cohorts yet. Add one below.';
-                    body.appendChild(empty);
+            fetch(deleteBaseUrl + id + '/delete', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(function (response) { return response.json(); })
+            .then(function (data) {
+                if (!data.ok) {
+                    alert(data.error || 'Failed to delete');
+                    return;
                 }
-            }
-        })
-        .catch(function () {
-            alert('Network error');
+
+                if (rowEl) {
+                    rowEl.remove();
+                }
+
+                updateCohortCount();
+
+                if (getCohortCount() === 0) {
+                    var body = document.querySelector('.cm-modal-body');
+                    if (body && !document.getElementById('cmEmptyState')) {
+                        var empty = document.createElement('div');
+                        empty.className = 'cm-empty-state';
+                        empty.id = 'cmEmptyState';
+                        empty.textContent = 'No cohorts yet. Add one below.';
+                        body.appendChild(empty);
+                    }
+                }
+            })
+            .catch(function () {
+                alert('Network error');
+            });
         });
     }
 
