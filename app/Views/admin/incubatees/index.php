@@ -143,7 +143,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/>
                             </svg>
                         </a>
-                        <form action="<?= site_url('admin/incubatees/' . $inc['id'] . '/delete') ?>" method="POST" onsubmit="return confirm('Delete this incubatee?')">
+                        <form action="<?= site_url('admin/incubatees/' . $inc['id'] . '/delete') ?>" method="POST" data-admin-delete-confirm data-confirm-title="Delete incubatee?" data-confirm-message="This removes <?= esc($inc['companyName'], 'attr') ?> from the incubatee records and the public Incubatees page. This action cannot be undone.">
                             <?= csrf_field() ?>
                             <button type="submit" class="act-btn delete" title="Delete" aria-label="Delete incubatee">
                                 <svg viewBox="0 0 24 24" fill="none" stroke-width="2">

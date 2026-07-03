@@ -1134,8 +1134,17 @@ function cfmAdd() {
 
 /* ── Delete cohort via AJAX ── */
 function cfmDelete(id, name) {
-    if (!confirm('Delete ' + name + '?')) return;
-    fetch('<?= site_url('admin/cohorts/') ?>' + id + '/delete', {
+    // Change note: this inline manager shares the same admin delete modal as full-page tables.
+    var confirmDelete = window.AdminDeleteConfirm
+        ? window.AdminDeleteConfirm.ask({
+            title: 'Delete cohort?',
+            message: 'This removes the "' + name + '" cohort from the cohort options for incubatees. This action cannot be undone.',
+        })
+        : Promise.resolve(confirm('Delete ' + name + '?'));
+
+    confirmDelete.then(function(confirmed) {
+        if (!confirmed) return;
+        fetch('<?= site_url('admin/cohorts/') ?>' + id + '/delete', {
         method: 'POST',
         headers: {'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json'},
         body: JSON.stringify({})
@@ -1169,7 +1178,8 @@ function cfmDelete(id, name) {
             alert(data.error || 'Failed to delete');
         }
     })
-    .catch(function() { alert('Network error'); });
+        .catch(function() { alert('Network error'); });
+    });
 }
 </script>
 <script src="<?= base_url('assets/js/admin/incubatees/form.js') ?>"></script>

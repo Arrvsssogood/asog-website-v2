@@ -47,7 +47,7 @@ $editUrl = site_url('admin/organization/modal/' . $id);
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/>
                         </svg>
                     </a>
-                    <form method="POST" action="<?= site_url('admin/organization/members/' . $id . '/delete') ?>" onsubmit="return confirm('Delete this member?')">
+                    <form method="POST" action="<?= site_url('admin/organization/members/' . $id . '/delete') ?>" data-admin-delete-confirm data-confirm-title="Delete organization member?" data-confirm-message="This removes <?= esc((string) ($member['fullName'] ?? 'this member'), 'attr') ?> from the organization records and public organization page. This action cannot be undone.">
                         <?= csrf_field() ?>
                         <button type="submit" class="act-btn delete" title="Delete" aria-label="Delete member">
                             <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
@@ -99,7 +99,7 @@ $editUrl = site_url('admin/organization/modal/' . $id);
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/>
                         </svg>
                     </a>
-                    <form method="POST" action="<?= site_url('admin/organization/members/' . $id . '/delete') ?>" onsubmit="return confirm('Delete this member?')">
+                    <form method="POST" action="<?= site_url('admin/organization/members/' . $id . '/delete') ?>" data-admin-delete-confirm data-confirm-title="Delete organization member?" data-confirm-message="This removes <?= esc((string) ($member['fullName'] ?? 'this member'), 'attr') ?> from the organization records and public organization page. This action cannot be undone.">
                         <?= csrf_field() ?>
                         <button type="submit" class="act-btn delete" title="Delete" aria-label="Delete member">
                             <svg viewBox="0 0 24 24" fill="none" stroke-width="2">

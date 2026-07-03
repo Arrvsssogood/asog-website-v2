@@ -270,3 +270,109 @@ button {
   padding: 0.35rem 0.65rem;
   font-size: 0.62rem;
 }
+
+/* Shared delete modal note: used across admin panels instead of browser confirm(). */
+.admin-delete-confirm {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.admin-delete-confirm.is-open {
+  display: flex;
+}
+
+.admin-delete-confirm-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.46);
+  backdrop-filter: blur(3px);
+}
+
+.admin-delete-confirm-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 420px);
+  overflow: hidden;
+  border: 1px solid #e4e2dd;
+  border-radius: 0.55rem;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+  animation: adminDeleteConfirmIn 0.18s ease;
+}
+
+@keyframes adminDeleteConfirmIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.admin-delete-confirm-icon {
+  width: 46px;
+  height: 46px;
+  margin: 1.3rem auto 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #fff7ed;
+  color: #b45309;
+  border: 1px solid #fed7aa;
+}
+
+.admin-delete-confirm-icon svg {
+  width: 23px;
+  height: 23px;
+}
+
+.admin-delete-confirm-copy {
+  padding: 0 1.45rem 1.15rem;
+  text-align: center;
+}
+
+.admin-delete-confirm-copy h2 {
+  margin: 0;
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.35rem;
+  font-weight: 400;
+  line-height: 1.15;
+  color: #1e293b;
+}
+
+.admin-delete-confirm-copy p:last-child {
+  margin: 0.55rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: #64748b;
+}
+
+.admin-delete-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  padding: 0.95rem 1.05rem;
+  border-top: 1px solid #eceae6;
+  background: #fafaf9;
+}
+
+.admin-delete-confirm-ok {
+  background: #991b1b;
+  color: #fff;
+}
+
+.admin-delete-confirm-ok:hover {
+  background: #7f1d1d;
+}
+
+.admin-delete-confirm-open {
+  overflow: hidden;
+}

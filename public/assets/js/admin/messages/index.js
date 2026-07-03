@@ -180,7 +180,6 @@ if (smartChkMenu) {
 document.addEventListener('click', function () {
     if (smartChkMenu) smartChkMenu.classList.remove('open');
 });
-
 function onRowCheck(checkbox, id) {
     if (checkbox.checked) {
         selectedIds.add(String(id));
@@ -195,9 +194,24 @@ function bulkDo(action) {
     if (!ids.length || !msgBaseUrl) return;
 
     if (action === 'delete') {
-        if (!confirm('Permanently delete ' + ids.length + ' message' + (ids.length !== 1 ? 's' : '') + '? This cannot be undone.')) return;
+        // Change note: bulk delete now uses the shared admin modal instead of native confirm().
+        var confirmBulkDelete = window.AdminDeleteConfirm
+            ? window.AdminDeleteConfirm.ask({
+                title: 'Delete selected messages?',
+                message: 'This removes ' + ids.length + ' selected contact message' + (ids.length !== 1 ? 's' : '') + ' from the inbox and archive. This action cannot be undone.',
+            })
+            : Promise.resolve(confirm('Permanently delete ' + ids.length + ' message' + (ids.length !== 1 ? 's' : '') + '? This cannot be undone.'));
+
+        confirmBulkDelete.then(function (confirmed) {
+            if (confirmed) runBulkAction(action, ids);
+        });
+        return;
     }
 
+    runBulkAction(action, ids);
+}
+
+function runBulkAction(action, ids) {
     fetch(msgBaseUrl + '/bulk', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
@@ -375,12 +389,22 @@ function toggleRead() {
 
 function confirmDelete() {
     if (!currentMsg) return;
-    document.getElementById('confirmText').textContent = 'Delete message from "' + currentMsg.name + '"? This cannot be undone.';
-    document.getElementById('confirmDel').classList.add('open');
+    var confirmSingleDelete = window.AdminDeleteConfirm
+        ? window.AdminDeleteConfirm.ask({
+            title: 'Delete message?',
+            message: 'This removes the contact message from "' + currentMsg.name + '" from the inbox and archive. This action cannot be undone.',
+        })
+        : Promise.resolve(confirm('Delete message from "' + currentMsg.name + '"? This cannot be undone.'));
+
+    confirmSingleDelete.then(function (confirmed) {
+        if (confirmed) doDelete();
+    });
 }
 
 function closeConfirm() {
-    document.getElementById('confirmDel').classList.remove('open');
+    if (window.AdminDeleteConfirm) {
+        window.AdminDeleteConfirm.close(false);
+    }
 }
 
 function doDelete() {
@@ -399,14 +423,11 @@ function doDelete() {
         backToInbox();
         showToast('Message deleted.');
     });
-    closeConfirm();
 }
 
 document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') {
-        if (document.getElementById('confirmDel').classList.contains('open')) {
-            closeConfirm();
-        } else if (document.getElementById('reader').classList.contains('open')) {
+        if (document.getElementById('reader').classList.contains('open')) {
             backToInbox();
         }
     }
@@ -414,8 +435,3 @@ document.addEventListener('keydown', function (e) {
         toggleRead();
     }
 });
-
-var confirmDialog = document.getElementById('confirmDel');
-if (confirmDialog) {
-    confirmDialog.addEventListener('click', function (e) { if (e.target === this) closeConfirm(); });
-}

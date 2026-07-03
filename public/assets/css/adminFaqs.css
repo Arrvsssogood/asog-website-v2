@@ -309,6 +309,43 @@
   cursor: not-allowed;
 }
 
+.faq-admin-item-actions .act-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #e4e2dd;
+  border-radius: .35rem;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .15s;
+}
+
+.faq-admin-item-actions .act-btn svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+}
+
+.faq-admin-item-actions .act-btn.delete {
+  color: #be123c;
+  border-color: #f5c2cd;
+}
+
+.faq-admin-item-actions .act-btn.delete:hover {
+  color: #be123c;
+  border-color: #be123c;
+  background: #fff1f2;
+}
+
+.faq-admin-item-actions .act-btn:focus-visible {
+  outline: 2px solid #03558c;
+  outline-offset: 1px;
+}
+
 .faq-admin-edit-form {
   gap: .75rem;
   padding: .9rem;
