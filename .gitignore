@@ -100,6 +100,8 @@ phpunit
 # Composer
 #-------------------------
 vendor/
+!public/assets/loader/vendor/
+!public/assets/loader/vendor/*.js
 
 #-------------------------
 # IDE / Development Files

@@ -73,6 +73,7 @@ async function init(options = {}) {
     state.root = root;
     state.config = config;
     state.initialized = true;
+    root.dataset.loaderBooted = 'true';
 
     if (new URLSearchParams(window.location.search).get('asog-loader') === 'reset') {
         sessionRemove(config.sessionKey);
