@@ -150,8 +150,8 @@
     opacity: 0;
     pointer-events: none;
     transform: translate(-50%, -50%) scale(0.96);
-    -webkit-mask: url("../svg/full-logo.svg") center / contain no-repeat;
-    mask: url("../svg/full-logo.svg") center / contain no-repeat;
+    -webkit-mask: url("../img/full-logo.png") center / contain no-repeat;
+    mask: url("../img/full-logo.png") center / contain no-repeat;
 }
 
 [data-asog-loader-shine]::before {

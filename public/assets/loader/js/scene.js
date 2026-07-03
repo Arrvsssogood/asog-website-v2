@@ -98,14 +98,15 @@ export class ASOGLoaderScene {
             part.scale.setScalar(0.94);
         });
 
-        const finalLogoImage = this.assets.stageLogo || this.assets.logo;
+        const finalLogoImage = this.assets.stageLogo;
         const logoTexture = new THREE.Texture(finalLogoImage);
         logoTexture.colorSpace = THREE.SRGBColorSpace;
         logoTexture.needsUpdate = true;
         const logoAspect = finalLogoImage.naturalWidth / Math.max(1, finalLogoImage.naturalHeight);
         const finalLogoSize = markSize;
+        const finalLogoGeometry = new THREE.PlaneGeometry(finalLogoSize * logoAspect, finalLogoSize);
         this.items.finalLogo = new THREE.Mesh(
-            new THREE.PlaneGeometry(finalLogoSize * logoAspect, finalLogoSize),
+            finalLogoGeometry,
             new THREE.MeshBasicMaterial({
                 map: logoTexture,
                 transparent: true,
@@ -115,13 +116,28 @@ export class ASOGLoaderScene {
         );
         this.items.finalLogo.position.set(0, -0.08, 0.6);
         this.items.finalLogo.scale.setScalar(0.94);
+        this.items.finalFlash = new THREE.Mesh(
+            finalLogoGeometry.clone(),
+            new THREE.MeshBasicMaterial({
+                map: logoTexture,
+                color: 0xeaf7ff,
+                transparent: true,
+                opacity: 0,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending,
+            }),
+        );
+        this.items.finalFlash.position.copy(this.items.finalLogo.position);
+        this.items.finalFlash.position.z = 0.66;
+        this.items.finalFlash.scale.copy(this.items.finalLogo.scale);
         this.items.subtext = makeImagePlane(THREE, this.assets.subtext, finalLogoSize, 0.64);
         this.items.subtext.position.set(0, -1.18, 0.64);
-        this.items.subtext.scale.setScalar(0.94);
+        this.items.subtext.scale.setScalar(0.7);
 
         this.logoGroup.add(
             ...this.items.componentList,
             this.items.finalLogo,
+            this.items.finalFlash,
             this.items.subtext,
         );
         this.logoGroup.scale.setScalar(this.logoScale);
