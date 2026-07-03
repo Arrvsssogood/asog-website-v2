@@ -12,6 +12,10 @@ import {
 import { ASOGLoaderScene } from './scene.js';
 import { createLoaderTimeline } from './timeline.js';
 
+function dispatchLoaderEvent(name, detail = {}) {
+    window.dispatchEvent(new CustomEvent(name, { detail }));
+}
+
 const state = {
     root: null,
     config: null,
@@ -27,6 +31,7 @@ async function complete() {
     }
 
     state.completing = true;
+    dispatchLoaderEvent('asog-loader:complete', { mode: 'animated' });
     sessionSet(state.config.sessionKey, '1');
     state.root.dataset.state = 'complete';
     state.root.setAttribute('aria-busy', 'false');
@@ -54,6 +59,7 @@ async function showStaticAndComplete(root, config, fallback = false) {
         sessionSet(config.sessionKey, '1');
     }
     await wait(config.staticHoldMs);
+    dispatchLoaderEvent('asog-loader:complete', { mode: fallback ? 'fallback' : 'static' });
     root.dataset.state = 'complete';
     root.setAttribute('aria-busy', 'false');
     await wait(config.fadeOutMs);
@@ -66,6 +72,88 @@ async function waitForLoaderFonts() {
     }
 
     await document.fonts.load('900 122px "ASOG Loader Monas"');
+}
+
+function parseBackgroundImageUrl(value) {
+    if (!value || value === 'none') {
+        return '';
+    }
+
+    const match = String(value).match(/url\((['"]?)(.*?)\1\)/i);
+    return match ? match[2] : '';
+}
+
+function collectLandingAssetUrls(config) {
+    const urls = new Set();
+    const add = (url) => {
+        if (!url || typeof url !== 'string') {
+            return;
+        }
+
+        try {
+            urls.add(new URL(url, window.location.href).href);
+        } catch (error) {
+            // Ignore malformed URLs from optional content.
+        }
+    };
+
+    document.querySelectorAll('#hero .slide[data-bg]').forEach((slide) => {
+        add(slide.getAttribute('data-bg'));
+    });
+
+    document.querySelectorAll('#hero .slide').forEach((slide) => {
+        add(parseBackgroundImageUrl(slide.style.backgroundImage));
+    });
+
+    document.querySelectorAll('img[fetchpriority="high"], img[data-landing-preload]').forEach((image) => {
+        add(image.currentSrc || image.getAttribute('src'));
+    });
+
+    return Array.from(urls).slice(0, Math.max(0, config.landingPreloadLimit || 0));
+}
+
+function preloadPageImage(url) {
+    return new Promise((resolve) => {
+        const image = new Image();
+        image.decoding = 'async';
+        image.onload = async () => {
+            if (image.decode) {
+                try {
+                    await image.decode();
+                } catch (error) {
+                    // Loaded images are still useful even if decode() rejects.
+                }
+            }
+            resolve({ url, ok: true });
+        };
+        image.onerror = () => resolve({ url, ok: false });
+        image.src = url;
+    });
+}
+
+function preloadLandingAssets(config) {
+    const urls = collectLandingAssetUrls(config);
+    if (!urls.length) {
+        return Promise.resolve({ urls, timedOut: false });
+    }
+
+    let timeoutId = 0;
+    const assetWork = Promise.allSettled(urls.map(preloadPageImage)).then((results) => ({
+        urls,
+        timedOut: false,
+        results,
+    }));
+    const timeoutWork = new Promise((resolve) => {
+        timeoutId = window.setTimeout(() => {
+            resolve({ urls, timedOut: true });
+        }, Math.max(1000, config.landingPreloadMaxMs || 8500));
+    });
+
+    return Promise.race([assetWork, timeoutWork]).finally(() => {
+        if (timeoutId) {
+            window.clearTimeout(timeoutId);
+        }
+    });
 }
 
 async function init(options = {}) {
@@ -85,6 +173,7 @@ async function init(options = {}) {
     }
 
     if (config.runOnce && sessionGet(config.sessionKey) === '1') {
+        dispatchLoaderEvent('asog-loader:complete', { mode: 'skipped' });
         root.remove();
         state.root = null;
         state.initialized = false;
@@ -92,6 +181,7 @@ async function init(options = {}) {
     }
 
     options.onStart?.();
+    dispatchLoaderEvent('asog-loader:start');
 
     if (prefersReducedMotion() || !supportsWebGL()) {
         await showStaticAndComplete(root, config, !supportsWebGL());
@@ -100,6 +190,7 @@ async function init(options = {}) {
     }
 
     try {
+        const landingAssetsReady = preloadLandingAssets(config);
         const [assets, gsap] = await Promise.all([
             preloadLoaderAssets(config),
             window.gsap ? Promise.resolve(window.gsap) : loadScript(config.assets.gsap),
@@ -119,6 +210,7 @@ async function init(options = {}) {
             config,
             root,
             onComplete: async () => {
+                await landingAssetsReady;
                 options.onComplete?.();
                 await complete();
             },

@@ -5,6 +5,8 @@ export const ASOG_LOADER_CONFIG = {
     pixelRatioMax: 1.75,
     fadeOutMs: 860,
     staticHoldMs: 920,
+    landingPreloadMaxMs: 8500,
+    landingPreloadLimit: 8,
     colors: {
         blue: 0x43A7DB,
         deepBlue: 0x03558C,
