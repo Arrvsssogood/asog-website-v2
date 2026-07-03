@@ -45,4 +45,34 @@ $importMap = [
 </div>
 
 <script type="importmap"><?= json_encode($importMap, JSON_UNESCAPED_SLASHES) ?></script>
+<script>
+    (() => {
+        const root = document.querySelector('[data-asog-loader-root]');
+        if (!root) {
+            return;
+        }
+
+        window.setTimeout(() => {
+            if (!root.isConnected || root.dataset.loaderBooted === 'true' || root.dataset.state === 'complete') {
+                return;
+            }
+
+            root.dataset.fallback = 'true';
+            root.dataset.static = 'true';
+
+            window.setTimeout(() => {
+                if (!root.isConnected) {
+                    return;
+                }
+
+                root.dataset.state = 'complete';
+                root.setAttribute('aria-busy', 'false');
+
+                window.setTimeout(() => {
+                    root.remove();
+                }, 900);
+            }, 900);
+        }, 5000);
+    })();
+</script>
 <script type="module" src="<?= esc($loaderBase) ?>/js/main.js"></script>
