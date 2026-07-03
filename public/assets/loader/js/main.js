@@ -41,6 +41,11 @@ async function complete() {
 }
 
 async function showStaticAndComplete(root, config, fallback = false) {
+    const logo = root.querySelector('[data-asog-loader-logo]');
+    if (logo && !logo.getAttribute('src')) {
+        logo.src = logo.dataset.src || config.logoUrl || '';
+    }
+
     root.dataset.static = 'true';
     if (fallback) {
         root.dataset.fallback = 'true';

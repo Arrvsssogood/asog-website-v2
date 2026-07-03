@@ -81,7 +81,7 @@ export function createLoaderTimeline({ scene, gsap, config, root, onComplete }) 
     const s = scene.items;
     const scale = config.durationScale || 1;
     const logoScale = scene.getLogoScale?.() || 0.9;
-    const finalLockupScale = logoScale * 0.53;
+    const finalLockupScale = logoScale * 0.5;
     const tl = gsap.timeline({
         defaults: { ease: 'power3.out' },
         onStart() {
@@ -142,59 +142,71 @@ export function createLoaderTimeline({ scene, gsap, config, root, onComplete }) 
     tl.to(s.components.sparkle.material, { opacity: 1, duration: dur(0.4), ease: 'power2.out' }, at(6.64));
 
     tl.to(s.logoGroup.scale, {
-        x: logoScale * 1.02,
-        y: logoScale * 1.02,
-        duration: dur(0.42),
+        x: logoScale * 1.012,
+        y: logoScale * 1.012,
+        duration: dur(0.32),
+        ease: 'sine.out',
+    }, at(7.06));
+    tl.to(s.logoGroup.scale, {
+        x: logoScale,
+        y: logoScale,
+        duration: dur(0.36),
         ease: 'sine.inOut',
-        yoyo: true,
-        repeat: 1,
-    }, at(7.08));
+    }, at(7.38));
+    tl.to(s.componentList.map((part) => part.scale), {
+        x: 0.94,
+        y: 0.94,
+        duration: dur(0.46),
+        ease: 'power2.inOut',
+    }, at(7.2));
+    tl.to(s.componentList.map((part) => part.position), {
+        y: -0.08,
+        duration: dur(0.46),
+        ease: 'power2.inOut',
+    }, at(7.2));
 
     tl.call(() => {
         root.dataset.loaderPhase = 'final';
-    }, null, at(7.42));
-    tl.fromTo(s.finalLogo.scale, { x: 0.92, y: 0.92 }, { x: 0.94, y: 0.94, duration: dur(0.72), ease: 'power3.out' }, at(7.36));
-    tl.to(s.finalLogo.material, { opacity: 1, duration: dur(0.68), ease: 'power2.out' }, at(7.36));
-    tl.to(s.componentList.map((part) => part.material), { opacity: 0, duration: dur(0.58), ease: 'power2.inOut' }, at(7.58));
-    tl.to(s.grid.material, { opacity: 0.015, duration: dur(0.8), ease: 'sine.out' }, at(7.68));
-
-    tl.call(() => {
-        root.dataset.shine = 'true';
-    }, null, at(7.9));
-    tl.call(() => {
-        root.dataset.shine = 'false';
-    }, null, at(8.78));
+    }, null, at(7.52));
+    tl.set(s.finalLogo.scale, { x: 0.94, y: 0.94 }, at(7.52));
+    tl.set(s.finalFlash.scale, { x: 0.94, y: 0.94 }, at(7.52));
+    tl.to(s.finalLogo.material, { opacity: 1, duration: dur(0.62), ease: 'power2.inOut' }, at(7.52));
+    tl.to(s.componentList.map((part) => part.material), { opacity: 0, duration: dur(0.62), ease: 'power2.inOut' }, at(7.54));
+    tl.to(s.finalFlash.material, { opacity: 0.42, duration: dur(0.18), ease: 'power2.out' }, at(7.82));
+    tl.to(s.finalFlash.scale, { x: 0.985, y: 0.985, duration: dur(0.42), ease: 'sine.out' }, at(7.82));
+    tl.to(s.finalFlash.material, { opacity: 0, duration: dur(0.46), ease: 'power2.out' }, at(8.02));
+    tl.to(s.grid.material, { opacity: 0.015, duration: dur(0.8), ease: 'sine.out' }, at(7.78));
 
     tl.to(s.logoGroup.scale, {
         x: finalLockupScale,
         y: finalLockupScale,
-        duration: dur(0.82),
-        ease: 'power2.inOut',
-    }, at(8.82));
+        duration: dur(0.86),
+        ease: 'power3.inOut',
+    }, at(8.42));
     tl.to(s.logoGroup.position, {
-        y: 0.64,
-        duration: dur(0.82),
-        ease: 'power2.inOut',
-    }, at(8.82));
-
-    tl.fromTo(s.subtext.position, { y: -0.42 }, {
-        y: -2.78,
-        duration: dur(0.9),
-        ease: 'power3.out',
-    }, at(9.2));
-    tl.fromTo(s.subtext.scale, { x: 0.78, y: 0.78 }, {
-        x: 0.78,
         y: 0.78,
-        duration: dur(0.9),
+        duration: dur(0.86),
+        ease: 'power3.inOut',
+    }, at(8.42));
+
+    tl.fromTo(s.subtext.position, { y: -3.22 }, {
+        y: -3.02,
+        duration: dur(0.84),
+        ease: 'power3.out',
+    }, at(9.18));
+    tl.fromTo(s.subtext.scale, { x: 0.66, y: 0.66 }, {
+        x: 0.7,
+        y: 0.7,
+        duration: dur(0.84),
         ease: 'power2.out',
-    }, at(9.2));
+    }, at(9.18));
     tl.to(s.subtext.material, {
         opacity: 1,
-        duration: dur(0.6),
+        duration: dur(0.54),
         ease: 'power2.out',
-    }, at(9.2));
+    }, at(9.3));
 
-    tl.to({}, { duration: dur(2.25) }, at(9.72));
+    tl.to({}, { duration: dur(2.18) }, at(9.86));
 
     return tl;
 }

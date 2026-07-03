@@ -7,7 +7,6 @@ $importMap = [
     ],
 ];
 ?>
-<link rel="preload" as="image" href="<?= esc($logoUrl) ?>">
 <link rel="stylesheet" href="<?= esc($loaderBase) ?>/css/asog-loader.css">
 
 <div
@@ -36,7 +35,7 @@ $importMap = [
     <div data-asog-loader-shine aria-hidden="true"></div>
     <img
         data-asog-loader-logo
-        src="<?= esc($logoUrl) ?>"
+        data-src="<?= esc($logoUrl) ?>"
         alt="ASOG Technology Business Incubator"
         width="320"
         height="320"
@@ -59,6 +58,10 @@ $importMap = [
 
             root.dataset.fallback = 'true';
             root.dataset.static = 'true';
+            const logo = root.querySelector('[data-asog-loader-logo]');
+            if (logo && !logo.getAttribute('src')) {
+                logo.src = logo.dataset.src || root.dataset.logoUrl || '';
+            }
 
             window.setTimeout(() => {
                 if (!root.isConnected) {

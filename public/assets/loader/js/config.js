@@ -16,15 +16,14 @@ export const ASOG_LOADER_CONFIG = {
     },
     assets: {
         gsap: 'vendor/gsap.min.js',
-        stageLogo: 'svg/full-logo.svg',
-        subtext: 'svg/subtext.svg',
+        stageLogo: 'img/full-logo.png',
+        subtext: 'img/subtext.png',
         logo: '../img/ASOG TBI/PNG/vertical-light.png',
-        noise: 'textures/noise.png',
         components: {
-            gear: 'svg/gear.svg',
-            arc: 'svg/arc.svg',
-            mountain: 'svg/mountain.svg',
-            sparkle: 'svg/sparkle.svg',
+            gear: 'img/gear.png',
+            arc: 'img/arc.png',
+            mountain: 'img/mountain.png',
+            sparkle: 'img/sparkle.png',
         },
     },
 };
@@ -47,7 +46,6 @@ export function mergeLoaderConfig(root, overrides = {}) {
             subtext: `${base}/${ASOG_LOADER_CONFIG.assets.subtext}`,
             logo: logoUrl,
             gsap: `${base}/${ASOG_LOADER_CONFIG.assets.gsap}`,
-            noise: `${base}/${ASOG_LOADER_CONFIG.assets.noise}`,
             components: Object.fromEntries(
                 Object.entries(ASOG_LOADER_CONFIG.assets.components).map(([key, path]) => [key, `${base}/${path}`]),
             ),

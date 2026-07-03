@@ -1,8 +1,7 @@
 import { loadImage } from './utils.js';
 
 export async function preloadLoaderAssets(config) {
-    const [logo, stageLogo, subtext, gear, arc, mountain, sparkle] = await Promise.all([
-        loadImage(config.assets.logo),
+    const [stageLogo, subtext, gear, arc, mountain, sparkle] = await Promise.all([
         loadImage(config.assets.stageLogo),
         loadImage(config.assets.subtext),
         loadImage(config.assets.components.gear),
@@ -12,7 +11,6 @@ export async function preloadLoaderAssets(config) {
     ]);
 
     return {
-        logo,
         stageLogo,
         subtext,
         components: {
