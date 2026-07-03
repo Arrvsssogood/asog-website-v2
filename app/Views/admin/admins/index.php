@@ -36,20 +36,20 @@ function sortClass(string $col, string $currentSort, string $currentDir): string
 
 <!-- Stats Widgets -->
 <div class="grid-stats">
-    <div class="stat">
-        <div class="n" id="statActive" style="color:#10b981"><?= $counts['active'] ?></div>
+    <div class="stat stat-active">
+        <div class="n" id="statActive"><?= $counts['active'] ?></div>
         <div class="t">Active</div>
     </div>
-    <div class="stat">
-        <div class="n" id="statInactive" style="color:#ef4444"><?= $counts['inactive'] ?></div>
+    <div class="stat stat-inactive">
+        <div class="n" id="statInactive"><?= $counts['inactive'] ?></div>
         <div class="t">Inactive</div>
     </div>
-    <div class="stat">
-        <div class="n" id="statSuperadmin" style="color:#03558C"><?= $counts['superadmin'] ?></div>
+    <div class="stat stat-superadmin">
+        <div class="n" id="statSuperadmin"><?= $counts['superadmin'] ?></div>
         <div class="t">Super Admins</div>
     </div>
-    <div class="stat">
-        <div class="n" id="statAdmin" style="color:#f59e0b"><?= $counts['admin'] ?></div>
+    <div class="stat stat-admin">
+        <div class="n" id="statAdmin"><?= $counts['admin'] ?></div>
         <div class="t">Admins</div>
     </div>
 </div>

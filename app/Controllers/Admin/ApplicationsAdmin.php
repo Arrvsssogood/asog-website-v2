@@ -134,6 +134,31 @@ class ApplicationsAdmin extends BaseController
     }
 
     /**
+     * Save the admin remark without changing status or notifying the applicant.
+     */
+    public function updateRemark(int $id)
+    {
+        $app = $this->applicationModel->find($id);
+
+        if (! $app) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'Application not found.']);
+        }
+
+        $payload = $this->request->getJSON(true) ?? [];
+        $remark = $this->normalizeRemark($payload['remark'] ?? null);
+
+        if (! $this->applicationModel->update($id, ['statusRemark' => $remark])) {
+            return $this->response->setStatusCode(422)->setJSON(['error' => 'Unable to update application remark.']);
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'remark' => $remark,
+            'message' => $remark === null ? 'Remark cleared.' : 'Remark saved.',
+        ]);
+    }
+
+    /**
      * Toggle the archived state of a single application.
      */
 

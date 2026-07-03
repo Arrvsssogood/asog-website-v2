@@ -2,6 +2,9 @@
 .grid-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.85rem;margin-bottom:1.8rem}
 .stat{background:#fff;border:1px solid #eceae6;border-radius:.4rem;padding:1.1rem 1.2rem}
 .stat .n{font-family:'DM Serif Display',serif;font-size:1.6rem;color:#03558C;line-height:1}
+.stat.stat-inbox .n{color:#03558C}
+.stat.stat-unread .n{color:#f59e0b}
+.stat.stat-archived .n{color:#94a3b8}
 .stat .t{font-size:.6rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#94a3b8;margin-top:.3rem}
 
 
