@@ -775,6 +775,22 @@
     line-height: 1;
 }
 
+.stat.stat-active .n {
+    color: #10b981;
+}
+
+.stat.stat-inactive .n {
+    color: #ef4444;
+}
+
+.stat.stat-superadmin .n {
+    color: #03558C;
+}
+
+.stat.stat-admin .n {
+    color: #f59e0b;
+}
+
 .stat .t {
     font-size: .6rem;
     font-weight: 600;

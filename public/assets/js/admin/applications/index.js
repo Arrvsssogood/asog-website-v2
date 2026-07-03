@@ -16,8 +16,7 @@
     var btnSaveStatus     = document.getElementById('btnSaveStatus');
     var btnArchModal = document.getElementById('btnArchModal');
     var btnRestoreModal = document.getElementById('btnRestoreModal');
-    var statusRemarkWrap = document.getElementById('statusRemarkWrap');
-    var statusRemarkInput = document.getElementById('statusRemarkInput');
+    var btnRequestRevalidation = document.getElementById('btnRequestRevalidation');
 
     var confirmBg = document.getElementById('confirmDialog');
     var confirmIcon = document.getElementById('confirmIcon');
@@ -47,6 +46,7 @@
     var confirmCb = null;
     var currentAppData = null;
     var statusPickerValue = null;
+    var remarkEditValue = '';
 
     function bindTableEvents() {
         document.querySelectorAll('.btn-review').forEach(function (btn) {
@@ -236,6 +236,7 @@
     // Handled dynamically in bindTableEvents()
 
     function openModal(id) {
+        modalTitle.innerHTML = '<span>APPLICATION OVERVIEW</span>';
         modalBody.innerHTML = '<p style="color:#94a3b8;font-size:.78rem;padding:2rem 0;text-align:center">Loading\u2026</p>';
         hideChangeMode();
         modalBg.classList.add('open');
@@ -258,22 +259,25 @@
     }
 
     function renderModal(d) {
-        modalTitle.textContent = d.startupName || 'Application Review';
+        modalTitle.innerHTML = '<span>APPLICATION OVERVIEW FOR</span> <strong>' + escHtml(d.startupName || 'Startup Application') + '</strong>';
 
-        var html = '<div class="field-grid">';
-        html += field('Applicant', escHtml(d.applicantName));
-        html += field('Email', '<a href="mailto:' + escHtml(d.applicantEmail) + '">' + escHtml(d.applicantEmail) + '</a>');
-        html += field('Contact', escHtml(d.contactNumber));
-        html += field('Startup', escHtml(d.startupName));
-        html += '</div>';
+        var html = '<section class="app-review-section app-review-summary">'
+            + reviewStat('Applicant\'s Name', escHtml(d.applicantName))
+            + reviewStat('Email', '<a href="mailto:' + escHtml(d.applicantEmail) + '">' + escHtml(d.applicantEmail) + '</a>', 'email')
+            + reviewStat('Contact', escHtml(d.contactNumber), 'contact')
+            + '</section>';
 
-        html += '<div class="modal-divider"></div>';
-        html += field('Description', escHtml(d.startupDescription));
-        html += field('Main Risk', escHtml(d.mainRisk) || '\u2014');
-        html += field('Short-term Goals', escHtml(d.shortTermGoals) || '\u2014');
-        html += field('Video Presentation', d.videoPresentationLink
-            ? '<a href="' + escHtml(d.videoPresentationLink) + '" target="_blank" rel="noopener">' + truncateUrl(d.videoPresentationLink) + '</a>'
-            : '\u2014');
+        html += '<section class="app-review-section app-review-status-row">'
+            + reviewStat('Status', '<span class="modal-status-text status-' + escHtml(d.applicationStatus) + '">' + statusLabel(d.applicationStatus) + '</span>', 'status')
+            + reviewStat('Submitted on', formatDateTime(d.createdAt))
+            + '</section>';
+
+        html += '<section class="app-review-section">' + reviewField('Description', escHtml(d.startupDescription), 'wide') + '</section>';
+        html += '<section class="app-review-section">' + reviewField('Main Risk', escHtml(d.mainRisk) || '\u2014', 'wide') + '</section>';
+        html += '<section class="app-review-section">' + reviewField('Short-term Goals', escHtml(d.shortTermGoals) || '\u2014', 'wide') + '</section>';
+        html += '<section class="app-review-section">' + reviewField('Video Presentation', d.videoPresentationLink
+            ? '<a href="' + escHtml(d.videoPresentationLink) + '" target="_blank" rel="noopener">' + escHtml(d.videoPresentationLink) + '</a>'
+            : '\u2014', 'wide') + '</section>';
 
         if (d.teamCvPath) {
             var cards = d.teamCvPath.split(',').map(function (p, i) {
@@ -285,7 +289,11 @@
                     + '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>'
                     + '<span>CV ' + (i + 1) + '</span></a>';
             }).join('');
-            html += '<div class="field"><div class="field-label">Team CVs</div><div class="file-cards">' + cards + '</div></div>';
+            html += '<section class="app-review-section app-review-files">'
+                + '<div class="file-group"><div class="field-label">Team CVs</div><div class="file-cards">' + cards + '</div></div>';
+        } else {
+            html += '<section class="app-review-section app-review-files">'
+                + '<div class="file-group"><div class="field-label">Team CVs</div><div class="field-value">\u2014</div></div>';
         }
 
         if (d.leanCanvasPath) {
@@ -294,18 +302,16 @@
             var lcCard = '<a class="file-card" href="' + escHtml(lcUrl) + '" target="_blank" rel="noopener" title="Open ' + escHtml(lcFilename) + '">'
                 + '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>'
                 + '<span>Lean Canvas</span></a>';
-            html += '<div class="field"><div class="field-label">Lean Canvas</div><div class="file-cards">' + lcCard + '</div></div>';
+            html += '<div class="file-group"><div class="field-label">Lean Canvas</div><div class="file-cards">' + lcCard + '</div></div>';
+        } else {
+            html += '<div class="file-group"><div class="field-label">Lean Canvas</div><div class="field-value">\u2014</div></div>';
         }
+        html += '</section>';
 
-        html += '<div class="modal-divider"></div>';
-        html += '<div class="field-grid">';
-        html += field('Status', '<span class="tag tag-' + escHtml(d.applicationStatus) + '">' + statusLabel(d.applicationStatus) + '</span>');
-        html += field('Submitted', formatDate(d.createdAt));
-        html += '</div>';
-        html += field('Current Remark', escHtml(d.statusRemark) || '\u2014');
+        html += '<section class="app-review-section app-review-remarks" id="remarkSection"></section>';
 
         modalBody.innerHTML = html;
-        if (statusRemarkInput) statusRemarkInput.value = d.statusRemark || '';
+        renderRemarkPanel(false);
         updateFooterButtons(d.applicationStatus, d.isArchived);
     }
 
@@ -315,30 +321,30 @@
 
         btnAccept.disabled = false;
         btnReject.disabled = false;
+        if (btnRequestRevalidation) btnRequestRevalidation.disabled = false;
 
         var archived = (Number(isArchived) === 1);
 
+        btnAccept.style.display = 'none';
+        btnReject.style.display = 'none';
+        btnChange.style.display = 'none';
+        if (btnRequestRevalidation) btnRequestRevalidation.style.display = 'none';
+        if (btnArchModal) btnArchModal.style.display = 'none';
+        if (btnRestoreModal) btnRestoreModal.style.display = 'none';
+
         if (archived) {
-            btnAccept.style.display = 'none';
-            btnReject.style.display = 'none';
-            btnChange.style.display = 'none';
-            if (btnArchModal) btnArchModal.style.display = 'none';
             if (btnRestoreModal) btnRestoreModal.style.display = 'inline-flex';
-            if (statusRemarkWrap) statusRemarkWrap.style.display = 'none';
         } else if (status === 'pending') {
             btnAccept.style.display = 'inline-flex';
             btnReject.style.display = 'inline-flex';
+            if (btnRequestRevalidation) btnRequestRevalidation.style.display = 'inline-flex';
+            if (btnArchModal) btnArchModal.style.display = 'inline-flex';
+        } else if (status === 'for_revalidation') {
             btnChange.style.display = 'inline-flex';
             if (btnArchModal) btnArchModal.style.display = 'inline-flex';
-            if (btnRestoreModal) btnRestoreModal.style.display = 'none';
-            if (statusRemarkWrap) statusRemarkWrap.style.display = 'flex';
         } else {
-            btnAccept.style.display = 'none';
-            btnReject.style.display = 'none';
             btnChange.style.display = 'inline-flex';
             if (btnArchModal) btnArchModal.style.display = 'inline-flex';
-            if (btnRestoreModal) btnRestoreModal.style.display = 'none';
-            if (statusRemarkWrap) statusRemarkWrap.style.display = 'flex';
         }
     }
 
@@ -348,7 +354,7 @@
         btnChange.style.display = 'none';
         if (btnArchModal) btnArchModal.style.display = 'none';
         if (btnRestoreModal) btnRestoreModal.style.display = 'none';
-        if (statusRemarkWrap) statusRemarkWrap.style.display = 'none';
+        if (btnRequestRevalidation) btnRequestRevalidation.style.display = 'none';
         hideChangeMode();
     }
 
@@ -360,6 +366,19 @@
     /* ── Close modal ──────────────────────────────────── */
     btnClose.addEventListener('click', closeModal);
     statusChangeWrap.addEventListener('click', function (e) { e.stopPropagation(); });
+    modalBody.addEventListener('click', function (e) {
+        var actionBtn = e.target.closest('[data-remark-action]');
+        if (!actionBtn) return;
+
+        var action = actionBtn.dataset.remarkAction;
+        if (action === 'edit') {
+            openRemarkEditor(true);
+        } else if (action === 'cancel') {
+            renderRemarkPanel(false);
+        } else if (action === 'save') {
+            saveRemark();
+        }
+    });
     modalBg.addEventListener('click', function (e) {
         if (e.target === modalBg && statusChangeWrap.style.display === 'none') closeModal();
     });
@@ -374,7 +393,7 @@
         modalBg.classList.remove('open');
         currentId = null;
         currentAppData = null;
-        if (statusRemarkInput) statusRemarkInput.value = '';
+        remarkEditValue = '';
     }
 
     /* ══════════════════════════════════════════════════
@@ -400,6 +419,25 @@
             onConfirm: function () { sendStatus('rejected'); }
         });
     });
+
+    if (btnRequestRevalidation) {
+        btnRequestRevalidation.addEventListener('click', function () {
+            var remark = getCurrentRemark();
+            if (!remark) {
+                showToast('Please add a remark before returning this application for revalidation.', 'error');
+                openRemarkEditor(true);
+                return;
+            }
+
+            showConfirm({
+                title: 'Return for Revalidation',
+                message: 'Send this application back to the applicant for updates?',
+                color: 'green',
+                icon: 'check',
+                onConfirm: function () { sendStatus('for_revalidation'); }
+            });
+        });
+    }
 
     btnChange.addEventListener('click', function () {
         var cur = currentAppData ? currentAppData.applicationStatus : null;
@@ -432,7 +470,7 @@
     btnSaveStatus.addEventListener('click', function () {
         var newStatus = statusPickerValue;
         if (!newStatus || !currentId) return;
-        var remark = statusRemarkInput ? statusRemarkInput.value.trim() : '';
+        var remark = getCurrentRemark();
 
         if (newStatus === (currentAppData && currentAppData.applicationStatus)) {
             hideChangeMode();
@@ -442,7 +480,7 @@
 
         if (newStatus === 'for_revalidation' && !remark) {
             showToast('Please add a remark before marking this application for revalidation.', 'error');
-            if (statusRemarkInput) statusRemarkInput.focus();
+            openRemarkEditor(true);
             return;
         }
 
@@ -459,7 +497,7 @@
         if (!currentId) return;
         var idCopy = currentId;
         var oldStatus = currentAppData ? currentAppData.applicationStatus : null;
-        var remark = statusRemarkInput ? statusRemarkInput.value.trim() : '';
+        var remark = getCurrentRemark();
 
         var row = document.querySelector('tr[data-id="' + idCopy + '"]');
         if (row) {
@@ -794,11 +832,107 @@
        SECTION 6 — Helpers
        ══════════════════════════════════════════════════ */
 
-    function field(label, value) {
-        return '<div class="field">'
+    function reviewStat(label, value, extraClass) {
+        return '<div class="app-review-stat ' + (extraClass || '') + '">'
+            + '<span>' + label + '</span>'
+            + '<strong>' + (value || '\u2014') + '</strong>'
+            + '</div>';
+    }
+
+    function reviewField(label, value, extraClass) {
+        return '<div class="field app-review-field ' + (extraClass || '') + '">'
             + '<div class="field-label">' + label + '</div>'
             + '<div class="field-value">' + (value || '\u2014') + '</div>'
             + '</div>';
+    }
+
+    function renderRemarkPanel(editing) {
+        var section = document.getElementById('remarkSection');
+        if (!section || !currentAppData) return;
+
+        var remark = (currentAppData.statusRemark || '').trim();
+        var html = '<div class="app-review-section-head"><span>Remarks</span></div>';
+
+        if (editing) {
+            remarkEditValue = remarkEditValue || remark;
+            html += '<div class="remark-editor">'
+                + '<textarea id="statusRemarkInput" class="modal-status-input" rows="4" maxlength="2000"'
+                + ' placeholder="Add the specific details, files, or corrections the applicant should address.">'
+                + escHtml(remarkEditValue) + '</textarea>'
+                + '<div class="remark-actions">'
+                + '<button type="button" class="remark-btn primary" data-remark-action="save">Save Remarks</button>'
+                + '<button type="button" class="remark-btn subtle" data-remark-action="cancel">Cancel</button>'
+                + '</div>'
+                + '</div>';
+        } else if (remark) {
+            html += '<div class="remark-preview">'
+                + '<p>' + escHtml(remark) + '</p>'
+                + '<button type="button" class="remark-btn" data-remark-action="edit">Edit Remarks</button>'
+                + '</div>';
+        } else {
+            html += '<div class="remark-empty">'
+                + '<p>No remarks added yet.</p>'
+                + '<button type="button" class="remark-btn" data-remark-action="edit">Add Remarks</button>'
+                + '</div>';
+        }
+
+        section.innerHTML = html;
+
+        if (editing) {
+            var input = document.getElementById('statusRemarkInput');
+            if (input) {
+                input.addEventListener('input', function () {
+                    remarkEditValue = input.value;
+                });
+            }
+        }
+    }
+
+    function openRemarkEditor(focusInput) {
+        remarkEditValue = currentAppData ? (currentAppData.statusRemark || '') : '';
+        renderRemarkPanel(true);
+        var input = document.getElementById('statusRemarkInput');
+        if (focusInput && input) {
+            input.focus();
+            input.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        }
+    }
+
+    function getCurrentRemark() {
+        var input = document.getElementById('statusRemarkInput');
+        if (input) return input.value.trim();
+        return currentAppData && currentAppData.statusRemark ? currentAppData.statusRemark.trim() : '';
+    }
+
+    function saveRemark() {
+        if (!currentId || !currentAppData) return;
+        var input = document.getElementById('statusRemarkInput');
+        var remark = input ? input.value.trim() : '';
+        var buttons = document.querySelectorAll('#remarkSection button');
+
+        buttons.forEach(function (btn) { btn.disabled = true; });
+
+        fetch(siteUrl('admin/applications/' + currentId + '/remark'), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ remark: remark })
+        })
+            .then(function (res) { return res.json(); })
+            .then(function (data) {
+                buttons.forEach(function (btn) { btn.disabled = false; });
+                if (!data.success) {
+                    showToast(data.error || 'Unable to save remark.', 'error');
+                    return;
+                }
+                currentAppData.statusRemark = data.remark || '';
+                remarkEditValue = '';
+                renderRemarkPanel(false);
+                showToast(data.message || 'Remark saved.', 'success');
+            })
+            .catch(function () {
+                buttons.forEach(function (btn) { btn.disabled = false; });
+                showToast('Network error. Remark was not saved.', 'error');
+            });
     }
 
     function updateStatCounts(from, to) {
@@ -863,15 +997,15 @@
         return map[s] || capitalize(s);
     }
 
-    function formatDate(iso) {
+    function formatDateTime(iso) {
         if (!iso) return '\u2014';
         var d = new Date(iso);
         var m = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        return m[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
-    }
-
-    function truncateUrl(url) {
-        return url && url.length > 50 ? url.substring(0, 47) + '\u2026' : url;
+        var hours = d.getHours();
+        var minutes = String(d.getMinutes()).padStart(2, '0');
+        var suffix = hours >= 12 ? 'PM' : 'AM';
+        var hour12 = hours % 12 || 12;
+        return m[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear() + ', ' + hour12 + ':' + minutes + ' ' + suffix;
     }
 
     function siteUrl(path) {

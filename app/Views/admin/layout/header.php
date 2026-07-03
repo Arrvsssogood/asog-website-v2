@@ -97,16 +97,16 @@
 
     <div class="body">
         <header class="bar">
-            <?php if (($activePage ?? '') === 'dashboard'): ?>
-                <div>
-                    <h1>Welcome back, <?= esc(session()->get('admin_name') ?? 'Admin') ?></h1>
-                </div>
-                <div style="font-size:.62rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;white-space:nowrap;">
-                    <?= date('l, M j, Y') ?>
-                </div>
-            <?php else: ?>
-                <h1><?= esc($pageTitle ?? 'Dashboard') ?></h1>
-            <?php endif; ?>
+            <h1>
+                <?php if (($activePage ?? '') === 'dashboard'): ?>
+                    Welcome back, <?= esc(session()->get('admin_name') ?? 'Admin') ?>
+                <?php else: ?>
+                    <?= esc($pageTitle ?? 'Dashboard') ?>
+                <?php endif; ?>
+            </h1>
+            <div class="bar-date">
+                <?= date('l, M j, Y') ?>
+            </div>
         </header>
 
         <div class="page">

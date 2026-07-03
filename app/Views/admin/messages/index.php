@@ -19,16 +19,16 @@ $baseUrl = site_url('admin/messages') . '?' . http_build_query([
 ?>
 
 <div class="grid-stats">
-    <div class="stat">
+    <div class="stat stat-inbox">
         <div class="n"><?= $counts['total'] ?></div>
         <div class="t">Inbox</div>
     </div>
-    <div class="stat">
-        <div class="n" style="color:#03558C"><?= $counts['unread'] ?></div>
+    <div class="stat stat-unread">
+        <div class="n"><?= $counts['unread'] ?></div>
         <div class="t">Unread</div>
     </div>
-    <div class="stat">
-        <div class="n" style="color:#94a3b8"><?= $counts['archived'] ?></div>
+    <div class="stat stat-archived">
+        <div class="n"><?= $counts['archived'] ?></div>
         <div class="t">Archived</div>
     </div>
 </div>
