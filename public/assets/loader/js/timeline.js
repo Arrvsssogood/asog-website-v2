@@ -1,6 +1,10 @@
 function renderMorphWord(word) {
-    if (word === 'ASOG') {
-        return '<span class="asog-loader-word-initial">ASOG</span>';
+    if (word === 'ASOG TBI') {
+        return [
+            '<span class="asog-loader-word-initial">ASOG</span>',
+            '<span class="asog-loader-word-gap">&nbsp;</span>',
+            '<span class="asog-loader-word-tbi">TBI</span>',
+        ].join('');
     }
 
     return [
@@ -16,7 +20,7 @@ function createWordMorphTimeline({ gsap, root, scale }) {
     const morphRoot = root.querySelector('[data-asog-loader-word-morph]');
     const wordA = root.querySelector('[data-asog-loader-word-a]');
     const wordB = root.querySelector('[data-asog-loader-word-b]');
-    const words = ['ACADEME', 'SOCIETY', 'ORGANIZATION', 'GOVERNMENT', 'ASOG'];
+    const words = ['ACADEME', 'SOCIETY', 'ORGANIZATION', 'GOVERNMENT', 'ASOG TBI'];
 
     if (!morphRoot || !wordA || !wordB) {
         return gsap.timeline();
