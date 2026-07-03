@@ -110,7 +110,8 @@
 }
 
 .asog-loader-word-initial,
-.asog-loader-word-rest {
+.asog-loader-word-rest,
+.asog-loader-word-tbi {
     display: inline-block;
     -webkit-background-clip: text;
     background-clip: text;
@@ -125,6 +126,16 @@
 .asog-loader-word-rest {
     color: #03558C;
     background-image: linear-gradient(135deg, #03558C 0%, #0B6EA8 48%, #023D67 100%);
+}
+
+.asog-loader-word-tbi {
+    color: #03558C;
+    background-image: linear-gradient(135deg, #43A7DB 0%, #03558C 48%, #023D67 100%);
+}
+
+.asog-loader-word-gap {
+    display: inline-block;
+    width: 0.18em;
 }
 
 [data-asog-loader-logo] {

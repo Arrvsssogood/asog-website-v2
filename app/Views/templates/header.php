@@ -107,7 +107,7 @@
     <?php
     /* ── Nav URLs: always link to dedicated pages ── */
     $navAbout      = site_url('about');
-    $navOurStory   = $navAbout . ''; # removed about-panel-1 to avoid jitter / page jumping
+    $navOurStory   = $navAbout . '';
     $navAboutLogo  = site_url('about/logo');
     $navPrograms   = site_url('programs');
     $navAltitude   = $navPrograms . ' ';
