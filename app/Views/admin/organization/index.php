@@ -314,6 +314,62 @@
         const photoField = modal.querySelector('#orgPhotoField');
         const featuredField = modal.querySelector('#orgFeaturedField');
 
+        const bindPhotoTile = () => {
+            const input = modal.querySelector('.org-photo-input');
+            const zone = modal.querySelector('.org-photo-upload-zone');
+            if (!input || !zone) return;
+
+            const renderPreview = (file) => {
+                if (!file || !file.type || !file.type.startsWith('image/')) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const preview = zone.querySelector('.org-photo-upload-preview');
+                    if (!preview) return;
+                    let img = preview.querySelector('.org-photo-preview');
+                    if (!img) {
+                        img = document.createElement('img');
+                        img.className = 'org-photo-preview';
+                        img.alt = '';
+                        preview.appendChild(img);
+                    }
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            };
+
+            zone.addEventListener('dragover', (event) => {
+                event.preventDefault();
+                zone.classList.add('is-dragover');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('is-dragover');
+            });
+
+            zone.addEventListener('drop', (event) => {
+                event.preventDefault();
+                zone.classList.remove('is-dragover');
+                const files = event.dataTransfer && event.dataTransfer.files;
+                if (!files || !files.length) return;
+                const transfer = new DataTransfer();
+                transfer.items.add(files[0]);
+                input.files = transfer.files;
+                renderPreview(files[0]);
+            });
+
+            input.addEventListener('change', () => {
+                renderPreview(input.files && input.files[0]);
+            });
+        };
+
+        const syncFeaturedNote = () => {
+            const checkbox = featuredField?.querySelector('input[type="checkbox"]');
+            const note = featuredField?.querySelector('.org-featured-replace-note');
+            if (!checkbox || !note) return;
+            const wasFeatured = featuredField.getAttribute('data-original-featured') === '1';
+            note.classList.toggle('is-hidden', wasFeatured || !checkbox.checked);
+        };
+
         const syncFields = () => {
             const sectionValue = sectionField?.value || 'core_team';
             const isMentor = sectionValue === 'mentor';
@@ -325,10 +381,13 @@
             }
             photoField?.classList.toggle('is-hidden', isMentor);
             featuredField?.classList.toggle('is-hidden', isMentor);
+            syncFeaturedNote();
         };
         if (sectionField && sectionField.tagName === 'SELECT') {
             sectionField.addEventListener('change', syncFields);
         }
+        featuredField?.querySelector('input[type="checkbox"]')?.addEventListener('change', syncFeaturedNote);
+        bindPhotoTile();
         syncFields();
 
         const form = modal.querySelector('form[data-modal-form]');
@@ -445,7 +504,7 @@
     });
 
     document.addEventListener('click', (event) => {
-        if (event.target.matches('[data-org-modal-close]')) {
+        if (event.target.closest('[data-org-modal-close]')) {
             event.preventDefault();
             closeModal();
         }
