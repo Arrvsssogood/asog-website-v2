@@ -245,6 +245,9 @@ class OrganizationAdmin extends BaseController
             ]))->withInput();
         }
 
+        $memberId = (int) $memberModel->getInsertID();
+        $this->clearFeaturedPeers($memberModel, $payload, $memberId);
+
         setToast('success', 'Member added.');
 
         return redirect()->to($this->organizationListUrl($payload['section'], $payload['mentorCategory'] ?? null));
@@ -290,6 +293,7 @@ class OrganizationAdmin extends BaseController
         }
 
         $memberId = (int) $memberModel->getInsertID();
+        $this->clearFeaturedPeers($memberModel, $payload, $memberId);
 
         return $this->modalSuccessResponse($memberId, 'Member added.', 'insert');
     }
@@ -347,6 +351,8 @@ class OrganizationAdmin extends BaseController
             return $this->modalErrorResponse('edit', $member, $payload, $memberModel->errors(), $id);
         }
 
+        $this->clearFeaturedPeers($memberModel, $payload, $id);
+
         return $this->modalSuccessResponse(
             $id,
             'Member updated.',
@@ -386,6 +392,8 @@ class OrganizationAdmin extends BaseController
                 'memberId' => $id,
             ]))->withInput();
         }
+
+        $this->clearFeaturedPeers($memberModel, $payload, $id);
 
         setToast('success', 'Member updated.');
 
@@ -587,6 +595,25 @@ class OrganizationAdmin extends BaseController
             ];
         }
 
+        if ($section !== OrganizationMemberModel::SECTION_MENTOR && (int) ($member['isFeatured'] ?? 0) === 1) {
+            foreach ($members as $index => $sectionMember) {
+                $sectionMemberId = (int) ($sectionMember['id'] ?? 0);
+                if ($sectionMemberId === $memberId) {
+                    continue;
+                }
+
+                $patchRows[] = [
+                    'id' => $sectionMemberId,
+                    'rowHtml' => view('admin/organization/_member_row', [
+                        'member' => $sectionMember,
+                        'activeSection' => $section,
+                        'isFirst' => $index === 0,
+                        'isLast' => $index === $lastIndex,
+                    ]),
+                ];
+            }
+        }
+
         $sectionCounts = $this->sectionCounts();
         $listEmpty = null;
         if ($action === 'relocate' && is_array($previousLocation)) {
@@ -743,6 +770,19 @@ class OrganizationAdmin extends BaseController
             'isFeatured'     => $this->request->getPost('isFeatured') === '1' ? 1 : 0,
             'isPublished'    => $this->request->getPost('isPublished') === '1' ? 1 : 0,
         ];
+    }
+
+    private function clearFeaturedPeers(OrganizationMemberModel $memberModel, array $payload, int $currentId): void
+    {
+        $section = (string) ($payload['section'] ?? '');
+        if ($section === OrganizationMemberModel::SECTION_MENTOR || (int) ($payload['isFeatured'] ?? 0) !== 1) {
+            return;
+        }
+
+        $this->db->table('organization_members')
+            ->where('section', $section)
+            ->where('id !=', $currentId)
+            ->update(['isFeatured' => 0]);
     }
 
     private function handlePhotoUpload(?string $existingPath = null): ?string

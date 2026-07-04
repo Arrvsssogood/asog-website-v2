@@ -15,7 +15,7 @@ $categoryId = 'mentor-' . $categorySlug;
             <span class="org-admin-mentor-kicker">Mentor area</span>
             <h3><?= esc($category) ?></h3>
         </div>
-        <a href="<?= site_url('admin/organization/modal?section=mentor&category=' . rawurlencode($category)) ?>" class="btn btn-o btn-s js-org-modal-trigger" data-modal-url="<?= site_url('admin/organization/modal?section=mentor&category=' . rawurlencode($category)) ?>">Add mentor</a>
+        <a href="<?= site_url('admin/organization/modal?section=mentor&category=' . rawurlencode($category)) ?>" class="btn btn-p btn-s js-org-modal-trigger" data-modal-url="<?= site_url('admin/organization/modal?section=mentor&category=' . rawurlencode($category)) ?>">Add mentor</a>
     </div>
 
     <?php if (empty($members)): ?>
