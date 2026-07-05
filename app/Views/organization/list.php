@@ -143,7 +143,8 @@
                     'member' => $member,
                     'width' => '220px',
                     'maxWidth' => '300px',
-                    'gradient' => 'linear-gradient(160deg, rgba(150,208,255,.7), rgba(3,85,140,.5))',
+                    'gradient' => 'linear-gradient(to top, rgba(3,85,140,.42), rgba(3,85,140,.12))',
+                    'nameClass' => 'font-display text-[1.02rem] font-semibold text-dark leading-tight',
                     'primaryClass' => 'text-[.62rem] font-semibold tracking-[.1em] uppercase text-sky mt-1.5 block',
                 ]) ?>
             <?php endforeach; ?>

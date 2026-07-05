@@ -33,9 +33,9 @@ function makeGrid(THREERef) {
 
     const geometry = new THREERef.BufferGeometry().setFromPoints(points);
     const material = new THREERef.LineBasicMaterial({
-        color: 0x03558C,
+        color: 0x2A4282,
         transparent: true,
-        opacity: 0.035,
+        opacity: 0,
         depthWrite: false,
     });
     return new THREERef.LineSegments(geometry, material);
