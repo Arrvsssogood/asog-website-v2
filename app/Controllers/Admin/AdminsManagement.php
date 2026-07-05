@@ -52,15 +52,7 @@ class AdminsManagement extends BaseController
      */
     public function create()
     {
-        $data = [
-            'pageTitle'  => 'New Account',
-            'activePage' => 'admins',
-            'admin'      => null,
-        ];
-
-        return view('admin/layout/header', $data)
-             . view('admin/admins/form', $data)
-             . view('admin/layout/footer');
+        return redirect()->to(site_url('admin/accounts') . '?modal=add');
     }
 
     /**
@@ -68,32 +60,13 @@ class AdminsManagement extends BaseController
      */
     public function store()
     {
-        $email = trim((string) $this->request->getPost('email'));
-        $role  = trim((string) $this->request->getPost('role')) ?: 'superadmin';
-
-        if ($this->adminModel->isEmailTaken($email)) {
-            setToast('error', 'That email is already used by another admin.');
+        $result = $this->createAccountFromRequest();
+        if (! $result['ok']) {
+            setToast('error', $result['message']);
             return redirect()->back()->withInput();
         }
 
-        // Generate temp password
-        $tempPassword = bin2hex(random_bytes(8));
-
-        $data = [
-            // Full name is synced from Google profile on first successful OAuth login.
-            'fullName'    => 'Pending Google Name',
-            'email'       => $email,
-            'password'    => $tempPassword,
-            'role'        => $role,
-            'isActive'    => 1,
-        ];
-
-        if (!$this->adminModel->insert($data)) {
-            setToast('error', 'Error: ' . implode(', ', $this->adminModel->errors()));
-            return redirect()->back()->withInput();
-        }
-
-        setToast('success', 'Account added. Email: ' . $email . ' | Role: ' . ucfirst($role));
+        setToast('success', $result['message']);
         return redirect()->to('admin/accounts');
     }
 
@@ -112,15 +85,7 @@ class AdminsManagement extends BaseController
             return redirect()->to('admin/accounts')->with('error', 'Admin not found.');
         }
 
-        $data = [
-            'pageTitle'  => 'Edit Account',
-            'activePage' => 'admins',
-            'admin'      => $admin,
-        ];
-
-        return view('admin/layout/header', $data)
-             . view('admin/admins/form', $data)
-             . view('admin/layout/footer');
+        return redirect()->to(site_url('admin/accounts') . '?modal=edit&accountId=' . $id);
     }
 
     /**
@@ -129,41 +94,79 @@ class AdminsManagement extends BaseController
     public function update($id = null)
     {
         $id = (int) $id;
-        if ($id === 0) {
+        if ($id === 0 || $this->adminModel->find($id) === null) {
             return redirect()->to('admin/accounts')->with('error', 'Invalid admin ID.');
         }
 
-        $admin = $this->adminModel->find($id);
-        if ($admin === null) {
-            return redirect()->to('admin/accounts')->with('error', 'Admin not found.');
-        }
-
-        $email       = trim((string) $this->request->getPost('email'));
-        $googleEmail = trim((string) $this->request->getPost('googleEmail'));
-        $googleSub   = trim((string) $this->request->getPost('googleSub'));
-        $role        = trim((string) $this->request->getPost('role')) ?: 'superadmin';
-        $isActive    = (bool) $this->request->getPost('isActive');
-
-        if ($this->adminModel->isEmailTaken($email, $id)) {
-            setToast('error', 'That email is already used by another admin.');
+        $result = $this->updateAccountFromRequest($id);
+        if (! $result['ok']) {
+            setToast('error', $result['message']);
             return redirect()->back()->withInput();
         }
 
-        $updateData = [
-            'email'       => $email,
-            'googleEmail' => $googleEmail === '' ? null : $googleEmail,
-            'googleSub'   => $googleSub === '' ? null : $googleSub,
-            'role'        => $role,
-            'isActive'    => $isActive ? 1 : 0,
-        ];
-
-        if (!$this->adminModel->update($id, $updateData)) {
-            setToast('error', 'Error: ' . implode(', ', $this->adminModel->errors()));
-            return redirect()->back()->withInput();
-        }
-
-        setToast('success', 'Account updated.');
+        setToast('success', $result['message']);
         return redirect()->to('admin/accounts');
+    }
+
+    public function modalCreate()
+    {
+        return $this->response->setBody($this->renderAccountModal([
+            'mode' => 'add',
+            'admin' => null,
+            'errors' => [],
+            'formData' => [],
+            'submitUrl' => site_url('admin/accounts/modal'),
+        ]));
+    }
+
+    public function modalEdit(int $id)
+    {
+        $admin = $this->adminModel->find($id);
+        if (! is_array($admin)) {
+            return $this->response->setStatusCode(404)->setBody('Account not found.');
+        }
+
+        return $this->response->setBody($this->renderAccountModal([
+            'mode' => 'edit',
+            'admin' => $admin,
+            'errors' => [],
+            'formData' => [],
+            'submitUrl' => site_url('admin/accounts/modal/' . $id),
+        ]));
+    }
+
+    public function modalStore()
+    {
+        $result = $this->createAccountFromRequest();
+        if (! $result['ok']) {
+            return $this->modalErrorResponse('add', null, [$result['message']]);
+        }
+
+        return $this->response->setJSON([
+            'ok' => true,
+            'message' => $result['message'],
+        ]);
+    }
+
+    public function modalUpdate(int $id)
+    {
+        $admin = $this->adminModel->find($id);
+        if (! is_array($admin)) {
+            return $this->response->setStatusCode(404)->setJSON([
+                'ok' => false,
+                'message' => 'Account not found.',
+            ]);
+        }
+
+        $result = $this->updateAccountFromRequest($id);
+        if (! $result['ok']) {
+            return $this->modalErrorResponse('edit', $admin, [$result['message']], $id);
+        }
+
+        return $this->response->setJSON([
+            'ok' => true,
+            'message' => $result['message'],
+        ]);
     }
 
     /**
@@ -188,5 +191,93 @@ class AdminsManagement extends BaseController
         }
 
         return redirect()->to('admin/accounts');
+    }
+
+    private function createAccountFromRequest(): array
+    {
+        $email = trim((string) $this->request->getPost('email'));
+        $role  = $this->sanitizeRole((string) $this->request->getPost('role'));
+
+        if ($this->adminModel->isEmailTaken($email)) {
+            return ['ok' => false, 'message' => 'That email is already used by another admin.'];
+        }
+
+        $tempPassword = bin2hex(random_bytes(8));
+
+        $data = [
+            'fullName' => 'Pending Google Name',
+            'email'    => $email,
+            'password' => $tempPassword,
+            'role'     => $role,
+            'isActive' => 1,
+        ];
+
+        if (! $this->adminModel->insert($data)) {
+            return ['ok' => false, 'message' => 'Error: ' . implode(', ', $this->adminModel->errors())];
+        }
+
+        return ['ok' => true, 'message' => 'Account added. Email: ' . $email . ' | Role: ' . ucfirst($role)];
+    }
+
+    private function updateAccountFromRequest(int $id): array
+    {
+        $email       = trim((string) $this->request->getPost('email'));
+        $googleEmail = trim((string) $this->request->getPost('googleEmail'));
+        $googleSub   = trim((string) $this->request->getPost('googleSub'));
+        $role        = $this->sanitizeRole((string) $this->request->getPost('role'));
+        $isActive    = (bool) $this->request->getPost('isActive');
+
+        if ($this->adminModel->isEmailTaken($email, $id)) {
+            return ['ok' => false, 'message' => 'That email is already used by another admin.'];
+        }
+
+        $updateData = [
+            'email'       => $email,
+            'googleEmail' => $googleEmail === '' ? null : $googleEmail,
+            'googleSub'   => $googleSub === '' ? null : $googleSub,
+            'role'        => $role,
+            'isActive'    => $isActive ? 1 : 0,
+        ];
+
+        if (! $this->adminModel->update($id, $updateData)) {
+            return ['ok' => false, 'message' => 'Error: ' . implode(', ', $this->adminModel->errors())];
+        }
+
+        return ['ok' => true, 'message' => 'Account updated.'];
+    }
+
+    private function sanitizeRole(string $role): string
+    {
+        $role = trim($role);
+        return in_array($role, ['superadmin', 'admin', 'editor'], true) ? $role : 'superadmin';
+    }
+
+    private function renderAccountModal(array $data): string
+    {
+        return view('admin/admins/_account_modal', [
+            'modalMode' => $data['mode'],
+            'modalAdmin' => $data['admin'],
+            'modalErrors' => $data['errors'] ?? [],
+            'formData' => $data['formData'] ?? [],
+            'modalSubmitUrl' => $data['submitUrl'],
+        ]);
+    }
+
+    private function modalErrorResponse(string $mode, ?array $admin, array $errors, ?int $adminId = null)
+    {
+        $modalHtml = $this->renderAccountModal([
+            'mode' => $mode,
+            'admin' => $admin,
+            'errors' => $errors,
+            'formData' => $this->request->getPost(),
+            'submitUrl' => $mode === 'edit' && $adminId !== null
+                ? site_url('admin/accounts/modal/' . $adminId)
+                : site_url('admin/accounts/modal'),
+        ]);
+
+        return $this->response->setStatusCode(422)->setJSON([
+            'ok' => false,
+            'modalHtml' => $modalHtml,
+        ]);
     }
 }

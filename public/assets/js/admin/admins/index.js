@@ -3,10 +3,11 @@
 
     var filterForm = document.getElementById('filterForm');
     var configNode = document.getElementById('adminAdminsConfig');
-    var baseUrl    = configNode ? configNode.getAttribute('data-base-url') : '';
+    var modalRoot = document.getElementById('adminAccountModalRoot');
+    var baseUrl = configNode ? configNode.getAttribute('data-base-url') : '';
+    var isFetchingPage = false;
 
     function bindTableEvents() {
-        // Intercept sorting links
         document.querySelectorAll('.tbl th.sortable a').forEach(function (link) {
             link.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -14,7 +15,6 @@
             });
         });
 
-        // Intercept pagination buttons
         document.querySelectorAll('.tbl-pagination .pag-btn:not(.pag-disabled)').forEach(function (btn) {
             btn.addEventListener('click', function (e) {
                 var href = this.getAttribute('href');
@@ -24,7 +24,6 @@
             });
         });
 
-        // Intercept clear button
         var clearBtn = document.querySelector('.app-btn-clear');
         if (clearBtn) {
             clearBtn.addEventListener('click', function (e) {
@@ -40,9 +39,9 @@
         }
     }
 
-    var isFetchingPage = false;
-    function loadPage(url) {
-        if (isFetchingPage) return;
+    function loadPage(url, options) {
+        options = options || {};
+        if (isFetchingPage) return Promise.resolve();
         isFetchingPage = true;
 
         var tblWrap = document.querySelector('.tbl-wrap');
@@ -52,55 +51,24 @@
             tblWrap.style.pointerEvents = 'none';
         }
 
-        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        return fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(function (res) { return res.text(); })
             .then(function (htmlText) {
                 isFetchingPage = false;
                 var parser = new DOMParser();
                 var doc = parser.parseFromString(htmlText, 'text/html');
 
-                // Swap Toolbar (to update count)
-                var newToolbar = doc.querySelector('.toolbar');
-                var currentToolbar = document.querySelector('.toolbar');
-                if (newToolbar && currentToolbar) {
-                    currentToolbar.parentNode.replaceChild(newToolbar, currentToolbar);
+                swapNode(doc, '.accounts-admin-toolbar');
+                swapNode(doc, '.grid-stats');
+                swapNode(doc, '.tbl-wrap');
+                syncClearButton(doc);
+
+                if (!options.skipHistory) {
+                    history.pushState(null, '', url);
                 }
 
-                // Swap Stats
-                var newStats = doc.querySelector('.grid-stats');
-                var currentStats = document.querySelector('.grid-stats');
-                if (newStats && currentStats) {
-                    currentStats.parentNode.replaceChild(newStats, currentStats);
-                }
-
-                // Swap Table Wrap
-                var newTblWrap = doc.querySelector('.tbl-wrap');
-                var currentTblWrap = document.querySelector('.tbl-wrap');
-                if (newTblWrap && currentTblWrap) {
-                    currentTblWrap.parentNode.replaceChild(newTblWrap, currentTblWrap);
-                }
-
-                // Swap Clear Button in Form
-                var newClear = doc.querySelector('.app-btn-clear');
-                var currentClear = document.querySelector('.app-btn-clear');
-                if (currentClear) {
-                    if (newClear) {
-                        currentClear.parentNode.replaceChild(newClear, currentClear);
-                    } else {
-                        currentClear.parentNode.removeChild(currentClear);
-                    }
-                } else if (newClear) {
-                    var formNode = document.getElementById('filterForm');
-                    if (formNode) {
-                        formNode.appendChild(newClear);
-                    }
-                }
-
-                // Push new URL state to browser
-                history.pushState(null, '', url);
-
-                // Re-bind events on new elements
                 bindTableEvents();
+                bindFilterControls();
             })
             .catch(function () {
                 isFetchingPage = false;
@@ -111,40 +79,208 @@
             });
     }
 
-    // Intercept form submit
-    if (filterForm) {
-        filterForm.addEventListener('submit', function (e) {
-            e.preventDefault();
-            var params = new URLSearchParams(new FormData(this));
-            var url = baseUrl + '?' + params.toString();
-            loadPage(url);
-        });
+    function swapNode(doc, selector) {
+        var next = doc.querySelector(selector);
+        var current = document.querySelector(selector);
+        if (next && current) {
+            current.parentNode.replaceChild(next, current);
+        }
     }
 
-    // Intercept dropdown status selection changes
-    var statusSelect = document.getElementById('statusFilterSelect');
-    if (statusSelect) {
-        statusSelect.addEventListener('change', function () {
-            if (filterForm) {
-                filterForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+    function syncClearButton(doc) {
+        var newClear = doc.querySelector('.app-btn-clear');
+        var currentClear = document.querySelector('.app-btn-clear');
+        if (currentClear) {
+            if (newClear) {
+                currentClear.parentNode.replaceChild(newClear, currentClear);
+            } else {
+                currentClear.parentNode.removeChild(currentClear);
+            }
+        } else if (newClear) {
+            var formNode = document.getElementById('filterForm');
+            if (formNode) {
+                formNode.appendChild(newClear);
+            }
+        }
+    }
+
+    function bindFilterControls() {
+        filterForm = document.getElementById('filterForm');
+        if (filterForm && filterForm.dataset.bound !== '1') {
+            filterForm.dataset.bound = '1';
+            filterForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var params = new URLSearchParams(new FormData(this));
+                loadPage(baseUrl + '?' + params.toString());
+            });
+        }
+
+        ['statusFilterSelect', 'roleFilterSelect'].forEach(function (id) {
+            var select = document.getElementById(id);
+            if (select && select.dataset.bound !== '1') {
+                select.dataset.bound = '1';
+                select.addEventListener('change', function () {
+                    if (filterForm) {
+                        filterForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                    }
+                });
             }
         });
+
+        if (window.AdminCustomSelect && typeof window.AdminCustomSelect.init === 'function') {
+            window.AdminCustomSelect.init(document);
+        }
     }
 
-    var roleSelect = document.getElementById('roleFilterSelect');
-    if (roleSelect) {
-        roleSelect.addEventListener('change', function () {
-            if (filterForm) {
-                filterForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-            }
+    function openModal(url) {
+        if (!url || !modalRoot) return;
+
+        fetch(url, {
+            method: 'GET',
+            cache: 'no-store',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        })
+            .then(function (response) {
+                if (!response.ok) throw new Error('Modal request failed.');
+                return response.text();
+            })
+            .then(function (html) {
+                modalRoot.innerHTML = html;
+                attachModalHandlers();
+            })
+            .catch(function () {
+                showAccountToast('error', 'Could not load the account form.');
+            });
+    }
+
+    function closeModal() {
+        if (modalRoot) {
+            modalRoot.innerHTML = '';
+        }
+        document.body.classList.remove('account-modal-open');
+        clearModalQuery();
+    }
+
+    function clearModalQuery() {
+        var url = new URL(window.location.href);
+        if (!url.searchParams.has('modal')) return;
+        url.searchParams.delete('modal');
+        url.searchParams.delete('accountId');
+        history.replaceState(null, '', url.toString());
+    }
+
+    function attachModalHandlers() {
+        var modal = modalRoot ? modalRoot.querySelector('[data-account-modal]') : null;
+        if (!modal) return;
+
+        document.body.classList.add('account-modal-open');
+
+        if (window.AdminCustomSelect && typeof window.AdminCustomSelect.init === 'function') {
+            window.AdminCustomSelect.init(modal);
+        }
+
+        var form = modal.querySelector('form[data-account-modal-form]');
+        if (!form) return;
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            var submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) submitBtn.disabled = true;
+
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                cache: 'no-store',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            })
+                .then(function (response) {
+                    return response.json().then(function (data) {
+                        return { ok: response.ok, data: data };
+                    });
+                })
+                .then(function (result) {
+                    if (!result.ok || result.data.ok === false) {
+                        if (result.data.modalHtml) {
+                            modalRoot.innerHTML = result.data.modalHtml;
+                            attachModalHandlers();
+                        } else if (result.data.message) {
+                            showAccountToast('error', result.data.message);
+                        }
+                        return;
+                    }
+
+                    closeModal();
+                    showAccountToast('success', result.data.message || 'Account saved.');
+                    loadPage(location.href, { skipHistory: true });
+                })
+                .catch(function () {
+                    showAccountToast('error', 'Something went wrong while saving.');
+                })
+                .finally(function () {
+                    if (submitBtn) submitBtn.disabled = false;
+                });
         });
     }
 
-    // Handle browser back/forward history navigation
-    window.addEventListener('popstate', function () {
-        loadPage(location.href);
+    function showAccountToast(type, message) {
+        var toast = document.createElement('div');
+        toast.className = 'org-admin-toast account-admin-toast';
+        var bg = type === 'error' ? '#fee2e2' : (type === 'info' ? '#dbeafe' : '#dcfce7');
+        var color = type === 'error' ? '#991b1b' : (type === 'info' ? '#0c4a6e' : '#166534');
+        toast.style.background = bg;
+        toast.style.color = color;
+        toast.style.boxShadow = '0 10px 30px rgba(15,23,42,.12)';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        requestAnimationFrame(function () {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0)';
+        });
+        setTimeout(function () {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateY(-8px)';
+            setTimeout(function () { toast.remove(); }, 250);
+        }, 2600);
+    }
+
+    function openModalFromQuery() {
+        var params = new URLSearchParams(window.location.search);
+        var modal = params.get('modal');
+        if (modal === 'add') {
+            openModal(baseUrl + '/modal');
+        } else if (modal === 'edit') {
+            var accountId = parseInt(params.get('accountId') || '0', 10);
+            if (accountId > 0) {
+                openModal(baseUrl + '/modal/' + accountId);
+            }
+        }
+    }
+
+    document.addEventListener('click', function (event) {
+        var closeTrigger = event.target.closest('[data-account-modal-close]');
+        if (closeTrigger) {
+            event.preventDefault();
+            closeModal();
+            return;
+        }
+
+        var trigger = event.target.closest('.js-account-modal-trigger');
+        if (!trigger) return;
+        event.preventDefault();
+        openModal(trigger.getAttribute('data-modal-url'));
     });
 
-    // Initialize initial load bindings
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && modalRoot && modalRoot.querySelector('[data-account-modal]')) {
+            closeModal();
+        }
+    });
+
+    window.addEventListener('popstate', function () {
+        loadPage(location.href, { skipHistory: true });
+    });
+
+    bindFilterControls();
     bindTableEvents();
+    openModalFromQuery();
 })();

@@ -379,6 +379,318 @@
     justify-content: center;
 }
 
+/* Account modal */
+.account-admin-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.account-admin-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15,23,42,.48);
+    backdrop-filter: blur(2px);
+    border: 0;
+    padding: 0;
+}
+
+.account-admin-modal-dialog {
+    position: relative;
+    z-index: 1;
+    width: min(100%, 720px);
+    max-height: calc(100vh - 2rem);
+    border: 1px solid #e4e2dd;
+    border-radius: .65rem;
+    background: #fff;
+    box-shadow: 0 24px 60px -26px rgba(15,23,42,.45);
+    display: flex;
+    flex-direction: column;
+}
+
+.account-admin-modal-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 1.05rem .9rem;
+    border-bottom: 1px solid #eceae6;
+    background: #fff;
+    border-radius: .65rem .65rem 0 0;
+}
+
+.account-admin-modal-head span {
+    display: block;
+    font-size: .58rem;
+    font-weight: 700;
+    letter-spacing: .13em;
+    text-transform: uppercase;
+    color: #94a3b8;
+}
+
+.account-admin-modal-head h2 {
+    margin: .18rem 0 0;
+    font-size: .92rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #1e293b;
+}
+
+.account-admin-modal-head p {
+    margin: .22rem 0 0;
+    font-size: .7rem;
+    color: #64748b;
+    line-height: 1.45;
+}
+
+.account-admin-modal-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid #e4e2dd;
+    border-radius: .32rem;
+    background: #fff;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+    transition: all .15s;
+}
+
+.account-admin-modal-close:hover {
+    border-color: #03558C;
+    color: #03558C;
+    background: #edf5fc;
+}
+
+.account-admin-modal-close svg {
+    width: 17px;
+    height: 17px;
+    stroke: currentColor;
+}
+
+.account-admin-modal-form {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.account-admin-modal-body {
+    display: grid;
+    gap: .85rem;
+    padding: 1rem;
+    background: #faf9f7;
+    overflow: visible;
+}
+
+.account-admin-modal-section {
+    border: 1px solid #eceae6;
+    border-radius: .5rem;
+    background: #f8f7f5;
+    padding: .85rem;
+    min-width: 0;
+}
+
+.account-admin-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .75rem;
+}
+
+.account-admin-field {
+    display: grid;
+    gap: .28rem;
+    min-width: 0;
+}
+
+.account-admin-field > span {
+    font-size: .58rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #94a3b8;
+}
+
+.account-admin-field input,
+.account-admin-field select {
+    font-family: inherit;
+    font-size: .8rem;
+    color: #1e293b;
+    border: 1px solid #e4e2dd;
+    border-radius: .3rem;
+    padding: .5rem .65rem;
+    background: #fff;
+}
+
+.account-admin-field input:focus,
+.account-admin-field select:focus {
+    outline: none;
+    border-color: #03558C;
+}
+
+.account-admin-field .csel {
+    display: block;
+    width: 100%;
+}
+
+.account-admin-field-static {
+    min-height: 37px;
+    font-size: .8rem;
+    color: #334155;
+    background: #fff;
+    border: 1px solid #e4e2dd;
+    border-radius: .3rem;
+    padding: .5rem .65rem;
+    line-height: 1.4;
+}
+
+.account-admin-switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .85rem;
+    background: #fff;
+    border: 1px solid #e4e2dd;
+    border-radius: .45rem;
+    padding: .72rem .78rem;
+    min-width: 0;
+}
+
+.account-switch-copy {
+    display: block;
+    min-width: 0;
+}
+
+.account-switch-copy strong {
+    display: block;
+    color: #1e293b;
+    font-size: .78rem;
+    line-height: 1.35;
+}
+
+.account-switch-copy small {
+    display: block;
+    color: #64748b;
+    font-size: .68rem;
+    margin-top: .12rem;
+    line-height: 1.45;
+}
+
+.account-switch {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.account-switch input {
+    display: none;
+}
+
+.account-switch .track {
+    width: 32px;
+    height: 18px;
+    border-radius: 9px;
+    background: #d4d0ca;
+    position: relative;
+    transition: background .2s;
+}
+
+.account-switch .track::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform .2s;
+}
+
+.account-switch input:checked + .track {
+    background: #03558C;
+}
+
+.account-switch input:checked + .track::after {
+    transform: translateX(14px);
+}
+
+.account-admin-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .65rem;
+    padding: .85rem 1rem;
+    border-top: 1px solid #eceae6;
+    background: #fff;
+    border-radius: 0 0 .65rem .65rem;
+}
+
+.account-admin-form-actions .btn {
+    min-width: 122px;
+    justify-content: center;
+}
+
+.account-admin-errors {
+    display: grid;
+    gap: .3rem;
+    border: 1px solid #fecaca;
+    background: #fff1f2;
+    color: #9f1239;
+    border-radius: .5rem;
+    padding: .55rem .7rem;
+    margin: 1rem 1rem 0;
+    font-size: .72rem;
+}
+
+.account-admin-modal .csel-ctx--lf-select .csel-trigger {
+    font-size: .8rem;
+    padding: .5rem .65rem;
+}
+
+.account-admin-modal .csel-ctx--lf-select .csel-val {
+    font-size: .8rem;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    color: #1e293b;
+}
+
+.account-admin-modal .csel-ctx--lf-select .csel-opt {
+    font-size: .84rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    color: #1e293b;
+    padding: .58rem .75rem;
+}
+
+.account-admin-toast {
+    position: fixed;
+    top: 1.1rem;
+    right: 1.1rem;
+    z-index: 9999;
+    padding: .55rem .9rem;
+    border-radius: .3rem;
+    font-size: .78rem;
+    font-family: 'DM Sans', sans-serif;
+    max-width: 340px;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity .25s, transform .25s;
+}
+
+.account-modal-open {
+    overflow: hidden;
+}
+
 /* Success/Error Messages */
 .alert {
     padding: 1rem;
