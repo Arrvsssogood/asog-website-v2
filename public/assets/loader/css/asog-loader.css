@@ -19,10 +19,8 @@
     min-height: 100dvh;
     overflow: hidden;
     isolation: isolate;
-    color: #03558C;
-    background:
-        radial-gradient(circle at 50% 42%, rgba(3, 85, 140, 0.09), transparent 34rem),
-        linear-gradient(180deg, #ffffff 0%, #f8fbfd 100%);
+    color: #2A4282;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbfd 100%);
     opacity: 1;
     visibility: visible;
     pointer-events: auto;
@@ -35,11 +33,11 @@
     inset: 0;
     z-index: -2;
     background-image:
-        linear-gradient(rgba(3, 85, 140, 0.032) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(3, 85, 140, 0.032) 1px, transparent 1px);
+        linear-gradient(rgba(42, 66, 130, 0.032) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(42, 66, 130, 0.032) 1px, transparent 1px);
     background-size: 40px 40px;
     mask-image: radial-gradient(circle at center, black 0%, transparent 82%);
-    opacity: 0.42;
+    opacity: 0;
     transition: opacity 700ms ease;
 }
 
@@ -49,8 +47,8 @@
     inset: auto 0 0;
     z-index: -1;
     height: 28vh;
-    background: linear-gradient(180deg, transparent, rgba(67, 167, 219, 0.12));
-    opacity: 1;
+    background: linear-gradient(180deg, transparent, rgba(66, 163, 216, 0.12));
+    opacity: 0;
     transition: opacity 700ms ease;
 }
 
@@ -120,17 +118,17 @@
 
 .asog-loader-word-initial {
     color: #F8AF21;
-    background-image: linear-gradient(135deg, #F8AF21 0%, #FFD45A 48%, #E89413 100%);
+    background-image: linear-gradient(135deg, #F57D1A 0%, #F8AF21 36%, #F8AF21 70%, #F3943A 100%);
 }
 
 .asog-loader-word-rest {
-    color: #03558C;
-    background-image: linear-gradient(135deg, #03558C 0%, #0B6EA8 48%, #023D67 100%);
+    color: #2A4282;
+    background-image: linear-gradient(135deg, #2A4282 0%, #42A3D8 42%, #42A3D8 72%, #2A4282 100%);
 }
 
 .asog-loader-word-tbi {
-    color: #03558C;
-    background-image: linear-gradient(135deg, #43A7DB 0%, #03558C 48%, #023D67 100%);
+    color: #2A4282;
+    background-image: linear-gradient(135deg, #42A3D8 0%, #42A3D8 54%, #2A4282 100%);
 }
 
 .asog-loader-word-gap {
@@ -252,15 +250,27 @@
 }
 
 [data-asog-loader-root][data-loader-phase="words"]::before {
-    opacity: 0.34;
+    opacity: 0;
+}
+
+[data-asog-loader-root][data-loader-phase="words"]::after {
+    opacity: 0;
 }
 
 [data-asog-loader-root][data-loader-phase="build"]::before {
     opacity: 0.28;
 }
 
+[data-asog-loader-root][data-loader-phase="build"]::after {
+    opacity: 0.82;
+}
+
 [data-asog-loader-root][data-loader-phase="final"]::before {
     opacity: 0.22;
+}
+
+[data-asog-loader-root][data-loader-phase="final"]::after {
+    opacity: 0.5;
 }
 
 [data-asog-loader-root][data-loader-phase="build"] [data-asog-loader-word-morph],

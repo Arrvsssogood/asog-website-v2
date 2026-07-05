@@ -111,7 +111,7 @@ export function createLoaderTimeline({ scene, gsap, config, root, onComplete }) 
         ease: 'sine.inOut',
         onUpdate: () => scene.camera.updateProjectionMatrix(),
     }, at(0));
-    tl.to(s.grid.material, { opacity: 0.018, duration: dur(0.6), ease: 'sine.out' }, at(0));
+    tl.to(s.grid.material, { opacity: 0.014, duration: dur(0.7), ease: 'sine.out' }, at(0.85));
     tl.to(s.grid.position, { x: 0.05, y: -0.04, duration: dur(10.4), ease: 'sine.inOut' }, at(0));
 
     tl.call(() => {

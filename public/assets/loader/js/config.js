@@ -8,9 +8,9 @@ export const ASOG_LOADER_CONFIG = {
     landingPreloadMaxMs: 8500,
     landingPreloadLimit: 8,
     colors: {
-        blue: 0x43A7DB,
-        deepBlue: 0x03558C,
-        navy: 0x03558C,
+        blue: 0x42A3D8,
+        deepBlue: 0x2A4282,
+        navy: 0x2A4282,
         gold: 0xF8AF21,
         orange: 0xF47B20,
         white: 0xFFFFFF,
