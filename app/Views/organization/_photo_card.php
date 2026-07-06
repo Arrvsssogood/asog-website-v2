@@ -12,6 +12,7 @@ $photoUrl = org_photo_url($member['photoPath'] ?? '');
 $name = $member['fullName'] ?? '';
 $rolePrimary = trim((string) ($member['rolePrimary'] ?? ''));
 $roleSecondary = trim((string) ($member['roleSecondary'] ?? ''));
+$nameClass = $nameClass ?? 'font-display text-[1.05rem] font-semibold text-dark leading-tight';
 ?>
 <div class="rc text-center w-full mx-auto" style="max-width:<?= esc($maxWidth ?? '280px') ?>">
     <?php if ($photoUrl !== ''): ?>
@@ -31,7 +32,7 @@ $roleSecondary = trim((string) ($member['roleSecondary'] ?? ''));
         </div>
     </div>
     <?php endif; ?>
-    <h4 class="font-display text-[1.05rem] font-semibold text-dark leading-tight"><?= esc($name) ?></h4>
+    <h4 class="<?= esc($nameClass) ?>"><?= esc($name) ?></h4>
     <?php if ($rolePrimary !== ''): ?>
         <span class="<?= esc($primaryClass ?? 'text-[.68rem] font-semibold tracking-[.08em] uppercase text-dark mt-1.5 block') ?>"><?= esc($rolePrimary) ?></span>
     <?php endif; ?>

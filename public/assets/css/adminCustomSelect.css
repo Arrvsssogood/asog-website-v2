@@ -4,7 +4,8 @@
 }
 
 .field .csel,
-.form-group .csel {
+.form-group .csel,
+.settings-field .csel {
   display: block;
   width: 100%;
 }
@@ -152,18 +153,21 @@
 }
 
 .csel-ctx--app-select-filter .csel-trigger,
-.csel-ctx--lf-select .csel-trigger {
+.csel-ctx--lf-select .csel-trigger,
+.csel-ctx--settings-select .csel-trigger {
   font-size: .78rem;
   padding: .42rem .6rem;
 }
 
 .csel-ctx--app-select-filter .csel-opt,
-.csel-ctx--lf-select .csel-opt {
+.csel-ctx--lf-select .csel-opt,
+.csel-ctx--settings-select .csel-opt {
   font-size: .78rem;
   padding: .42rem .6rem;
 }
 
-.csel-ctx--lf-select {
+.csel-ctx--lf-select,
+.csel-ctx--settings-select {
   min-width: 210px;
 }
 

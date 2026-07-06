@@ -2,6 +2,8 @@
      ║  COHORT PAGE — Dedicated incubatee showcase per cohort        ║
      ╚══════════════════════════════════════════════════════════════╝ -->
 <?php
+helper('incubatees');
+
 $incubatees    = $incubatees ?? [];
 $hasIncubatees = ! empty($incubatees);
 $count         = count($incubatees);

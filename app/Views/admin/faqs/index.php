@@ -5,7 +5,13 @@
         <span class="faq-admin-count"><?= count($faqs ?? []) ?> FAQ<?= count($faqs ?? []) === 1 ? '' : 's' ?></span>
         <p>Manage the questions shown near the bottom of the public application page.</p>
     </div>
-    <a href="<?= site_url('apply') ?>" target="_blank" rel="noopener" class="btn btn-o">View apply page</a>
+    <a href="<?= site_url('apply#apply-faqs') ?>" target="_blank" rel="noopener" class="btn btn-o">
+        View FAQs
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h8v8"/>
+        </svg>
+    </a>
 </div>
 
 <div class="faq-admin-settings">
@@ -121,9 +127,16 @@
                             <?= csrf_field() ?>
                             <button type="submit" class="faq-admin-icon-btn" title="Move down" aria-label="Move FAQ down" <?= $index === $lastIndex ? 'disabled' : '' ?>>↓</button>
                         </form>
-                        <form method="POST" action="<?= site_url('admin/faqs/' . $id . '/delete') ?>" onsubmit="return confirm('Delete this FAQ?')">
+                        <form method="POST" action="<?= site_url('admin/faqs/' . $id . '/delete') ?>" data-admin-delete-confirm data-confirm-title="Delete FAQ?" data-confirm-message="This removes the question and answer from the FAQ list on the public application page. This action cannot be undone.">
                             <?= csrf_field() ?>
-                            <button type="submit" class="faq-admin-icon-btn is-delete" title="Delete" aria-label="Delete FAQ">×</button>
+                            <button type="submit" class="act-btn delete" title="Delete" aria-label="Delete FAQ">
+                                <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 6V4h8v2"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 6l-1 14H6L5 6"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 11v6M14 11v6"/>
+                                </svg>
+                            </button>
                         </form>
                     </div>
                 </div>

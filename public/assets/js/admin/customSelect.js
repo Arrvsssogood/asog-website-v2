@@ -5,6 +5,7 @@
     '.field select',
     '.form-group select',
     'select.lf-select',
+    'select.settings-select',
     'select.app-select-filter',
     'select.status-select'
   ];

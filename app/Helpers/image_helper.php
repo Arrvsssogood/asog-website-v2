@@ -257,9 +257,15 @@ function responsiveStaticImg(string $basePathFromDb, string $type, string $alt =
             }
             if ($src300 || $src500 || $full) {
                 $srcsetParts = [];
-                if ($src300) $srcsetParts[] = ['url' => $src300, 'w' => '300w'];
-                if ($src500) $srcsetParts[] = ['url' => $src500, 'w' => '500w'];
-                if ($found['full_webp']) $srcsetParts[] = ['url' => $found['full_webp'], 'w' => '900w'];
+                if ($src300) {
+                    $srcsetParts[] = ['url' => $src300, 'w' => '300w'];
+                }
+                if ($src500) {
+                    $srcsetParts[] = ['url' => $src500, 'w' => '500w'];
+                }
+                if (isset($found['full_webp'])) {
+                    $srcsetParts[] = ['url' => $found['full_webp'], 'w' => '900w'];
+                }
 
                 $srcset = implode(', ', array_map(fn($p) => $p['url'] . ' ' . $p['w'], $srcsetParts));
                 $fallbackSrc = $found['full_webp'] ?? $found['full_png'] ?? $found['full_jpg'] ?? ($src500 ?? $src300);
@@ -367,13 +373,43 @@ if (! function_exists('org_photo_url')) {
             return '';
         }
 
-        // If already an absolute URL, return as-is
+        // If already an absolute URL, return as-is.
         if (preg_match('#^https?://#i', $p)) {
             return $p;
         }
 
-        // Otherwise treat as web-relative and build with base_url
-        return base_url(ltrim($p, '/'));
+        $normalized = str_replace('\\', '/', ltrim($p, '/'));
+        $normalized = strtok($normalized, '?');
+        $normalized = strtok($normalized, '#');
+
+        $candidates = [$normalized];
+        $extension = pathinfo($normalized, PATHINFO_EXTENSION);
+
+        if ($extension === '') {
+            $candidates[] = $normalized . '.webp';
+            $candidates[] = $normalized . '.png';
+            $candidates[] = $normalized . '.jpg';
+            $candidates[] = $normalized . '.jpeg';
+        } else {
+            $stem = preg_replace('/\.(webp|png|jpe?g)$/i', '', $normalized);
+            $candidates[] = $stem . '.webp';
+            $candidates[] = $stem . '.png';
+            $candidates[] = $stem . '.jpg';
+            $candidates[] = $stem . '.jpeg';
+        }
+
+        foreach ($candidates as $candidate) {
+            if ($candidate === '') {
+                continue;
+            }
+
+            $fsPath = FCPATH . ltrim($candidate, '/');
+            if (is_file($fsPath)) {
+                return base_url($candidate);
+            }
+        }
+
+        return base_url($normalized);
     }
 }
 

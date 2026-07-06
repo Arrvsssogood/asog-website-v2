@@ -39,6 +39,10 @@ class Landing extends BaseController
                 LandingSettingModel::KEY_GUESS_STARTUP_ENABLED,
                 '1'
             )) !== '0',
+            'isGuessStartupVisible' => trim((string) $landingSettingModel->getValue(
+                LandingSettingModel::KEY_GUESS_STARTUP_VISIBLE,
+                '1'
+            )) !== '0',
             'heroSlides'         => $postModel->getFeaturedSlides(5),
             'heroPreloadImage'   => '',
             'featuredPost'       => $postModel->getFeatured(),
@@ -53,15 +57,20 @@ class Landing extends BaseController
             $data['heroPreloadImage'] = base_url($data['heroSlides'][0]['imagePath']);
         }
 
-        return view('templates/header', $data)
+        $content = view('templates/header', $data)
             . view('landing/hero', $data)
             . view('landing/about', $data)
             . view('landing/programs', $data)
             . view('landing/incubatees', $data)
             . view('landing/news', $data)
             . view('landing/organization', $data)
-            . view('landing/cta', $data)
-            . view('landing/games', $data)
+            . view('landing/cta', $data);
+
+        if (! empty($data['isGuessStartupVisible'])) {
+            $content .= view('landing/games', $data);
+        }
+
+        return $content
             . view('landing/contact', $data)
             . view('templates/footer');
     }

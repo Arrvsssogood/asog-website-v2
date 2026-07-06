@@ -3,6 +3,8 @@
      ║  Horizontal cohort tabs · Card grid · Panel detail            ║
      ╚══════════════════════════════════════════════════════════════╝ -->
 <?php
+helper('incubatees');
+
 $cohorts        = $cohorts ?? [];
 $allIncubatees  = $allIncubatees ?? [];
 $hasIncubatees  = ! empty($allIncubatees);
@@ -34,7 +36,7 @@ $firstCohort    = $hasCohorts ? $cohorts[0]['name'] : '';
         <!-- ═══════ CARD GRID (all cohorts, filtered by tab) ═══════ -->
         <div id="ibStack" class="ib-stack flex flex-wrap gap-5 justify-center relative">
             <?php foreach ($allIncubatees as $i => $inc): ?>
-            <div class="ib-card cursor-pointer relative" data-ix="<?= $i ?>"
+            <div class="ib-card cursor-pointer relative" id="<?= esc(incubatee_anchor_id($inc)) ?>" data-ix="<?= $i ?>"
                 data-cohort="<?= esc($inc['cohort'] ?? '') ?>"
                 <?php if (($inc['cohort'] ?? '') !== $firstCohort): ?>style="display:none" <?php endif; ?>>
                 <div class="ib-inner relative w-full h-full rounded-xl">

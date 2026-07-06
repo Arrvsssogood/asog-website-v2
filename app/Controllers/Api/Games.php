@@ -28,6 +28,12 @@ class Games extends BaseController
 
     public function leaderboard()
     {
+        if (! $this->isGuessStartupVisible()) {
+            return $this->respondJson([
+                'error' => 'Guess The Startup is not available.',
+            ], 404);
+        }
+
         if (! $this->isGuessStartupEnabled()) {
             return $this->respondJson([
                 'error' => 'Guess The Startup is currently unavailable.',
@@ -47,6 +53,12 @@ class Games extends BaseController
 
     public function start()
     {
+        if (! $this->isGuessStartupVisible()) {
+            return $this->respondJson([
+                'error' => 'Guess The Startup is not available.',
+            ], 404);
+        }
+
         if (! $this->isGuessStartupEnabled()) {
             return $this->respondJson([
                 'error' => 'Guess The Startup is currently unavailable.',
@@ -159,6 +171,12 @@ class Games extends BaseController
 
     public function abandon()
     {
+        if (! $this->isGuessStartupVisible()) {
+            return $this->respondJson([
+                'error' => 'Guess The Startup is not available.',
+            ], 404);
+        }
+
         if (! $this->isGuessStartupEnabled()) {
             return $this->respondJson([
                 'error' => 'Guess The Startup is currently unavailable.',
@@ -192,6 +210,12 @@ class Games extends BaseController
 
     public function submit()
     {
+        if (! $this->isGuessStartupVisible()) {
+            return $this->respondJson([
+                'error' => 'Guess The Startup is not available.',
+            ], 404);
+        }
+
         if (! $this->isGuessStartupEnabled()) {
             return $this->respondJson([
                 'error' => 'Guess The Startup is currently unavailable.',
@@ -481,6 +505,14 @@ class Games extends BaseController
     {
         $settingModel = new LandingSettingModel();
         $value = trim((string) $settingModel->getValue(LandingSettingModel::KEY_GUESS_STARTUP_ENABLED, '1'));
+
+        return $value !== '0';
+    }
+
+    private function isGuessStartupVisible(): bool
+    {
+        $settingModel = new LandingSettingModel();
+        $value = trim((string) $settingModel->getValue(LandingSettingModel::KEY_GUESS_STARTUP_VISIBLE, '1'));
 
         return $value !== '0';
     }

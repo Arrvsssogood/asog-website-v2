@@ -93,6 +93,11 @@ class Incubatees extends BaseController
 
     public function applyForm(): string
     {
+        $window = $this->applicationWindowStatus();
+        if (! $window['isOpen']) {
+            return $this->renderApplicationUnavailable($window);
+        }
+
         $data = $this->buildApplyFormViewData();
 
         return view('templates/header', $data)
@@ -103,6 +108,13 @@ class Incubatees extends BaseController
 
     public function applyFormStore(): \CodeIgniter\HTTP\ResponseInterface
     {
+        $window = $this->applicationWindowStatus();
+        if (! $window['isOpen']) {
+            return $this->response
+                ->setStatusCode(403)
+                ->setBody($this->renderApplicationUnavailable($window));
+        }
+
         $applicationModel = $this->applicationModel;
         
         $data = [
@@ -540,6 +552,79 @@ class Incubatees extends BaseController
         ));
 
         return $raw === '1';
+    }
+
+    private function applicationWindowStatus(): array
+    {
+        $settings = new LandingSettingModel();
+        $startDate = $this->normalizeApplicationDate($settings->getValue(
+            LandingSettingModel::KEY_APPLY_START_DATE,
+            ''
+        ));
+        $endDate = $this->normalizeApplicationDate($settings->getValue(
+            LandingSettingModel::KEY_APPLY_END_DATE,
+            ''
+        ));
+        $today = (new \DateTimeImmutable('today', new \DateTimeZone(config('App')->appTimezone)))->format('Y-m-d');
+
+        if ($startDate !== '' && $today < $startDate) {
+            return [
+                'isOpen' => false,
+                'state' => 'upcoming',
+                'title' => 'Applications are not yet open',
+                'message' => 'Applications for the ASOG TBI incubation program will open on ' . $this->formatApplicationDate($startDate) . '. Please check back once the application period begins.',
+            ];
+        }
+
+        if ($endDate !== '' && $today > $endDate) {
+            return [
+                'isOpen' => false,
+                'state' => 'closed',
+                'title' => 'Applications are closed',
+                'message' => 'The current application period for the ASOG TBI incubation program has ended. Please check back for future application announcements.',
+            ];
+        }
+
+        return [
+            'isOpen' => true,
+            'state' => 'open',
+            'title' => '',
+            'message' => '',
+        ];
+    }
+
+    private function normalizeApplicationDate(?string $value): string
+    {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return '';
+        }
+
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+        if (! $date || $date->format('Y-m-d') !== $value) {
+            return '';
+        }
+
+        return $value;
+    }
+
+    private function formatApplicationDate(string $date): string
+    {
+        return (new \DateTimeImmutable($date))->format('F j, Y');
+    }
+
+    private function renderApplicationUnavailable(array $window): string
+    {
+        $data = [
+            'title' => 'Applications Unavailable - ASOG TBI',
+            'noticeTitle' => $window['title'],
+            'noticeMessage' => $window['message'],
+            'noticeState' => $window['state'],
+        ];
+
+        return view('templates/header', $data)
+            . view('incubatees/application_unavailable', $data)
+            . view('templates/footer');
     }
 
     private function buildApplyFormViewData(array $formInput = [], array $formErrors = [], ?string $formError = null, array $extra = []): array

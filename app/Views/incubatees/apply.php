@@ -287,7 +287,7 @@ $faqColumns = array_chunk($faqs, (int) ceil(count($faqs) / 2), true);
 ?>
 
 <!-- FAQ section -->
-<section class="relative overflow-hidden bg-navy py-20 md:py-28 px-6 md:px-10 lg:px-14" data-navhint="blue">
+<section id="apply-faqs" class="relative overflow-hidden bg-navy py-20 md:py-28 px-6 md:px-10 lg:px-14" data-navhint="blue">
     <div class="ai-grid opacity-30"></div>
 
     <div class="max-w-[1120px] mx-auto relative z-[2]">

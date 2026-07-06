@@ -1,7 +1,7 @@
 <!-- Card Grid -->
 <div id="ibStack" class="ib-stack flex flex-wrap gap-5 justify-center relative">
     <?php foreach ($incubatees as $i => $inc): ?>
-    <div class="ib-card cursor-pointer relative" data-ix="<?= $i ?>">
+    <div class="ib-card cursor-pointer relative" id="<?= esc(incubatee_anchor_id($inc)) ?>" data-ix="<?= $i ?>">
         <div class="ib-inner relative w-full h-full rounded-xl">
 
             <!-- Front -->

@@ -77,7 +77,7 @@
             <link rel="stylesheet" href="<?= esc($css) ?>">
         <?php endforeach; ?>
     <?php endif; ?>
-    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+    <script src="<?= base_url('assets/loader/vendor/gsap.min.js') ?>"></script>
     <?php if (empty($hideSiteHeader)): ?>
     <script src="<?= base_url('assets/js/features/layout/header.js') ?>" defer></script>
     <?php endif; ?>
@@ -99,6 +99,16 @@
     <?php if (! empty($heroPreloadImage)): ?>
     <link rel="preload" as="image" href="<?= esc($heroPreloadImage) ?>" fetchpriority="high">
     <?php endif; ?>
+    <?php if (! empty($isLanding) && empty($hideSiteHeader) && (($showAsogLoader ?? null) !== false)): ?>
+    <link rel="preload" as="font" href="<?= base_url('assets/loader/fonts/MonasGrotesk-Bold.woff2') ?>" type="font/woff2" crossorigin>
+    <link rel="preload" as="image" href="<?= base_url('assets/loader/img/full-logo.png') ?>">
+    <link rel="preload" as="image" href="<?= base_url('assets/loader/img/subtext.png') ?>">
+    <link rel="preload" as="image" href="<?= base_url('assets/loader/img/gear.png') ?>">
+    <link rel="preload" as="image" href="<?= base_url('assets/loader/img/arc.png') ?>">
+    <link rel="preload" as="image" href="<?= base_url('assets/loader/img/mountain.png') ?>">
+    <link rel="preload" as="image" href="<?= base_url('assets/loader/img/sparkle.png') ?>">
+    <link rel="preload" as="image" href="<?= base_url('assets/img/ASOG TBI/WebP/ASOG-TBI_full-colored_stacked.webp') ?>" type="image/webp">
+    <?php endif; ?>
 </head>
 
 <?php $bodyClass = trim('font-body bg-dark text-off overflow-x-hidden ' . (string) ($bodyClass ?? '')); ?>
@@ -107,7 +117,7 @@
     <?php
     /* ── Nav URLs: always link to dedicated pages ── */
     $navAbout      = site_url('about');
-    $navOurStory   = $navAbout . ''; # removed about-panel-1 to avoid jitter / page jumping
+    $navOurStory   = $navAbout . '';
     $navAboutLogo  = site_url('about/logo');
     $navPrograms   = site_url('programs');
     $navAltitude   = $navPrograms . ' ';
@@ -138,6 +148,7 @@
     $isProgramsPage  = $seg1 === 'programs';
     $isLandingPage   = ! empty($isLanding);
     $hideSiteHeader  = ! empty($hideSiteHeader);
+    $showAsogLoader  = ($showAsogLoader ?? null) !== false;
 
     $forceWhiteLogoPages = in_array($seg1, ['about', 'programs', 'services', 'facilities', 'news', 'organization', 'contact', 'incubatees'], true)
         || str_starts_with($uriPath, 'apply');
@@ -147,6 +158,10 @@
     $activeClass = static fn(bool $isActive): string => $isActive ? ' is-active' : '';
     ?>
     <a class="sr-only focus:not-sr-only" href="#main">Skip to content</a>
+
+    <?php if ($isLandingPage && ! $hideSiteHeader && $showAsogLoader): ?>
+        <?= view('components/asog_loader') ?>
+    <?php endif; ?>
 
     <?php if (! $hideSiteHeader): ?>
 

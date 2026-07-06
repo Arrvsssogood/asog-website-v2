@@ -22,68 +22,33 @@ function sortClass(string $col, string $currentSort, string $currentDir): string
 }
 ?>
 
-<?php
-$duplicateEmailSetting = old('allowDuplicateEmails');
-$allowDuplicateEmails = $duplicateEmailSetting !== null
-    ? $duplicateEmailSetting === '1'
-    : ! empty($allowDuplicateEmails);
-?>
-
 <!-- Stats -->
 <div class="grid-stats">
-    <div class="stat">
+    <div class="stat stat-total">
         <div class="n" id="statTotal"><?= $counts['total'] ?></div>
         <div class="t">Total Active</div>
     </div>
-    <div class="stat">
+    <div class="stat stat-review">
         <div class="n" id="statPending"><?= $counts['pending'] ?></div>
         <div class="t">For Review</div>
     </div>
-    <div class="stat">
+    <div class="stat stat-revalidation">
         <div class="n" id="statForRevalidation"><?= $counts['forRevalidation'] ?? 0 ?></div>
         <div class="t">For Revalidation</div>
     </div>
-    <div class="stat">
+    <div class="stat stat-accepted">
         <div class="n" id="statAccepted"><?= $counts['accepted'] ?></div>
         <div class="t">Accepted</div>
     </div>
-    <div class="stat">
+    <div class="stat stat-rejected">
         <div class="n" id="statRejected"><?= $counts['rejected'] ?></div>
         <div class="t">Rejected</div>
     </div>
-    <div class="stat">
+    <div class="stat stat-archived">
         <div class="n" id="statArchived"><?= $counts['archived'] ?></div>
         <div class="t">Archived</div>
     </div>
 </div>
-
-<section class="app-settings-card">
-    <div class="app-settings-head">
-        <span>Submission Rule</span>
-        <h2>Application settings</h2>
-        <p>Control whether applicants can submit more than once using the same email address.</p>
-    </div>
-
-    <form method="POST" action="<?= site_url('admin/applications/settings') ?>" class="app-settings-form">
-        <?= csrf_field() ?>
-        <label class="app-rule">
-            <input type="hidden" name="allowDuplicateEmails" value="0">
-            <input type="checkbox" name="allowDuplicateEmails" value="1" <?= $allowDuplicateEmails ? 'checked' : '' ?>>
-            <span>
-                <strong>Allow duplicate applicant emails</strong>
-                <small>
-                    <?= $allowDuplicateEmails
-                        ? 'Applicants can submit more than once with the same email address.'
-                        : 'Applicants will see an email-specific error if that address was already used before.' ?>
-                </small>
-            </span>
-        </label>
-
-        <div class="app-settings-actions">
-            <button type="submit" class="btn btn-p">Save application settings</button>
-        </div>
-    </form>
-</section>
 
 <!-- Combined filter + bulk bar -->
 <div class="app-filter-bar">
@@ -307,7 +272,7 @@ $baseUrl = site_url('admin/applications') . '?' . http_build_query([
 <div class="modal-bg" id="reviewModal">
     <div class="modal">
         <div class="modal-head">
-            <h2 id="modalTitle">Application Review</h2>
+            <h2 id="modalTitle"><span>APPLICATION OVERVIEW</span></h2>
             <button class="modal-close" id="modalClose">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -320,12 +285,6 @@ $baseUrl = site_url('admin/applications') . '?' . http_build_query([
             </div>
         </div>
         <div class="modal-foot" id="modalFoot">
-            <div class="modal-status-meta" id="statusRemarkWrap">
-                <label class="modal-status-label" for="statusRemarkInput">Remark For Applicant</label>
-                <textarea id="statusRemarkInput" class="modal-status-input" rows="3" maxlength="2000"
-                    placeholder="Optional note to include in the status notification email."></textarea>
-                <p class="modal-status-help">Required for For Revalidation. This will be included in the notification email sent for the selected status.</p>
-            </div>
             <button class="btn-arch-modal" id="btnArchModal" style="display:none">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
@@ -343,6 +302,13 @@ $baseUrl = site_url('admin/applications') . '?' . http_build_query([
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
                 Reject
+            </button>
+            <button class="btn-revalidate" id="btnRequestRevalidation" style="display:none">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a8 8 0 018 8v2"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 10l6 6m-6-6l6-6"/>
+                </svg>
+                Return for Revalidation
             </button>
             <button class="btn-accept" id="btnAccept" style="display:none">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">

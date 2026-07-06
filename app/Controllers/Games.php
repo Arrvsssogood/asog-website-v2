@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\LandingSettingModel;
 use App\Models\GamePlayerModel;
 use App\Models\GameWordlePlayModel;
+use CodeIgniter\Exceptions\PageNotFoundException;
 use Google\Client as GoogleClient;
 use Google\Service\Oauth2;
 
@@ -29,6 +30,8 @@ class Games extends BaseController
 
     public function guessStartup()
     {
+        $this->guardGuessStartupVisible();
+
         $player = $this->currentPlayer();
         $today = date('Y-m-d');
         $todayPlay = null;
@@ -64,6 +67,8 @@ class Games extends BaseController
 
     public function guessStartupLeaderboard()
     {
+        $this->guardGuessStartupVisible();
+
         $player = $this->currentPlayer();
         $today = date('Y-m-d');
         $rawDate = trim((string) $this->request->getGet('date'));
@@ -98,6 +103,8 @@ class Games extends BaseController
 
     public function guessStartupPlay()
     {
+        $this->guardGuessStartupVisible();
+
         if (! $this->isGuessStartupEnabled()) {
             return $this->redirectWhenGameDisabled();
         }
@@ -146,6 +153,8 @@ class Games extends BaseController
 
     public function guessStartupProfile()
     {
+        $this->guardGuessStartupVisible();
+
         if (! $this->isGuessStartupEnabled()) {
             return $this->redirectWhenGameDisabled();
         }
@@ -363,6 +372,8 @@ class Games extends BaseController
 
     public function google()
     {
+        $this->guardGuessStartupVisible();
+
         if (! $this->isGuessStartupEnabled()) {
             return $this->redirectWhenGameDisabled();
         }
@@ -387,6 +398,8 @@ class Games extends BaseController
 
     public function googleCallback()
     {
+        $this->guardGuessStartupVisible();
+
         if (! $this->isGuessStartupEnabled()) {
             return $this->redirectWhenGameDisabled();
         }
@@ -502,6 +515,8 @@ class Games extends BaseController
 
     public function signOut()
     {
+        $this->guardGuessStartupVisible();
+
         session()->remove([
             'gsp_player_id',
             'gsp_player_name',
@@ -519,6 +534,21 @@ class Games extends BaseController
         $value = trim((string) $settingModel->getValue(LandingSettingModel::KEY_GUESS_STARTUP_ENABLED, '1'));
 
         return $value !== '0';
+    }
+
+    private function isGuessStartupVisible(): bool
+    {
+        $settingModel = new LandingSettingModel();
+        $value = trim((string) $settingModel->getValue(LandingSettingModel::KEY_GUESS_STARTUP_VISIBLE, '1'));
+
+        return $value !== '0';
+    }
+
+    private function guardGuessStartupVisible(): void
+    {
+        if (! $this->isGuessStartupVisible()) {
+            throw PageNotFoundException::forPageNotFound();
+        }
     }
 
     private function redirectWhenGameDisabled()

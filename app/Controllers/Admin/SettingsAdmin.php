@@ -13,6 +13,8 @@ class SettingsAdmin extends BaseController
 
         $guessStartupRaw = trim((string) $settingModel->getValue(LandingSettingModel::KEY_GUESS_STARTUP_ENABLED, '1'));
         $isGuessStartupEnabled = $guessStartupRaw !== '0';
+        $guessStartupVisibleRaw = trim((string) $settingModel->getValue(LandingSettingModel::KEY_GUESS_STARTUP_VISIBLE, '1'));
+        $isGuessStartupVisible = $guessStartupVisibleRaw !== '0';
 
         $internsRaw = trim((string) $settingModel->getValue(LandingSettingModel::KEY_SHOW_INTERNS, '1'));
         $showInternsSection = $internsRaw !== '0';
@@ -27,13 +29,32 @@ class SettingsAdmin extends BaseController
             $selectedLandingFilter = 'all';
         }
 
+        $allowDuplicateEmails = trim((string) $settingModel->getValue(
+            LandingSettingModel::KEY_APPLY_ALLOW_DUPLICATE_EMAILS,
+            '0'
+        )) === '1';
+        $applicationStartDate = $this->normalizeDateValue($settingModel->getValue(
+            LandingSettingModel::KEY_APPLY_START_DATE,
+            ''
+        )) ?? '';
+        $applicationEndDate = $this->normalizeDateValue($settingModel->getValue(
+            LandingSettingModel::KEY_APPLY_END_DATE,
+            ''
+        )) ?? '';
+        $applicationWindowStatus = $this->applicationWindowStatus($applicationStartDate, $applicationEndDate);
+
         $data = [
             'pageTitle'             => 'Settings',
             'activePage'            => 'settings',
             'isGuessStartupEnabled' => $isGuessStartupEnabled,
+            'isGuessStartupVisible' => $isGuessStartupVisible,
             'showInternsSection'    => $showInternsSection,
             'landingFilterOptions'  => $activeCohortNames,
             'selectedLandingFilter' => $selectedLandingFilter,
+            'allowDuplicateEmails'  => $allowDuplicateEmails,
+            'applicationStartDate'  => $applicationStartDate,
+            'applicationEndDate'    => $applicationEndDate,
+            'applicationWindowStatus' => $applicationWindowStatus,
         ];
 
         return view('admin/layout/header', $data)
@@ -45,14 +66,17 @@ class SettingsAdmin extends BaseController
     {
         $settingModel = new LandingSettingModel();
         $enabled = $this->request->getPost('guessStartupEnabled') === '1';
+        $visible = $this->request->getPost('guessStartupVisible') === '1';
 
-        if (! $settingModel->setValue(LandingSettingModel::KEY_GUESS_STARTUP_ENABLED, $enabled ? '1' : '0')) {
-            setToast('error', 'Unable to save game availability setting.');
+        $saved = $settingModel->setValue(LandingSettingModel::KEY_GUESS_STARTUP_ENABLED, $enabled ? '1' : '0');
+        $saved = $settingModel->setValue(LandingSettingModel::KEY_GUESS_STARTUP_VISIBLE, $visible ? '1' : '0') && $saved;
+
+        if (! $saved) {
+            setToast('error', 'Unable to save game settings.');
             return redirect()->to(site_url('admin/settings'));
         }
 
-        $status = $enabled ? 'enabled' : 'disabled';
-        setToast('success', 'Guess the Startup game is now ' . $status . '.');
+        setToast('success', 'Guess the Startup settings updated.');
 
         return redirect()->to(site_url('admin/settings'));
     }
@@ -97,5 +121,95 @@ class SettingsAdmin extends BaseController
         setToast('success', 'Landing incubatees set to ' . $label . '.');
 
         return redirect()->to(site_url('admin/settings'));
+    }
+
+    public function updateApplicationSettings()
+    {
+        $allowDuplicateEmails = $this->request->getPost('allowDuplicateEmails') === '1';
+        $startDate = $this->normalizeDateValue($this->request->getPost('applicationStartDate'));
+        $endDate = $this->normalizeDateValue($this->request->getPost('applicationEndDate'));
+
+        if ($startDate === null || $endDate === null) {
+            setToast('error', 'Please enter valid application dates.');
+            return redirect()->to(site_url('admin/settings'))->withInput();
+        }
+
+        if ($startDate !== '' && $endDate !== '' && $endDate < $startDate) {
+            setToast('error', 'Application end date must be on or after the start date.');
+            return redirect()->to(site_url('admin/settings'))->withInput();
+        }
+
+        $settingModel = new LandingSettingModel();
+        $saved = $settingModel->setValue(
+            LandingSettingModel::KEY_APPLY_ALLOW_DUPLICATE_EMAILS,
+            $allowDuplicateEmails ? '1' : '0'
+        );
+        $saved = $settingModel->setValue(LandingSettingModel::KEY_APPLY_START_DATE, $startDate) && $saved;
+        $saved = $settingModel->setValue(LandingSettingModel::KEY_APPLY_END_DATE, $endDate) && $saved;
+
+        if (! $saved) {
+            setToast('error', 'Unable to save application settings.');
+            return redirect()->to(site_url('admin/settings'))->withInput();
+        }
+
+        setToast('success', 'Application settings updated.');
+        return redirect()->to(site_url('admin/settings'));
+    }
+
+    private function normalizeDateValue($value): ?string
+    {
+        $value = trim((string) ($value ?? ''));
+        if ($value === '') {
+            return '';
+        }
+
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+        if (! $date || $date->format('Y-m-d') !== $value) {
+            return null;
+        }
+
+        return $value;
+    }
+
+    private function applicationWindowStatus(string $startDate, string $endDate): array
+    {
+        $today = (new \DateTimeImmutable('today', new \DateTimeZone(config('App')->appTimezone)))->format('Y-m-d');
+
+        if ($startDate === '' && $endDate === '') {
+            return [
+                'label' => 'Always open',
+                'description' => 'No application timeline is currently configured.',
+                'state' => 'open',
+            ];
+        }
+
+        if ($startDate !== '' && $today < $startDate) {
+            return [
+                'label' => 'Not yet open',
+                'description' => 'Applications will open on ' . $this->formatDateLabel($startDate) . '.',
+                'state' => 'upcoming',
+            ];
+        }
+
+        if ($endDate !== '' && $today > $endDate) {
+            return [
+                'label' => 'Closed',
+                'description' => 'Applications closed on ' . $this->formatDateLabel($endDate) . '.',
+                'state' => 'closed',
+            ];
+        }
+
+        return [
+            'label' => 'Open',
+            'description' => $endDate !== ''
+                ? 'Applications are open until ' . $this->formatDateLabel($endDate) . '.'
+                : 'Applications are currently open.',
+            'state' => 'open',
+        ];
+    }
+
+    private function formatDateLabel(string $date): string
+    {
+        return (new \DateTimeImmutable($date))->format('F j, Y');
     }
 }

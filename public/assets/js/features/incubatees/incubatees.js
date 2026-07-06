@@ -411,6 +411,9 @@
         });
     });
 
+    window.__ibShowcaseReady = true;
+    window.dispatchEvent(new CustomEvent('ib:ready'));
+
     /* ── Mobile: show preview popup (mini version of desktop big card) ── */
     function showMobilePreview(card, idx) {
         if (isOpen) return;

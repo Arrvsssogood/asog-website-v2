@@ -5,6 +5,8 @@
      ╚══════════════════════════════════════════════════════════════════════╝
 -->
 <?php
+helper('incubatees');
+
 $all = $incubatees ?? [];
 $hasIncubatees = ! empty($all);
 $fallbackIncubateeImage = base_url('assets/img/incubatees.webp');
@@ -23,6 +25,7 @@ if ($selectedFilter !== '' && strtolower($selectedFilter) !== 'all') {
 }
 ?>
 <link rel="stylesheet" href="<?= base_url('assets/css/landingIncubatees.css') ?>">
+<script src="<?= base_url('assets/js/features/carousel/landingIncubateesCarousel.js') ?>" defer></script>
 
 <section id="incubatees" class="relative overflow-hidden py-14 md:py-20 px-6 md:px-10 lg:px-14 bg-off">
     <div class="max-w-[1200px] mx-auto">
@@ -35,8 +38,12 @@ if ($selectedFilter !== '' && strtolower($selectedFilter) !== 'all') {
                     <span class="text-[.58rem] font-semibold tracking-[.2em] uppercase text-navy">Incubatees</span>
                 </div>
                 <h2 class="font-display text-3xl md:text-[2.1rem] leading-[1.12] text-dark">
-                    <?= esc($headingMain) ?><?php if (! empty($headingHighlight)): ?> <em
-                        class=" text-gold"><?= esc($headingHighlight) ?></em><?php endif; ?>
+                    <?php if ($headingMain === 'All Cohorts' && empty($headingHighlight)): ?>
+                        <em class="text-gold">All</em> Cohorts
+                    <?php else: ?>
+                        <?= esc($headingMain) ?><?php if (! empty($headingHighlight)): ?> <em
+                            class="text-gold"><?= esc($headingHighlight) ?></em><?php endif; ?>
+                    <?php endif; ?>
                 </h2>
             </div>
             <a href="<?= site_url('incubatees') ?>"
@@ -47,11 +54,12 @@ if ($selectedFilter !== '' && strtolower($selectedFilter) !== 'all') {
         <div class="reveal reveal-d1">
             <?php if ($hasIncubatees): ?>
             <!-- Scrolling Logo Carousel -->
-            <div class="inc-carousel">
+            <div class="inc-carousel" data-incubatee-carousel>
                 <div class="inc-track">
                     <?php for ($loop = 0; $loop < 2; $loop++): ?>
                     <?php foreach ($all as $inc): ?>
-                    <div class="inc-logo-item"
+                    <a class="inc-logo-item"
+                        href="<?= site_url('incubatees') ?>#<?= esc(incubatee_anchor_id($inc)) ?>"
                         title="<?= esc(html_entity_decode($inc['companyName'], ENT_QUOTES, 'UTF-8')) ?>">
                         <?php if (! empty($inc['logoPath'])): ?>
                         <?= responsiveUploadImg($inc['logoPath'], 'incubatees', html_entity_decode($inc['companyName'], ENT_QUOTES, 'UTF-8'), '', true) ?>
@@ -59,7 +67,7 @@ if ($selectedFilter !== '' && strtolower($selectedFilter) !== 'all') {
                         <span
                             class="inc-initials"><?= strtoupper(substr(html_entity_decode($inc['companyName'], ENT_QUOTES, 'UTF-8'), 0, 2)) ?></span>
                         <?php endif; ?>
-                    </div>
+                    </a>
                     <?php endforeach; ?>
                     <?php endfor; ?>
                 </div>
@@ -78,6 +86,5 @@ if ($selectedFilter !== '' && strtolower($selectedFilter) !== 'all') {
             </div>
             <?php endif; ?>
         </div>
-    </div>
     </div>
 </section>

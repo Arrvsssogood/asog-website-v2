@@ -4494,6 +4494,25 @@
     .faq-item::after, .faq-answer {
       transition: none;
     }
+
+    #navbar, #navbar *,
+    #navIn, #navIn *,
+    #mobileMenu, #mobileMenu * {
+      transition: none !important;
+      animation: none !important;
+    }
+
+    #mobPsSub, #mobAboutSub, .mobile-menu-panel {
+      transition-duration: 0.01ms !important;
+    }
+
+    #mobPsChevron, #mobAboutChevron {
+      transition: none !important;
+    }
+
+    .slide, .hl, .hl-link {
+      transition: none !important;
+    }
   }
   .ai-cross::before, .ai-cross::after {
     content: '';

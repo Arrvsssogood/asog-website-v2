@@ -13,7 +13,7 @@ $lastIndex = count($members) - 1;
         <span>Add the first member using the button above.</span>
     </div>
 <?php else: ?>
-    <div class="org-admin-list" data-org-reorder-list data-section="<?= esc($activeSection) ?>" data-category="">
+    <div class="org-admin-list org-admin-card-grid" data-org-reorder-list data-section="<?= esc($activeSection) ?>" data-category="">
         <?php foreach ($members as $index => $member): ?>
             <?= view('admin/organization/_member_row', [
                 'member' => $member,

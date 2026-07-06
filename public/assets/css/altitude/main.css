@@ -250,6 +250,16 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .altitude-exp-hero,
+  .altitude-exp-mtn,
+  .altitude-exp-hero-content {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 /* ─── 1.  EXPLORE CARD (HORIZONTAL) ─── */
 .alt3d-card {
   position: relative;

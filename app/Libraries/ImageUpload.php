@@ -31,12 +31,6 @@ class ImageUpload
     /** Last error message. */
     protected string $error = '';
 
-    /** Whether to convert uploaded images to WebP. */
-    protected bool $convertToWebp = true;
-
-    /** WebP output quality (0-100). */
-    protected int $webpQuality = 82;
-
     public function __construct()
     {
         $this->basePath = FCPATH . 'uploads' . DIRECTORY_SEPARATOR;
@@ -117,21 +111,6 @@ class ImageUpload
 
         $relativePath = 'uploads/' . $subfolder . '/' . $newName;
 
-        // Convert to WebP when possible; keep original as fallback.
-        if ($this->convertToWebp && $this->shouldConvertToWebp($mimeType)) {
-            $webpName = pathinfo($newName, PATHINFO_FILENAME) . '.webp';
-            $webpPath = $destination . DIRECTORY_SEPARATOR . $webpName;
-
-            if ($this->convertImageToWebp($finalPath, $webpPath, $mimeType)) {
-                if ($webpPath !== $finalPath && is_file($finalPath)) {
-                    @unlink($finalPath);
-                }
-
-                $finalPath = $webpPath;
-                $relativePath = 'uploads/' . $subfolder . '/' . $webpName;
-            }
-        }
-
         log_message('info', '[ImageUpload] Success: ' . $relativePath . ' (' . filesize($finalPath) . ' bytes)');
 
         // Return path relative to the public accessor
@@ -164,57 +143,4 @@ class ImageUpload
         return $this->error;
     }
 
-    protected function shouldConvertToWebp(string $mimeType): bool
-    {
-        return in_array($mimeType, [
-            'image/jpeg',
-            'image/png',
-            'image/gif',
-            'image/webp',
-        ], true);
-    }
-
-    protected function convertImageToWebp(string $sourcePath, string $targetPath, string $mimeType): bool
-    {
-        if (! function_exists('imagewebp')) {
-            log_message('warning', '[ImageUpload] WebP conversion skipped: imagewebp() is unavailable.');
-            return false;
-        }
-
-        $loader = match ($mimeType) {
-            'image/jpeg' => 'imagecreatefromjpeg',
-            'image/png'  => 'imagecreatefrompng',
-            'image/gif'  => 'imagecreatefromgif',
-            'image/webp' => 'imagecreatefromwebp',
-            default      => null,
-        };
-
-        if ($loader === null || ! function_exists($loader)) {
-            log_message('warning', '[ImageUpload] WebP conversion skipped: loader unavailable for ' . $mimeType . '.');
-            return false;
-        }
-
-        $image = @$loader($sourcePath);
-        if (! $image) {
-            log_message('warning', '[ImageUpload] WebP conversion skipped: unable to read source image.');
-            return false;
-        }
-
-        // Preserve transparency for indexed/alpha images where possible.
-        if (function_exists('imagepalettetotruecolor')) {
-            @imagepalettetotruecolor($image);
-        }
-        @imagealphablending($image, true);
-        @imagesavealpha($image, true);
-
-        $written = @imagewebp($image, $targetPath, $this->webpQuality);
-        imagedestroy($image);
-
-        if (! $written || ! is_file($targetPath)) {
-            log_message('warning', '[ImageUpload] WebP conversion skipped: failed to write target image.');
-            return false;
-        }
-
-        return true;
-    }
 }

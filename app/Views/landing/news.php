@@ -2,7 +2,7 @@
      ║  SECTION: NEWS & INSIGHTS                                          ║
      ║  Featured + editorial list · gold hover accents                     ║
      ╚══════════════════════════════════════════════════════════════════════╝ -->
-<section id="news" class="relative overflow-hidden bg-off py-16 md:py-24 px-6 md:px-10 lg:px-14">
+<section id="news" class="relative overflow-hidden bg-off pt-10 pb-16 md:pt-14 md:pb-24 px-6 md:px-10 lg:px-14" style="box-shadow: 0 -2px 0 #F8F6F2;">
     <div class="max-w-[1200px] mx-auto relative z-[2]">
         <?php
         $newsExcerpt = static function (?string $text, int $limit): string {

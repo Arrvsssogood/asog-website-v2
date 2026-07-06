@@ -19,16 +19,16 @@ $baseUrl = site_url('admin/messages') . '?' . http_build_query([
 ?>
 
 <div class="grid-stats">
-    <div class="stat">
+    <div class="stat stat-inbox">
         <div class="n"><?= $counts['total'] ?></div>
         <div class="t">Inbox</div>
     </div>
-    <div class="stat">
-        <div class="n" style="color:#03558C"><?= $counts['unread'] ?></div>
+    <div class="stat stat-unread">
+        <div class="n"><?= $counts['unread'] ?></div>
         <div class="t">Unread</div>
     </div>
-    <div class="stat">
-        <div class="n" style="color:#94a3b8"><?= $counts['archived'] ?></div>
+    <div class="stat stat-archived">
+        <div class="n"><?= $counts['archived'] ?></div>
         <div class="t">Archived</div>
     </div>
 </div>
@@ -231,22 +231,6 @@ $baseUrl = site_url('admin/messages') . '?' . http_build_query([
             <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h10a5 5 0 015 5v4M3 10l6 6M3 10l6-6"/></svg>
             Reply
         </a>
-    </div>
-</div>
-
-<div class="confirm-bg" id="confirmDel">
-    <div class="confirm-box">
-        <div class="confirm-body">
-            <div class="confirm-icon red">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-            </div>
-            <h3>Delete message?</h3>
-            <p id="confirmText">This message will be permanently deleted.</p>
-        </div>
-        <div class="confirm-actions">
-            <button class="c-cancel" onclick="closeConfirm()">Cancel</button>
-            <button class="c-delete" onclick="doDelete()">Delete</button>
-        </div>
     </div>
 </div>
 

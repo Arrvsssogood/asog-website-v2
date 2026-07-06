@@ -21,6 +21,18 @@
   line-height: 1.5;
 }
 
+.faq-admin-toolbar .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+}
+
+.faq-admin-toolbar .btn svg {
+  width: 13px;
+  height: 13px;
+  stroke: currentColor;
+}
+
 .faq-admin-settings {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -295,6 +307,43 @@
 .faq-admin-icon-btn:disabled {
   opacity: .35;
   cursor: not-allowed;
+}
+
+.faq-admin-item-actions .act-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid #e4e2dd;
+  border-radius: .35rem;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .15s;
+}
+
+.faq-admin-item-actions .act-btn svg {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+}
+
+.faq-admin-item-actions .act-btn.delete {
+  color: #be123c;
+  border-color: #f5c2cd;
+}
+
+.faq-admin-item-actions .act-btn.delete:hover {
+  color: #be123c;
+  border-color: #be123c;
+  background: #fff1f2;
+}
+
+.faq-admin-item-actions .act-btn:focus-visible {
+  outline: 2px solid #03558c;
+  outline-offset: 1px;
 }
 
 .faq-admin-edit-form {
