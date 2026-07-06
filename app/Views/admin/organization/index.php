@@ -30,7 +30,9 @@
             </a>
         <?php endforeach; ?>
     </div>
-    <button type="button" class="btn btn-o org-reorder-mode-btn" id="orgReorderBtn">Re-order</button>
+    <div class="org-reorder-control-group">
+        <button type="button" class="btn btn-o org-reorder-mode-btn" id="orgReorderBtn">Re-order</button>
+    </div>
 </div>
 
 <?php if (($activeSection ?? '') === 'mentor'): ?>
@@ -72,6 +74,11 @@
 
     let draggedCard = null;
     let dragContainer = null;
+    let dragPlaceholder = null;
+    let dragPreview = null;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+    let activePointerId = null;
     let isReorderMode = false;
     const changedContainers = new Set();
 
@@ -139,6 +146,154 @@
         container.querySelectorAll('.org-drag-row[data-reorderable="1"]')
     );
 
+    const createDragPlaceholder = (row) => {
+        const placeholder = document.createElement(row.tagName.toLowerCase());
+        placeholder.className = row.classList.contains('org-admin-member-card')
+            ? 'org-drag-placeholder is-card'
+            : 'org-drag-placeholder is-row';
+        placeholder.style.minHeight = `${Math.max(row.getBoundingClientRect().height, 64)}px`;
+        return placeholder;
+    };
+
+    const setDragPreview = (event, row) => {
+        if (!event.dataTransfer || typeof event.dataTransfer.setDragImage !== 'function') {
+            return;
+        }
+
+        const rect = row.getBoundingClientRect();
+        const preview = row.cloneNode(true);
+        preview.classList.remove('is-dragging', 'is-drag-hidden', 'org-drag-over');
+        preview.classList.add('org-drag-preview');
+        preview.style.width = `${rect.width}px`;
+        document.body.appendChild(preview);
+        dragPreview = preview;
+        event.dataTransfer.setDragImage(preview, Math.min(36, rect.width / 2), Math.min(28, rect.height / 2));
+        requestAnimationFrame(() => {
+            dragPreview?.remove();
+            dragPreview = null;
+        });
+    };
+
+    const createPointerPreview = (row) => {
+        const rect = row.getBoundingClientRect();
+        const preview = row.cloneNode(true);
+        preview.classList.remove('is-dragging', 'is-drag-hidden', 'org-drag-over');
+        preview.classList.add('org-drag-preview', 'org-pointer-drag-preview');
+        preview.style.width = `${rect.width}px`;
+        document.body.appendChild(preview);
+        dragPreview = preview;
+    };
+
+    const movePointerPreview = (event) => {
+        if (!dragPreview) return;
+        dragPreview.style.transform = `translate3d(${event.clientX - dragOffsetX}px, ${event.clientY - dragOffsetY}px, 0)`;
+    };
+
+    const movePlaceholderFromPoint = (clientX, clientY) => {
+        if (!draggedCard || !dragContainer || !dragPlaceholder) return;
+
+        const target = document.elementFromPoint(clientX, clientY)?.closest('.org-drag-row');
+        if (!target || target === draggedCard) return;
+        if (target.closest('[data-org-reorder-list]') !== dragContainer) return;
+        if (!target.classList.contains('is-reorderable')) return;
+
+        const targetRect = target.getBoundingClientRect();
+        const isCardGrid = dragContainer.classList.contains('org-admin-card-grid');
+        const after = isCardGrid
+            ? (
+                Math.abs(clientY - (targetRect.top + targetRect.height / 2)) < targetRect.height * 0.45
+                    ? clientX > (targetRect.left + targetRect.width / 2)
+                    : clientY > (targetRect.top + targetRect.height / 2)
+            )
+            : (clientY - targetRect.top) > (targetRect.height / 2);
+
+        document.querySelectorAll('.org-drag-over').forEach((el) => el.classList.remove('org-drag-over'));
+        target.classList.add('org-drag-over');
+
+        if (after) {
+            target.after(dragPlaceholder);
+        } else {
+            target.before(dragPlaceholder);
+        }
+    };
+
+    const onPointerMove = (event) => {
+        if (activePointerId !== null && event.pointerId !== activePointerId) return;
+        event.preventDefault();
+        movePointerPreview(event);
+        movePlaceholderFromPoint(event.clientX, event.clientY);
+    };
+
+    const finishPointerDrag = (event, commitDrop) => {
+        if (activePointerId !== null && event.pointerId !== activePointerId) return;
+        const changedContainer = dragContainer;
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+        document.removeEventListener('pointercancel', onPointerCancel);
+        clearDragState(commitDrop);
+        if (commitDrop && changedContainer) {
+            changedContainers.add(changedContainer);
+        }
+    };
+
+    const onPointerUp = (event) => {
+        finishPointerDrag(event, true);
+    };
+
+    const onPointerCancel = (event) => {
+        finishPointerDrag(event, false);
+    };
+
+    const clearDragState = (commitDrop = false) => {
+        document.querySelectorAll('.org-drag-over').forEach((el) => el.classList.remove('org-drag-over'));
+
+        if (draggedCard) {
+            draggedCard.classList.remove('is-dragging', 'is-drag-hidden');
+            if (dragPlaceholder?.parentNode) {
+                if (commitDrop) {
+                    dragPlaceholder.parentNode.insertBefore(draggedCard, dragPlaceholder);
+                }
+                dragPlaceholder.remove();
+            }
+        } else {
+            dragPlaceholder?.remove();
+        }
+
+        dragPreview?.remove();
+
+        draggedCard = null;
+        dragContainer = null;
+        dragPlaceholder = null;
+        dragPreview = null;
+        activePointerId = null;
+    };
+
+    const startPointerDrag = (event, row) => {
+        if (!isReorderMode || !row || !row.classList.contains('is-reorderable')) return;
+        if (event.button !== undefined && event.button !== 0) return;
+
+        const rect = row.getBoundingClientRect();
+        activePointerId = event.pointerId;
+        draggedCard = row;
+        dragContainer = row.closest('[data-org-reorder-list]');
+        dragOffsetX = event.clientX - rect.left;
+        dragOffsetY = event.clientY - rect.top;
+        dragPlaceholder = createDragPlaceholder(row);
+        row.after(dragPlaceholder);
+        createPointerPreview(row);
+        movePointerPreview(event);
+        row.classList.add('is-dragging', 'is-drag-hidden');
+        event.preventDefault();
+
+        document.addEventListener('pointermove', onPointerMove, { passive: false });
+        document.addEventListener('pointerup', onPointerUp);
+        document.addEventListener('pointercancel', onPointerCancel);
+    };
+
+    const isInteractiveTarget = (target) => Boolean(
+        target.closest('a, button, input, select, textarea, label, .act-btn, .acts')
+    );
+
     const setReorderMode = (enabled) => {
         isReorderMode = enabled;
         document.body.classList.toggle('org-reorder-mode', enabled);
@@ -154,7 +309,7 @@
             const canReorder = enabled && rows.length > 1;
             container.classList.toggle('is-org-reorder-active', canReorder);
             rows.forEach((row) => {
-                row.draggable = canReorder;
+                row.draggable = false;
                 row.classList.toggle('is-reorderable', canReorder);
             });
         });
@@ -537,6 +692,13 @@
         });
     }
 
+    document.addEventListener('pointerdown', (event) => {
+        const row = event.target.closest('.org-drag-row');
+        if (!row) return;
+        if (!event.target.closest('.org-drag-handle') && isInteractiveTarget(event.target)) return;
+        startPointerDrag(event, row);
+    });
+
     document.addEventListener('dragstart', (event) => {
         const row = event.target.closest('.org-drag-row');
         if (!isReorderMode || !row || !row.classList.contains('is-reorderable')) {
@@ -545,19 +707,25 @@
         }
         draggedCard = row;
         dragContainer = row.closest('[data-org-reorder-list]');
+        dragPlaceholder = createDragPlaceholder(row);
+        row.after(dragPlaceholder);
         row.classList.add('is-dragging');
         event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', row.dataset.id || '');
+        setDragPreview(event, row);
+        requestAnimationFrame(() => {
+            if (draggedCard === row) {
+                row.classList.add('is-drag-hidden');
+            }
+        });
     });
 
     document.addEventListener('dragend', () => {
-        draggedCard?.classList.remove('is-dragging');
-        draggedCard = null;
-        dragContainer = null;
-        document.querySelectorAll('.org-drag-over').forEach((el) => el.classList.remove('org-drag-over'));
+        clearDragState(false);
     });
 
     document.addEventListener('dragover', (event) => {
-        if (!draggedCard || !dragContainer) return;
+        if (!draggedCard || !dragContainer || !dragPlaceholder) return;
 
         const target = event.target.closest('.org-drag-row');
         if (!target || target === draggedCard) return;
@@ -580,20 +748,18 @@
         target.classList.add('org-drag-over');
 
         if (after) {
-            target.after(draggedCard);
+            target.after(dragPlaceholder);
         } else {
-            target.before(draggedCard);
+            target.before(dragPlaceholder);
         }
     });
 
     document.addEventListener('drop', (event) => {
         if (!draggedCard || !dragContainer) return;
         event.preventDefault();
-        document.querySelectorAll('.org-drag-over').forEach((el) => el.classList.remove('org-drag-over'));
-        draggedCard.classList.remove('is-dragging');
-        changedContainers.add(dragContainer);
-        draggedCard = null;
-        dragContainer = null;
+        const changedContainer = dragContainer;
+        clearDragState(true);
+        changedContainers.add(changedContainer);
     });
 
     updateReorderAvailability();

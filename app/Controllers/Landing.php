@@ -43,6 +43,10 @@ class Landing extends BaseController
                 LandingSettingModel::KEY_GUESS_STARTUP_VISIBLE,
                 '1'
             )) !== '0',
+            'showAsogLoader'     => trim((string) $landingSettingModel->getValue(
+                LandingSettingModel::KEY_LANDING_LOADER_ENABLED,
+                '1'
+            )) !== '0',
             'heroSlides'         => $postModel->getFeaturedSlides(5),
             'heroPreloadImage'   => '',
             'featuredPost'       => $postModel->getFeatured(),

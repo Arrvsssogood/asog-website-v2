@@ -223,6 +223,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     var body = table.querySelector('tbody');
     var draggedRow = null;
+    var dragPlaceholder = null;
+    var dragPreview = null;
+    var dragOffsetX = 0;
+    var dragOffsetY = 0;
+    var activePointerId = null;
     var isReorderMode = false;
     var activeFilter = 'all';
     var reorderSnapshot = '';
@@ -245,6 +250,154 @@ document.addEventListener('DOMContentLoaded', function () {
         return rowsForCurrentScope().map(function (row) {
             return row.dataset.id || '';
         }).join('|');
+    }
+
+    function createDragPlaceholder(row) {
+        var placeholder = document.createElement('tr');
+        var cell = document.createElement('td');
+        placeholder.className = 'drag-placeholder-row';
+        cell.colSpan = Math.max(row.children.length, 1);
+        cell.style.height = Math.max(row.getBoundingClientRect().height, 52) + 'px';
+        placeholder.appendChild(cell);
+        return placeholder;
+    }
+
+    function setDragPreview(event, row) {
+        if (!event.dataTransfer || typeof event.dataTransfer.setDragImage !== 'function') {
+            return;
+        }
+
+        var previewTable = document.createElement('table');
+        var previewBody = document.createElement('tbody');
+        var previewRow = row.cloneNode(true);
+        var rect = row.getBoundingClientRect();
+        previewTable.className = 'inc-drag-preview';
+        previewTable.style.width = rect.width + 'px';
+        previewRow.classList.remove('dragging', 'drag-hidden', 'drop-target');
+        previewBody.appendChild(previewRow);
+        previewTable.appendChild(previewBody);
+        document.body.appendChild(previewTable);
+        dragPreview = previewTable;
+        event.dataTransfer.setDragImage(previewTable, Math.min(32, rect.width / 2), Math.min(24, rect.height / 2));
+        requestAnimationFrame(function () {
+            if (dragPreview) {
+                dragPreview.remove();
+                dragPreview = null;
+            }
+        });
+    }
+
+    function createPointerPreview(row) {
+        var previewTable = document.createElement('table');
+        var previewBody = document.createElement('tbody');
+        var previewRow = row.cloneNode(true);
+        var rect = row.getBoundingClientRect();
+        previewTable.className = 'inc-drag-preview inc-pointer-drag-preview';
+        previewTable.style.width = rect.width + 'px';
+        previewRow.classList.remove('dragging', 'drag-hidden', 'drop-target');
+        previewBody.appendChild(previewRow);
+        previewTable.appendChild(previewBody);
+        document.body.appendChild(previewTable);
+        dragPreview = previewTable;
+    }
+
+    function movePointerPreview(event) {
+        if (!dragPreview) return;
+        dragPreview.style.transform = 'translate3d(' + (event.clientX - dragOffsetX) + 'px,' + (event.clientY - dragOffsetY) + 'px,0)';
+    }
+
+    function movePlaceholderFromPoint(clientX, clientY) {
+        if (!draggedRow || !dragPlaceholder) return;
+        var targetRow = document.elementFromPoint(clientX, clientY)?.closest('tr.drag-row');
+        if (!targetRow || !targetRow.classList.contains('is-reorderable') || targetRow === draggedRow) return;
+
+        var targetRect = targetRow.getBoundingClientRect();
+        var after = (clientY - targetRect.top) > (targetRect.height / 2);
+        body.querySelectorAll('.drop-target').forEach(function (row) {
+            row.classList.remove('drop-target');
+        });
+        targetRow.classList.add('drop-target');
+
+        if (after) {
+            targetRow.after(dragPlaceholder);
+        } else {
+            targetRow.before(dragPlaceholder);
+        }
+    }
+
+    function onPointerMove(event) {
+        if (activePointerId !== null && event.pointerId !== activePointerId) return;
+        event.preventDefault();
+        movePointerPreview(event);
+        movePlaceholderFromPoint(event.clientX, event.clientY);
+    }
+
+    function onPointerUp(event) {
+        if (activePointerId !== null && event.pointerId !== activePointerId) return;
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+        document.removeEventListener('pointercancel', onPointerCancel);
+        clearDragState(true);
+    }
+
+    function onPointerCancel(event) {
+        if (activePointerId !== null && event.pointerId !== activePointerId) return;
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+        document.removeEventListener('pointercancel', onPointerCancel);
+        clearDragState(false);
+    }
+
+    function clearDragState(commitDrop) {
+        body.querySelectorAll('.drop-target').forEach(function (row) {
+            row.classList.remove('drop-target');
+        });
+
+        if (draggedRow) {
+            draggedRow.classList.remove('dragging', 'drag-hidden');
+            if (dragPlaceholder && dragPlaceholder.parentNode) {
+                if (commitDrop) {
+                    dragPlaceholder.parentNode.insertBefore(draggedRow, dragPlaceholder);
+                }
+                dragPlaceholder.remove();
+            }
+        } else if (dragPlaceholder) {
+            dragPlaceholder.remove();
+        }
+
+        if (dragPreview) {
+            dragPreview.remove();
+        }
+
+        draggedRow = null;
+        dragPlaceholder = null;
+        dragPreview = null;
+        activePointerId = null;
+    }
+
+    function startPointerDrag(event, row) {
+        if (!isReorderMode || !row || !row.classList.contains('is-reorderable')) return;
+        if (event.button !== undefined && event.button !== 0) return;
+
+        var rect = row.getBoundingClientRect();
+        activePointerId = event.pointerId;
+        draggedRow = row;
+        dragOffsetX = event.clientX - rect.left;
+        dragOffsetY = event.clientY - rect.top;
+        dragPlaceholder = createDragPlaceholder(row);
+        row.after(dragPlaceholder);
+        createPointerPreview(row);
+        movePointerPreview(event);
+        row.classList.add('dragging', 'drag-hidden');
+        event.preventDefault();
+
+        document.addEventListener('pointermove', onPointerMove, { passive: false });
+        document.addEventListener('pointerup', onPointerUp);
+        document.addEventListener('pointercancel', onPointerCancel);
+    }
+
+    function isInteractiveTarget(target) {
+        return Boolean(target.closest('a, button, input, select, textarea, label, .act-btn'));
     }
 
     function showAdminToast(type, message) {
@@ -279,14 +432,13 @@ document.addEventListener('DOMContentLoaded', function () {
             reorderBtn.classList.toggle('btn-p', enabled);
             reorderBtn.classList.toggle('btn-o', !enabled);
         }
-
         filterButtons.forEach(function (button) {
             button.disabled = enabled && (button.dataset.filter || 'all') !== activeFilter;
         });
 
         getRows().forEach(function (row) {
             var canDrag = enabled && row.style.display !== 'none';
-            row.draggable = canDrag;
+            row.draggable = false;
             row.classList.toggle('is-reorderable', canDrag);
         });
     }
@@ -399,6 +551,13 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    body.addEventListener('pointerdown', function (event) {
+        var row = event.target.closest('tr.drag-row');
+        if (!row) return;
+        if (!event.target.closest('.drag-handle') && isInteractiveTarget(event.target)) return;
+        startPointerDrag(event, row);
+    });
+
     body.addEventListener('dragstart', function (event) {
         var row = event.target.closest('tr.drag-row');
         if (!isReorderMode || !row || !row.classList.contains('is-reorderable')) {
@@ -406,22 +565,25 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
         draggedRow = row;
+        dragPlaceholder = createDragPlaceholder(row);
+        row.after(dragPlaceholder);
         row.classList.add('dragging');
         event.dataTransfer.effectAllowed = 'move';
-    });
-
-    body.addEventListener('dragend', function () {
-        if (draggedRow) {
-            draggedRow.classList.remove('dragging');
-        }
-        draggedRow = null;
-        body.querySelectorAll('.drop-target').forEach(function (row) {
-            row.classList.remove('drop-target');
+        event.dataTransfer.setData('text/plain', row.dataset.id || '');
+        setDragPreview(event, row);
+        requestAnimationFrame(function () {
+            if (draggedRow === row) {
+                row.classList.add('drag-hidden');
+            }
         });
     });
 
+    body.addEventListener('dragend', function () {
+        clearDragState(false);
+    });
+
     body.addEventListener('dragover', function (event) {
-        if (!isReorderMode || !draggedRow) return;
+        if (!isReorderMode || !draggedRow || !dragPlaceholder) return;
         event.preventDefault();
         var targetRow = event.target.closest('tr.drag-row');
         if (!targetRow || !targetRow.classList.contains('is-reorderable') || targetRow === draggedRow) return;
@@ -435,22 +597,16 @@ document.addEventListener('DOMContentLoaded', function () {
         targetRow.classList.add('drop-target');
 
         if (after) {
-            targetRow.after(draggedRow);
+            targetRow.after(dragPlaceholder);
         } else {
-            targetRow.before(draggedRow);
+            targetRow.before(dragPlaceholder);
         }
     });
 
     body.addEventListener('drop', function (event) {
-        if (!isReorderMode) return;
+        if (!isReorderMode || !draggedRow) return;
         event.preventDefault();
-        body.querySelectorAll('.drop-target').forEach(function (row) {
-            row.classList.remove('drop-target');
-        });
-        if (draggedRow) {
-            draggedRow.classList.remove('dragging');
-        }
-        draggedRow = null;
+        clearDragState(true);
     });
 
     applyFilter('all');

@@ -77,7 +77,9 @@
             <link rel="stylesheet" href="<?= esc($css) ?>">
         <?php endforeach; ?>
     <?php endif; ?>
+    <?php if (! empty($isLanding) && empty($hideSiteHeader) && (($showAsogLoader ?? null) !== false)): ?>
     <script src="<?= base_url('assets/loader/vendor/gsap.min.js') ?>"></script>
+    <?php endif; ?>
     <?php if (empty($hideSiteHeader)): ?>
     <script src="<?= base_url('assets/js/features/layout/header.js') ?>" defer></script>
     <?php endif; ?>
