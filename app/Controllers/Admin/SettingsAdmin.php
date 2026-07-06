@@ -33,6 +33,14 @@ class SettingsAdmin extends BaseController
             LandingSettingModel::KEY_APPLY_ALLOW_DUPLICATE_EMAILS,
             '0'
         )) === '1';
+        $showApplicationDeadline = trim((string) $settingModel->getValue(
+            LandingSettingModel::KEY_APPLY_SHOW_DEADLINE,
+            '1'
+        )) !== '0';
+        $landingLoaderEnabled = trim((string) $settingModel->getValue(
+            LandingSettingModel::KEY_LANDING_LOADER_ENABLED,
+            '1'
+        )) !== '0';
         $applicationStartDate = $this->normalizeDateValue($settingModel->getValue(
             LandingSettingModel::KEY_APPLY_START_DATE,
             ''
@@ -42,6 +50,16 @@ class SettingsAdmin extends BaseController
             ''
         )) ?? '';
         $applicationWindowStatus = $this->applicationWindowStatus($applicationStartDate, $applicationEndDate);
+        $gmailConfig = config('GmailApi');
+        $recaptchaConfig = config('Recaptcha');
+        $gmailReady = ! empty($gmailConfig->enabled)
+            && trim((string) $gmailConfig->senderEmail) !== ''
+            && trim((string) $gmailConfig->clientId) !== ''
+            && trim((string) $gmailConfig->clientSecret) !== ''
+            && trim((string) $gmailConfig->refreshToken) !== '';
+        $recaptchaReady = ! empty($recaptchaConfig->enabled)
+            && trim((string) $recaptchaConfig->siteKey) !== ''
+            && trim((string) $recaptchaConfig->apiKey) !== '';
 
         $data = [
             'pageTitle'             => 'Settings',
@@ -52,9 +70,33 @@ class SettingsAdmin extends BaseController
             'landingFilterOptions'  => $activeCohortNames,
             'selectedLandingFilter' => $selectedLandingFilter,
             'allowDuplicateEmails'  => $allowDuplicateEmails,
+            'showApplicationDeadline' => $showApplicationDeadline,
+            'landingLoaderEnabled'  => $landingLoaderEnabled,
             'applicationStartDate'  => $applicationStartDate,
             'applicationEndDate'    => $applicationEndDate,
             'applicationWindowStatus' => $applicationWindowStatus,
+            'gmailStatus' => [
+                'label'       => $gmailReady ? 'Ready' : 'Not configured',
+                'state'       => $gmailReady ? 'ready' : 'off',
+                'description' => $gmailReady
+                    ? 'Site email delivery is configured for transactional messages.'
+                    : 'Site email delivery is not fully configured.',
+                'detail'      => $gmailReady ? trim((string) $gmailConfig->senderEmail) : '',
+            ],
+            'recaptchaStatus' => [
+                'label'       => $recaptchaReady ? 'Enabled' : 'Disabled',
+                'state'       => $recaptchaReady ? 'ready' : 'off',
+                'description' => $recaptchaReady
+                    ? 'Public forms have score-based spam protection enabled.'
+                    : 'Public form spam protection is disabled or incomplete.',
+            ],
+            'loaderStatus' => [
+                'label'       => $landingLoaderEnabled ? 'Enabled' : 'Disabled',
+                'state'       => $landingLoaderEnabled ? 'ready' : 'off',
+                'description' => $landingLoaderEnabled
+                    ? 'Runs once per browser session on the homepage.'
+                    : 'Landing page opens directly without the intro animation.',
+            ],
         ];
 
         return view('admin/layout/header', $data)
@@ -126,6 +168,7 @@ class SettingsAdmin extends BaseController
     public function updateApplicationSettings()
     {
         $allowDuplicateEmails = $this->request->getPost('allowDuplicateEmails') === '1';
+        $showDeadline = $this->request->getPost('showApplicationDeadline') === '1';
         $startDate = $this->normalizeDateValue($this->request->getPost('applicationStartDate'));
         $endDate = $this->normalizeDateValue($this->request->getPost('applicationEndDate'));
 
@@ -144,6 +187,10 @@ class SettingsAdmin extends BaseController
             LandingSettingModel::KEY_APPLY_ALLOW_DUPLICATE_EMAILS,
             $allowDuplicateEmails ? '1' : '0'
         );
+        $saved = $settingModel->setValue(
+            LandingSettingModel::KEY_APPLY_SHOW_DEADLINE,
+            $showDeadline ? '1' : '0'
+        ) && $saved;
         $saved = $settingModel->setValue(LandingSettingModel::KEY_APPLY_START_DATE, $startDate) && $saved;
         $saved = $settingModel->setValue(LandingSettingModel::KEY_APPLY_END_DATE, $endDate) && $saved;
 
@@ -153,6 +200,20 @@ class SettingsAdmin extends BaseController
         }
 
         setToast('success', 'Application settings updated.');
+        return redirect()->to(site_url('admin/settings'));
+    }
+
+    public function updateSiteExperience()
+    {
+        $settingModel = new LandingSettingModel();
+        $loaderEnabled = $this->request->getPost('landingLoaderEnabled') === '1';
+
+        if (! $settingModel->setValue(LandingSettingModel::KEY_LANDING_LOADER_ENABLED, $loaderEnabled ? '1' : '0')) {
+            setToast('error', 'Unable to save site experience setting.');
+            return redirect()->to(site_url('admin/settings'));
+        }
+
+        setToast('success', 'Site experience settings updated.');
         return redirect()->to(site_url('admin/settings'));
     }
 
@@ -186,7 +247,7 @@ class SettingsAdmin extends BaseController
         if ($startDate !== '' && $today < $startDate) {
             return [
                 'label' => 'Not yet open',
-                'description' => 'Applications will open on ' . $this->formatDateLabel($startDate) . '.',
+                'description' => 'Application starts on ' . $this->formatDateLabel($startDate) . '.',
                 'state' => 'upcoming',
             ];
         }
@@ -194,7 +255,7 @@ class SettingsAdmin extends BaseController
         if ($endDate !== '' && $today > $endDate) {
             return [
                 'label' => 'Closed',
-                'description' => 'Applications closed on ' . $this->formatDateLabel($endDate) . '.',
+                'description' => 'Application ended on ' . $this->formatDateLabel($endDate) . '.',
                 'state' => 'closed',
             ];
         }
@@ -202,7 +263,7 @@ class SettingsAdmin extends BaseController
         return [
             'label' => 'Open',
             'description' => $endDate !== ''
-                ? 'Applications are open until ' . $this->formatDateLabel($endDate) . '.'
+                ? 'Application ends on ' . $this->formatDateLabel($endDate) . '.'
                 : 'Applications are currently open.',
             'state' => 'open',
         ];

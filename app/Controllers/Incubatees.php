@@ -42,6 +42,17 @@ class Incubatees extends BaseController
     {
         $faqModel = new FaqModel();
         $settings = new LandingSettingModel();
+        $showDeadline = trim((string) $settings->getValue(
+            LandingSettingModel::KEY_APPLY_SHOW_DEADLINE,
+            '1'
+        )) !== '0';
+        $applicationDeadline = $showDeadline
+            ? $this->normalizeApplicationDate($settings->getValue(LandingSettingModel::KEY_APPLY_END_DATE, ''))
+            : '';
+        $applicationStartDate = $showDeadline
+            ? $this->normalizeApplicationDate($settings->getValue(LandingSettingModel::KEY_APPLY_START_DATE, ''))
+            : '';
+        $applicationWindow = $this->applicationWindowStatus();
 
         $data = [
             'title'        => 'Be an Incubatee - ASOG TBI',
@@ -58,6 +69,15 @@ class Incubatees extends BaseController
                 'Find quick answers about eligibility, requirements, and what happens after you submit your application.'
             ),
             'allowDuplicateEmails' => $this->allowDuplicateEmails(),
+            'applicationWindow' => $applicationWindow,
+            'showApplicationDates' => $showDeadline,
+            'showApplicationDeadline' => $showDeadline && $applicationDeadline !== '' && ! empty($applicationWindow['isOpen']),
+            'applicationStartLabel' => $applicationStartDate !== ''
+                ? $this->formatApplicationDate($applicationStartDate)
+                : '',
+            'applicationDeadlineLabel' => $applicationDeadline !== ''
+                ? $this->formatApplicationDate($applicationDeadline)
+                : '',
         ];
 
         return view('templates/header', $data)
@@ -91,11 +111,11 @@ class Incubatees extends BaseController
             . view('templates/footer');
     }
 
-    public function applyForm(): string
+    public function applyForm()
     {
         $window = $this->applicationWindowStatus();
         if (! $window['isOpen']) {
-            return $this->renderApplicationUnavailable($window);
+            return redirect()->to(site_url('apply#application-notice'));
         }
 
         $data = $this->buildApplyFormViewData();
@@ -112,7 +132,7 @@ class Incubatees extends BaseController
         if (! $window['isOpen']) {
             return $this->response
                 ->setStatusCode(403)
-                ->setBody($this->renderApplicationUnavailable($window));
+                ->setBody('Application submissions are currently unavailable. Please visit the application overview for current availability.');
         }
 
         $applicationModel = $this->applicationModel;
@@ -572,7 +592,7 @@ class Incubatees extends BaseController
                 'isOpen' => false,
                 'state' => 'upcoming',
                 'title' => 'Applications are not yet open',
-                'message' => 'Applications for the ASOG TBI incubation program will open on ' . $this->formatApplicationDate($startDate) . '. Please check back once the application period begins.',
+                'message' => 'Applications for the ASOG TBI incubation program are not yet open. Please check back once the application period begins.',
             ];
         }
 
@@ -611,20 +631,6 @@ class Incubatees extends BaseController
     private function formatApplicationDate(string $date): string
     {
         return (new \DateTimeImmutable($date))->format('F j, Y');
-    }
-
-    private function renderApplicationUnavailable(array $window): string
-    {
-        $data = [
-            'title' => 'Applications Unavailable - ASOG TBI',
-            'noticeTitle' => $window['title'],
-            'noticeMessage' => $window['message'],
-            'noticeState' => $window['state'],
-        ];
-
-        return view('templates/header', $data)
-            . view('incubatees/application_unavailable', $data)
-            . view('templates/footer');
     }
 
     private function buildApplyFormViewData(array $formInput = [], array $formErrors = [], ?string $formError = null, array $extra = []): array

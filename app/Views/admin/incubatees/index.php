@@ -87,7 +87,9 @@
             </button>
         <?php endforeach; ?>
     </div>
-    <button type="button" class="btn btn-o reorder-mode-btn" id="incReorderBtn">Re-order</button>
+    <div class="reorder-control-group">
+        <button type="button" class="btn btn-o reorder-mode-btn" id="incReorderBtn">Re-order</button>
+    </div>
 </div>
 
 <table class="inc-tbl" id="incubateeTable">

@@ -181,6 +181,7 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
         $routes->post('settings/interns-visibility', 'Admin\SettingsAdmin::updateInternsVisibility');
         $routes->post('settings/homepage-incubatees-filter', 'Admin\SettingsAdmin::updateLandingFilter');
         $routes->post('settings/applications', 'Admin\SettingsAdmin::updateApplicationSettings');
+        $routes->post('settings/site-experience', 'Admin\SettingsAdmin::updateSiteExperience');
 
         // Account Management
         $routes->get('accounts', 'Admin\AdminsManagement::index');
