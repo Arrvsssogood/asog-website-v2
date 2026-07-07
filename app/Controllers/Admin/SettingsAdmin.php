@@ -222,6 +222,44 @@ class SettingsAdmin extends BaseController
         return redirect()->to(site_url('admin/settings'));
     }
 
+    public function updatePassword()
+    {
+        $adminId = (int) session()->get('admin_id');
+        $admin = $adminId > 0 ? $this->adminModel->find($adminId) : null;
+
+        if (! is_array($admin)) {
+            setToast('error', 'Account not found.');
+            return redirect()->to(site_url('admin/settings'));
+        }
+
+        $currentPassword = (string) $this->request->getPost('currentPassword');
+        $newPassword = (string) $this->request->getPost('newPassword');
+        $confirmPassword = (string) $this->request->getPost('confirmPassword');
+
+        if ($currentPassword === '' || ! password_verify($currentPassword, (string) ($admin['password'] ?? ''))) {
+            setToast('error', 'Current password is incorrect.');
+            return redirect()->to(site_url('admin/settings'))->withInput();
+        }
+
+        if (strlen($newPassword) < 8) {
+            setToast('error', 'New password must be at least 8 characters.');
+            return redirect()->to(site_url('admin/settings'))->withInput();
+        }
+
+        if ($newPassword !== $confirmPassword) {
+            setToast('error', 'New password and confirmation do not match.');
+            return redirect()->to(site_url('admin/settings'))->withInput();
+        }
+
+        if (! $this->adminModel->update($adminId, ['password' => $newPassword])) {
+            setToast('error', 'Unable to update password.');
+            return redirect()->to(site_url('admin/settings'))->withInput();
+        }
+
+        setToast('success', 'Password updated.');
+        return redirect()->to(site_url('admin/settings'));
+    }
+
     private function normalizeDateValue($value): ?string
     {
         $value = trim((string) ($value ?? ''));

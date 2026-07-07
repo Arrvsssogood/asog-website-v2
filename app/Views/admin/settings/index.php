@@ -360,11 +360,14 @@ $loaderStatus = $loaderStatus ?? [
     <section class="settings-group" aria-labelledby="google-account-settings-title">
         <div class="settings-group-head">
             <p class="settings-kicker">Your Account</p>
-            <h2 id="google-account-settings-title">Google Sign-In</h2>
-            <p class="settings-copy">Manage the Google account connected to your own login.</p>
+            <h2 id="google-account-settings-title">Account Security</h2>
+            <p class="settings-copy">Manage your own password and Google sign-in connection.</p>
         </div>
 
-        <?= view('admin/profile/_google_account_card', ['admin' => $currentAdmin ?? []]) ?>
+        <div class="settings-grid settings-grid-two">
+            <?= view('admin/profile/_password_card') ?>
+            <?= view('admin/profile/_google_account_card', ['admin' => $currentAdmin ?? []]) ?>
+        </div>
     </section>
 </div>
 

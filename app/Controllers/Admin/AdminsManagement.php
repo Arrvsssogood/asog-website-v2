@@ -18,7 +18,7 @@ class AdminsManagement extends BaseController
         $status    = trim((string) ($this->request->getGet('status') ?? 'all'));
         $status    = in_array($status, ['all', 'active', 'inactive'], true) ? $status : 'all';
         $role      = trim((string) ($this->request->getGet('role') ?? 'all'));
-        $role      = in_array($role, ['all', 'superadmin', 'admin'], true) ? $role : 'all';
+        $role      = in_array($role, ['all', 'superadmin', 'admin', 'editor'], true) ? $role : 'all';
         $sort      = trim((string) ($this->request->getGet('sort') ?? 'fullName'));
         $direction = trim((string) ($this->request->getGet('direction') ?? 'ASC'));
         $page      = max(1, (int) ($this->request->getGet('page') ?? 1));
@@ -227,10 +227,9 @@ class AdminsManagement extends BaseController
     private function updateAccountFromRequest(int $id): array
     {
         $fullName    = trim((string) $this->request->getPost('fullName'));
-        $email       = trim((string) $this->request->getPost('email'));
-        $googleEmail = trim((string) $this->request->getPost('googleEmail'));
-        $role        = $this->sanitizeRole((string) $this->request->getPost('role'));
-        $isActive    = (bool) $this->request->getPost('isActive');
+        $email    = trim((string) $this->request->getPost('email'));
+        $role     = $this->sanitizeRole((string) $this->request->getPost('role'));
+        $isActive = $this->request->getPost('isActive') === '1';
 
         if ($fullName === '') {
             return ['ok' => false, 'message' => 'Full name is required.'];
@@ -241,11 +240,10 @@ class AdminsManagement extends BaseController
         }
 
         $updateData = [
-            'fullName'    => $fullName,
-            'email'       => $email,
-            'googleEmail' => $googleEmail === '' ? null : $googleEmail,
-            'role'        => $role,
-            'isActive'    => $isActive ? 1 : 0,
+            'fullName' => $fullName,
+            'email'    => $email,
+            'role'     => $role,
+            'isActive' => $isActive ? 1 : 0,
         ];
 
         if (! $this->adminModel->update($id, $updateData)) {
