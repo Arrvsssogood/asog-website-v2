@@ -49,28 +49,7 @@ $pageTitle = $isEdit ? 'Edit Account' : 'New Account';
     </div>
 
     <?php if ($isEdit): ?>
-    <div class="form-sep"></div>
-    <h3>Google OAuth</h3>
-    <p class="form-desc">
-        The Google account identifier is saved automatically after this admin signs in with Google.
-        Use the field below only when their Google login email differs from their account email.
-    </p>
-
-    <div class="form-grid">
-        <div class="form-group">
-            <label for="googleEmail">Google Login Email</label>
-            <input type="email" id="googleEmail" name="googleEmail" 
-                value="<?= esc($admin['googleEmail'] ?? '') ?>" 
-                placeholder="user@gmail.com">
-        </div>
-    </div>
-
-    <div class="form-group checkbox">
-        <input type="checkbox" id="isActive" name="isActive" 
-            value="1" 
-            <?= $admin['isActive'] ? 'checked' : '' ?>>
-        <label for="isActive">Active</label>
-    </div>
+        <input type="hidden" name="isActive" value="<?= ! empty($admin['isActive']) ? '1' : '0' ?>">
     <?php endif; ?>
 
     <div class="form-actions">

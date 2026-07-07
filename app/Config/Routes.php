@@ -107,6 +107,7 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->get('google-account/callback', 'Admin\GoogleAccount::callback');
     $routes->post('google-account/unlink', 'Admin\GoogleAccount::unlink');
     $routes->get('settings', 'Admin\SettingsAdmin::index');
+    $routes->post('settings/password', 'Admin\SettingsAdmin::updatePassword');
 
     // ── editor + admin + superadmin ──────────────────────────────────────
     $routes->group('', ['filter' => 'role:editor'], function ($routes) {

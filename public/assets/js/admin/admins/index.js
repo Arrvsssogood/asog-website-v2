@@ -179,6 +179,8 @@
             window.AdminCustomSelect.init(modal);
         }
 
+        bindStatusAction(modal);
+
         var form = modal.querySelector('form[data-account-modal-form]');
         if (!form) return;
 
@@ -220,6 +222,35 @@
                     if (submitBtn) submitBtn.disabled = false;
                 });
         });
+    }
+
+    function bindStatusAction(modal) {
+        var wrap = modal.querySelector('[data-account-status-action]');
+        if (!wrap) return;
+
+        var input = wrap.querySelector('[data-account-status-input]');
+        var title = wrap.querySelector('[data-account-status-title]');
+        var copy = wrap.querySelector('[data-account-status-copy]');
+        var button = wrap.querySelector('[data-account-status-toggle]');
+        if (!input || !title || !copy || !button) return;
+
+        function renderStatus() {
+            var active = input.value === '1';
+            title.textContent = active ? 'Active' : 'Inactive';
+            copy.textContent = active
+                ? 'This account can currently sign in.'
+                : 'This account is currently blocked from signing in.';
+            button.textContent = active ? 'Deactivate Account' : 'Activate Account';
+            button.classList.toggle('btn-danger-soft', active);
+            button.classList.toggle('btn-p', !active);
+        }
+
+        button.addEventListener('click', function () {
+            input.value = input.value === '1' ? '0' : '1';
+            renderStatus();
+        });
+
+        renderStatus();
     }
 
     function showAccountToast(type, message) {

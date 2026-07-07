@@ -126,6 +126,23 @@
     padding: .75rem .8rem;
 }
 
+.admin-profile-field input {
+    width: 100%;
+    border: 1px solid #e4e2dd;
+    border-radius: .32rem;
+    background: #fff;
+    color: #1e293b;
+    font-family: inherit;
+    font-size: .78rem;
+    padding: .5rem .62rem;
+    outline: none;
+}
+
+.admin-profile-field input:focus {
+    border-color: #03558C;
+    box-shadow: 0 0 0 3px rgba(3, 85, 140, .08);
+}
+
 .admin-profile-field span {
     color: #94a3b8;
     font-size: .56rem;
@@ -152,6 +169,16 @@
 
 .admin-profile-actions form {
     margin: 0;
+}
+
+.admin-profile-password-form {
+    display: grid;
+    gap: .8rem;
+    padding: 1rem 1.1rem 0;
+}
+
+.admin-profile-password-form .admin-profile-actions {
+    margin: .15rem -1.1rem 0;
 }
 
 @media (max-width: 720px) {
