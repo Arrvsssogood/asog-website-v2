@@ -8,8 +8,8 @@ $errors = $modalErrors ?? [];
 $roleValue = (string) ($formData['role'] ?? old('role', $isEdit ? ($modalAdmin['role'] ?? 'superadmin') : 'superadmin'));
 $emailValue = (string) ($formData['email'] ?? old('email', $isEdit ? ($modalAdmin['email'] ?? '') : ''));
 $googleEmailValue = (string) ($formData['googleEmail'] ?? old('googleEmail', $isEdit ? ($modalAdmin['googleEmail'] ?? '') : ''));
-$googleSubValue = (string) ($formData['googleSub'] ?? old('googleSub', $isEdit ? ($modalAdmin['googleSub'] ?? '') : ''));
 $isActiveValue = (string) ($formData['isActive'] ?? old('isActive', $isEdit ? (string) ($modalAdmin['isActive'] ?? '1') : '1')) !== '0';
+$hasGoogleLink = $isEdit && ! empty($modalAdmin['googleSub']);
 ?>
 <div class="account-admin-modal" data-account-modal>
     <button type="button" class="account-admin-modal-backdrop" data-account-modal-close aria-label="Close modal"></button>
@@ -18,7 +18,7 @@ $isActiveValue = (string) ($formData['isActive'] ?? old('isActive', $isEdit ? (s
             <div>
                 <span>Admin access</span>
                 <h2 id="accountModalTitle"><?= $isEdit ? 'Edit Account' : 'New Account' ?></h2>
-                <p><?= $isEdit ? 'Update account access, Google link details, and status.' : 'Create an admin login invitation for Google authorization.' ?></p>
+                <p><?= $isEdit ? 'Update account access, Google login email, and status.' : 'Create an admin account. Google will link automatically on first sign-in.' ?></p>
             </div>
             <button type="button" class="account-admin-modal-close" data-account-modal-close aria-label="Close modal">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
@@ -66,14 +66,19 @@ $isActiveValue = (string) ($formData['isActive'] ?? old('isActive', $isEdit ? (s
 
                 <?php if ($isEdit): ?>
                     <section class="account-admin-modal-section">
-                        <div class="account-admin-modal-grid">
+                        <div class="account-admin-google-note">
+                            <div>
+                                <strong><?= $hasGoogleLink ? 'Google account linked' : 'Google account not linked yet' ?></strong>
+                                <span><?= $hasGoogleLink
+                                    ? 'The saved Google account identifier is managed automatically after sign-in.'
+                                    : 'The user only needs to sign in with Google using the account email below. The Google identifier will be saved automatically.' ?></span>
+                            </div>
+                        </div>
+
+                        <div class="account-admin-modal-grid account-admin-modal-grid-single">
                             <label class="account-admin-field">
-                                <span>Google email</span>
+                                <span>Google login email</span>
                                 <input type="email" name="googleEmail" value="<?= esc($googleEmailValue) ?>" placeholder="user@gmail.com">
-                            </label>
-                            <label class="account-admin-field">
-                                <span>Google ID</span>
-                                <input type="text" name="googleSub" value="<?= esc($googleSubValue) ?>" placeholder="Google account identifier">
                             </label>
                         </div>
                     </section>
