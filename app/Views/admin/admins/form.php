@@ -22,6 +22,15 @@ $pageTitle = $isEdit ? 'Edit Account' : 'New Account';
 
     <div class="form-grid">
         <div class="form-group">
+            <label for="fullName">Full name *</label>
+            <input type="text" id="fullName" name="fullName"
+                value="<?= esc($isEdit ? ($admin['fullName'] ?? '') : old('fullName')) ?>"
+                maxlength="150"
+                required
+                placeholder="Juan Dela Cruz">
+        </div>
+
+        <div class="form-group">
             <label for="email">Email *</label>
             <input type="email" id="email" name="email" 
                 value="<?= esc($isEdit ? $admin['email'] : old('email')) ?>" 

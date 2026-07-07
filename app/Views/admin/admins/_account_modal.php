@@ -6,10 +6,10 @@ $formUrl = $modalSubmitUrl ?? ($isEdit
     : site_url('admin/accounts/modal'));
 $errors = $modalErrors ?? [];
 $roleValue = (string) ($formData['role'] ?? old('role', $isEdit ? ($modalAdmin['role'] ?? 'superadmin') : 'superadmin'));
+$fullNameValue = (string) ($formData['fullName'] ?? old('fullName', $isEdit ? ($modalAdmin['fullName'] ?? '') : ''));
 $emailValue = (string) ($formData['email'] ?? old('email', $isEdit ? ($modalAdmin['email'] ?? '') : ''));
 $googleEmailValue = (string) ($formData['googleEmail'] ?? old('googleEmail', $isEdit ? ($modalAdmin['googleEmail'] ?? '') : ''));
 $isActiveValue = (string) ($formData['isActive'] ?? old('isActive', $isEdit ? (string) ($modalAdmin['isActive'] ?? '1') : '1')) !== '0';
-$hasGoogleLink = $isEdit && ! empty($modalAdmin['googleSub']);
 ?>
 <div class="account-admin-modal" data-account-modal>
     <button type="button" class="account-admin-modal-backdrop" data-account-modal-close aria-label="Close modal"></button>
@@ -41,12 +41,10 @@ $hasGoogleLink = $isEdit && ! empty($modalAdmin['googleSub']);
             <div class="account-admin-modal-body">
                 <section class="account-admin-modal-section">
                     <div class="account-admin-modal-grid">
-                        <?php if ($isEdit): ?>
-                            <div class="account-admin-field">
-                                <span>Full name</span>
-                                <div class="account-admin-field-static"><?= esc((string) ($modalAdmin['fullName'] ?? 'Pending Google Name')) ?></div>
-                            </div>
-                        <?php endif; ?>
+                        <label class="account-admin-field">
+                            <span>Full name</span>
+                            <input type="text" name="fullName" value="<?= esc($fullNameValue) ?>" maxlength="150" required placeholder="Juan Dela Cruz">
+                        </label>
 
                         <label class="account-admin-field">
                             <span>Email</span>
@@ -66,15 +64,6 @@ $hasGoogleLink = $isEdit && ! empty($modalAdmin['googleSub']);
 
                 <?php if ($isEdit): ?>
                     <section class="account-admin-modal-section">
-                        <div class="account-admin-google-note">
-                            <div>
-                                <strong><?= $hasGoogleLink ? 'Google account linked' : 'Google account not linked yet' ?></strong>
-                                <span><?= $hasGoogleLink
-                                    ? 'The saved Google account identifier is managed automatically after sign-in.'
-                                    : 'The user only needs to sign in with Google using the account email below. The Google identifier will be saved automatically.' ?></span>
-                            </div>
-                        </div>
-
                         <div class="account-admin-modal-grid account-admin-modal-grid-single">
                             <label class="account-admin-field">
                                 <span>Google login email</span>

@@ -49,20 +49,55 @@ Use this checklist before the first production deployment and for later releases
 
 ## 3. Google Cloud Console URL Replacement
 
-- [ ] Use an ASOG-owned Google Cloud project/OAuth client that current maintainers can access.
+- [ ] Use an ASOG-owned Google Cloud project that current maintainers can access.
 - [ ] Do not depend on an old OAuth client owned only by a previous developer/intern.
-- [ ] Update production `.env` with the ASOG-owned `googleOAuthClientId` and `googleOAuthClientSecret`.
-- [ ] Gmail API OAuth client has this authorized redirect URI:
-  - `https://asogtbi.com/asog-admin/gmail-api/callback`
-- [ ] Admin Google login OAuth client has this authorized redirect URI:
-  - `https://asogtbi.com/asog-admin/google/callback`
-- [ ] Admin self-service Google account linking has this authorized redirect URI:
-  - `https://asogtbi.com/admin/google-account/callback`
-- [ ] Guess the Startup Google login OAuth client has this authorized redirect URI:
-  - `https://asogtbi.com/games/guess-the-startup/google/callback`
-- [ ] reCAPTCHA production key includes:
-  - `asogtbi.com`
-  - `www.asogtbi.com` only if the `www` domain is used
+- [ ] In `Google Auth platform > Branding`, confirm:
+  - [ ] app name is `ASOG TBI Website`
+  - [ ] support email is ASOG-owned
+  - [ ] developer contact email is ASOG-owned
+  - [ ] authorized domain includes `asogtbi.com`
+  - [ ] homepage URL is `https://asogtbi.com/`
+  - [ ] privacy/terms URLs are filled only if those public pages exist
+- [ ] In `Google Auth platform > Data Access`, confirm only needed scopes are enabled:
+  - [ ] login/account linking client: `openid`, `email`, `profile`
+  - [ ] Gmail API mailer client: `https://www.googleapis.com/auth/gmail.send`
+- [ ] In `Google Auth platform > Audience`, confirm production readiness:
+  - [ ] during local testing, add the sender/admin Google accounts as test users
+  - [ ] before production launch, publish the app to Production so admin Google login is not limited to test users
+  - [ ] before generating the final Gmail API refresh token, publish to Production to avoid External Testing refresh-token expiry
+  - [ ] if Google requires verification because of branding/logo or Gmail scope, complete the requested verification steps or document the temporary launch limitation
+- [ ] In `Google Auth platform > Clients`, confirm the ASOG-owned login OAuth client has these authorized redirect URIs:
+  - [ ] `http://localhost:8080/asog-admin/google/callback`
+  - [ ] `http://localhost:8080/admin/google-account/callback`
+  - [ ] `http://localhost:8080/games/guess-the-startup/google/callback`
+  - [ ] `https://asogtbi.com/asog-admin/google/callback`
+  - [ ] `https://asogtbi.com/admin/google-account/callback`
+  - [ ] `https://asogtbi.com/games/guess-the-startup/google/callback`
+- [ ] Update production `.env` with the ASOG-owned login OAuth values:
+  ```ini
+  googleOAuthClientId = production-client-id
+  googleOAuthClientSecret = production-client-secret
+  googleOAuthRedirectUri = https://asogtbi.com/asog-admin/google/callback
+  googleOAuthAccountRedirectUri = https://asogtbi.com/admin/google-account/callback
+  googleOAuthGameRedirectUri = https://asogtbi.com/games/guess-the-startup/google/callback
+  ```
+- [ ] In `Google Auth platform > Clients`, confirm the Gmail API OAuth client has this authorized redirect URI:
+  - [ ] `https://asogtbi.com/asog-admin/gmail-api/callback`
+- [ ] Update production `.env` with the Gmail API OAuth values from the ASOG-owned mailer client:
+  ```ini
+  gmailApi.clientId = production-gmail-client-id
+  gmailApi.clientSecret = production-gmail-client-secret
+  gmailApi.redirectUri = https://asogtbi.com/asog-admin/gmail-api/callback
+  gmailApi.setupEnabled = false
+  ```
+- [ ] In Google Cloud reCAPTCHA, confirm the production key includes:
+  - [ ] `asogtbi.com`
+  - [ ] `www.asogtbi.com` only if the `www` domain is used
+- [ ] Update production `.env` with production reCAPTCHA values:
+  ```ini
+  recaptcha.enabled = true
+  recaptcha.allowedHostnames = 'asogtbi.com'
+  ```
 - [ ] Send one test email and verify all links point to `https://asogtbi.com/...`, not `.test` or localhost.
 
 ## 4. GitHub To Hostinger Deployment
