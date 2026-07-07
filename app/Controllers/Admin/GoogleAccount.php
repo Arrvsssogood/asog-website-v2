@@ -91,7 +91,8 @@ class GoogleAccount extends BaseController
             'lastLoginAt' => date('Y-m-d H:i:s'),
         ];
 
-        if ($googleName !== '') {
+        $existingName = trim((string) ($admin['fullName'] ?? ''));
+        if ($googleName !== '' && ($existingName === '' || strcasecmp($existingName, 'Pending Google Name') === 0)) {
             $updateData['fullName'] = $googleName;
             session()->set('admin_name', $googleName);
         }

@@ -195,8 +195,13 @@ class AdminsManagement extends BaseController
 
     private function createAccountFromRequest(): array
     {
+        $fullName = trim((string) $this->request->getPost('fullName'));
         $email = trim((string) $this->request->getPost('email'));
         $role  = $this->sanitizeRole((string) $this->request->getPost('role'));
+
+        if ($fullName === '') {
+            return ['ok' => false, 'message' => 'Full name is required.'];
+        }
 
         if ($this->adminModel->isEmailTaken($email)) {
             return ['ok' => false, 'message' => 'That email is already used by another admin.'];
@@ -205,7 +210,7 @@ class AdminsManagement extends BaseController
         $tempPassword = bin2hex(random_bytes(8));
 
         $data = [
-            'fullName' => 'Pending Google Name',
+            'fullName' => $fullName,
             'email'    => $email,
             'password' => $tempPassword,
             'role'     => $role,
@@ -221,16 +226,22 @@ class AdminsManagement extends BaseController
 
     private function updateAccountFromRequest(int $id): array
     {
+        $fullName    = trim((string) $this->request->getPost('fullName'));
         $email       = trim((string) $this->request->getPost('email'));
         $googleEmail = trim((string) $this->request->getPost('googleEmail'));
         $role        = $this->sanitizeRole((string) $this->request->getPost('role'));
         $isActive    = (bool) $this->request->getPost('isActive');
+
+        if ($fullName === '') {
+            return ['ok' => false, 'message' => 'Full name is required.'];
+        }
 
         if ($this->adminModel->isEmailTaken($email, $id)) {
             return ['ok' => false, 'message' => 'That email is already used by another admin.'];
         }
 
         $updateData = [
+            'fullName'    => $fullName,
             'email'       => $email,
             'googleEmail' => $googleEmail === '' ? null : $googleEmail,
             'role'        => $role,

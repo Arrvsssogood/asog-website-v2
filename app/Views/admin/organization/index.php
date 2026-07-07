@@ -480,14 +480,13 @@
                 reader.onload = (event) => {
                     const preview = zone.querySelector('.org-photo-upload-preview');
                     if (!preview) return;
-                    let img = preview.querySelector('.org-photo-preview');
-                    if (!img) {
-                        img = document.createElement('img');
-                        img.className = 'org-photo-preview';
-                        img.alt = '';
-                        preview.appendChild(img);
-                    }
+                    preview.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.className = 'org-photo-preview';
+                    img.alt = 'Selected photo preview';
                     img.src = event.target.result;
+                    preview.appendChild(img);
+                    zone.classList.add('has-preview');
                 };
                 reader.readAsDataURL(file);
             };
@@ -509,7 +508,7 @@
                 const transfer = new DataTransfer();
                 transfer.items.add(files[0]);
                 input.files = transfer.files;
-                renderPreview(files[0]);
+                input.dispatchEvent(new Event('change', { bubbles: true }));
             });
 
             input.addEventListener('change', () => {

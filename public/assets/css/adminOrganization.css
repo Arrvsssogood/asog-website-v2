@@ -93,7 +93,9 @@
 .org-photo-upload-zone input[type=file]{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
 .org-photo-upload-label{font-size:.7rem;color:#94a3b8}
 .org-photo-upload-label strong{color:#03558C}
+.org-photo-upload-zone.has-preview .org-photo-upload-label{display:none}
 .org-photo-upload-preview{margin-top:.5rem;display:flex;align-items:center;justify-content:center;width:100%}
+.org-photo-upload-zone.has-preview .org-photo-upload-preview{margin-top:0}
 .org-photo-preview{max-width:104px;max-height:104px;border-radius:.35rem;object-fit:contain;border:1px solid #eceae6;background:#fff}
 .org-admin-switch-row{display:flex;align-items:center;justify-content:space-between;gap:.85rem;font-size:.78rem;color:#1e293b;background:#fff;border:1px solid #e4e2dd;border-radius:.45rem;padding:.72rem .78rem;min-width:0}
 .org-switch-copy{display:block;min-width:0}
