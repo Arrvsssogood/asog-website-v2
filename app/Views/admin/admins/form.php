@@ -42,20 +42,17 @@ $pageTitle = $isEdit ? 'Edit Account' : 'New Account';
     <?php if ($isEdit): ?>
     <div class="form-sep"></div>
     <h3>Google OAuth</h3>
+    <p class="form-desc">
+        The Google account identifier is saved automatically after this admin signs in with Google.
+        Use the field below only when their Google login email differs from their account email.
+    </p>
 
     <div class="form-grid">
         <div class="form-group">
-            <label for="googleEmail">Google Email</label>
+            <label for="googleEmail">Google Login Email</label>
             <input type="email" id="googleEmail" name="googleEmail" 
                 value="<?= esc($admin['googleEmail'] ?? '') ?>" 
                 placeholder="user@gmail.com">
-        </div>
-
-        <div class="form-group">
-            <label for="googleSub">Google ID</label>
-            <input type="text" id="googleSub" name="googleSub" 
-                value="<?= esc($admin['googleSub'] ?? '') ?>" 
-                placeholder="Google account identifier">
         </div>
     </div>
 

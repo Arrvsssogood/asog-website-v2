@@ -1,6 +1,8 @@
 <link rel="stylesheet" href="<?= base_url('assets/css/adminSettings.css') ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/adminProfile.css') ?>">
 
 <?php
+$canManageSiteSettings = ! empty($canManageSiteSettings);
 $duplicateEmailSetting = old('allowDuplicateEmails');
 $allowDuplicateEmails = $duplicateEmailSetting !== null
     ? $duplicateEmailSetting === '1'
@@ -39,6 +41,7 @@ $loaderStatus = $loaderStatus ?? [
 ?>
 
 <div class="settings-stack">
+    <?php if ($canManageSiteSettings): ?>
     <section class="settings-group" aria-labelledby="public-application-settings-title">
         <div class="settings-group-head">
             <p class="settings-kicker">Applications</p>
@@ -352,8 +355,20 @@ $loaderStatus = $loaderStatus ?? [
             </form>
         </div>
     </section>
+    <?php endif; ?>
+
+    <section class="settings-group" aria-labelledby="google-account-settings-title">
+        <div class="settings-group-head">
+            <p class="settings-kicker">Your Account</p>
+            <h2 id="google-account-settings-title">Google Sign-In</h2>
+            <p class="settings-copy">Manage the Google account connected to your own login.</p>
+        </div>
+
+        <?= view('admin/profile/_google_account_card', ['admin' => $currentAdmin ?? []]) ?>
+    </section>
 </div>
 
+<?php if ($canManageSiteSettings): ?>
 <script>
 (() => {
     document.querySelectorAll('[data-toggle-form]').forEach((form) => {
@@ -374,3 +389,4 @@ $loaderStatus = $loaderStatus ?? [
     });
 })();
 </script>
+<?php endif; ?>

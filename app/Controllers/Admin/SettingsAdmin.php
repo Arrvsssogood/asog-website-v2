@@ -10,6 +10,9 @@ class SettingsAdmin extends BaseController
     public function index()
     {
         $settingModel = new LandingSettingModel();
+        $sessionRole = (string) session()->get('admin_role');
+        $currentAdminId = (int) session()->get('admin_id');
+        $currentAdmin = $currentAdminId > 0 ? $this->adminModel->find($currentAdminId) : null;
 
         $guessStartupRaw = trim((string) $settingModel->getValue(LandingSettingModel::KEY_GUESS_STARTUP_ENABLED, '1'));
         $isGuessStartupEnabled = $guessStartupRaw !== '0';
@@ -64,6 +67,8 @@ class SettingsAdmin extends BaseController
         $data = [
             'pageTitle'             => 'Settings',
             'activePage'            => 'settings',
+            'currentAdmin'          => is_array($currentAdmin) ? $currentAdmin : null,
+            'canManageSiteSettings' => $sessionRole === 'superadmin',
             'isGuessStartupEnabled' => $isGuessStartupEnabled,
             'isGuessStartupVisible' => $isGuessStartupVisible,
             'showInternsSection'    => $showInternsSection,

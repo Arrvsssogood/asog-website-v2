@@ -223,7 +223,6 @@ class AdminsManagement extends BaseController
     {
         $email       = trim((string) $this->request->getPost('email'));
         $googleEmail = trim((string) $this->request->getPost('googleEmail'));
-        $googleSub   = trim((string) $this->request->getPost('googleSub'));
         $role        = $this->sanitizeRole((string) $this->request->getPost('role'));
         $isActive    = (bool) $this->request->getPost('isActive');
 
@@ -234,7 +233,6 @@ class AdminsManagement extends BaseController
         $updateData = [
             'email'       => $email,
             'googleEmail' => $googleEmail === '' ? null : $googleEmail,
-            'googleSub'   => $googleSub === '' ? null : $googleSub,
             'role'        => $role,
             'isActive'    => $isActive ? 1 : 0,
         ];

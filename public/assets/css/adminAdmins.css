@@ -504,6 +504,36 @@
     gap: .75rem;
 }
 
+.account-admin-modal-grid-single {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.account-admin-google-note {
+    display: flex;
+    gap: .7rem;
+    align-items: flex-start;
+    border: 1px solid rgba(3, 85, 140, .14);
+    border-radius: .42rem;
+    background: #f7fbfe;
+    padding: .72rem .78rem;
+    margin-bottom: .75rem;
+}
+
+.account-admin-google-note strong {
+    display: block;
+    color: #1e293b;
+    font-size: .76rem;
+    line-height: 1.3;
+}
+
+.account-admin-google-note span {
+    display: block;
+    margin-top: .12rem;
+    color: #64748b;
+    font-size: .66rem;
+    line-height: 1.5;
+}
+
 .account-admin-field {
     display: grid;
     gap: .28rem;
