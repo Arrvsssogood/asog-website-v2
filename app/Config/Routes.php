@@ -156,6 +156,10 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
         $routes->put('applications/(:num)/toggle-archive', 'Admin\ApplicationsAdmin::toggleArchive/$1');
         $routes->post('applications/bulk', 'Admin\ApplicationsAdmin::bulk');
 
+        // Admin Notifications
+        $routes->put('notifications/(:num)/read', 'Admin\NotificationsAdmin::markRead/$1');
+        $routes->put('notifications/read-all', 'Admin\NotificationsAdmin::markAllRead');
+
         // Contact Messages
         $routes->get('messages', 'Admin\MessagesAdmin::index');
         $routes->get('messages/(:num)', 'Admin\MessagesAdmin::show/$1');

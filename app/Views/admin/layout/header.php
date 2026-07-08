@@ -112,8 +112,80 @@
                     <?= esc($pageTitle ?? 'Dashboard') ?>
                 <?php endif; ?>
             </h1>
-            <div class="bar-date">
-                <?= date('l, M j, Y') ?>
+            <div class="bar-tools">
+                <?php
+                    $canViewNotifications = in_array($sessionRole ?? '', ['admin', 'superadmin'], true);
+                    $notifications = $adminNotifications ?? [];
+                    $unreadNotifications = (int) ($adminUnreadNotificationCount ?? 0);
+                ?>
+                <?php if ($canViewNotifications): ?>
+                <div class="admin-notifications" data-admin-notifications>
+                    <button type="button"
+                        class="admin-notifications-trigger"
+                        data-admin-notifications-trigger
+                        aria-label="Open admin notifications"
+                        aria-expanded="false">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17a3 3 0 006 0"/>
+                        </svg>
+                        <?php if ($unreadNotifications > 0): ?>
+                            <span class="admin-notifications-count" data-admin-notifications-count><?= $unreadNotifications > 9 ? '9+' : $unreadNotifications ?></span>
+                        <?php endif; ?>
+                    </button>
+                    <div class="admin-notifications-menu" data-admin-notifications-menu>
+                        <div class="admin-notifications-head">
+                            <div>
+                                <strong>Notifications</strong>
+                                <span data-admin-notifications-unread-label><?= $unreadNotifications ?> unread</span>
+                            </div>
+                            <?php if (! empty($notifications)): ?>
+                                <button type="button"
+                                    data-admin-notifications-read-all
+                                    data-read-url="<?= site_url('admin/notifications/read-all') ?>">
+                                    Mark all read
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                        <div class="admin-notifications-list">
+                            <?php if (empty($notifications)): ?>
+                                <div class="admin-notifications-empty">No notifications yet.</div>
+                            <?php else: ?>
+                                <?php foreach ($notifications as $notification): ?>
+                                    <?php
+                                        $notificationId = (int) ($notification['id'] ?? 0);
+                                        $isRead = ! empty($notification['isRead']);
+                                        $type = (string) ($notification['type'] ?? 'system_update');
+                                        $href = (string) ($notification['link'] ?? site_url('admin'));
+                                        $created = (string) ($notification['createdAt'] ?? '');
+                                        $timeLabel = $created !== '' && strtotime($created) !== false
+                                            ? date('M j, g:i A', strtotime($created))
+                                            : '';
+                                    ?>
+                                    <a href="<?= esc($href, 'attr') ?>"
+                                        class="admin-notification-item <?= $isRead ? 'is-read' : 'is-unread' ?>"
+                                        data-admin-notification-item
+                                        data-read-url="<?= site_url('admin/notifications/' . $notificationId . '/read') ?>">
+                                        <span class="admin-notification-dot type-<?= esc($type, 'attr') ?>"></span>
+                                        <span class="admin-notification-copy">
+                                            <strong><?= esc((string) ($notification['title'] ?? 'Notification')) ?></strong>
+                                            <?php if (! empty($notification['body'])): ?>
+                                                <span><?= esc((string) $notification['body']) ?></span>
+                                            <?php endif; ?>
+                                            <?php if ($timeLabel !== ''): ?>
+                                                <small><?= esc($timeLabel) ?></small>
+                                            <?php endif; ?>
+                                        </span>
+                                    </a>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+                <div class="bar-date">
+                    <?= date('l, M j, Y') ?>
+                </div>
             </div>
         </header>
 
