@@ -179,6 +179,7 @@
             window.AdminCustomSelect.init(modal);
         }
 
+        bindRoleAction(modal);
         bindStatusAction(modal);
 
         var form = modal.querySelector('form[data-account-modal-form]');
@@ -212,6 +213,14 @@
                     }
 
                     closeModal();
+                    if (result.data.requiresReauth) {
+                        showAccountToast('info', 'Your access was updated. Please sign in again to continue.');
+                        window.setTimeout(function () {
+                            window.location.href = result.data.logoutUrl || '/asog-admin/logout';
+                        }, 900);
+                        return;
+                    }
+
                     showAccountToast('success', result.data.message || 'Account saved.');
                     loadPage(location.href, { skipHistory: true });
                 })
@@ -224,6 +233,73 @@
         });
     }
 
+    function bindRoleAction(modal) {
+        var select = modal.querySelector('[data-account-role-select]');
+        if (!select) return;
+
+        var accountId = parseInt(modal.getAttribute('data-account-id') || '0', 10);
+        var currentAdminId = parseInt(modal.getAttribute('data-current-admin-id') || '0', 10);
+        var originalRole = select.getAttribute('data-original-role') || modal.getAttribute('data-original-role') || '';
+        var previousRole = select.value;
+        var suppressChange = false;
+
+        function syncCustomSelect() {
+            var wrap = select.closest('.csel');
+            if (!wrap) return;
+            var selectedOption = select.options[select.selectedIndex];
+            var valueNode = wrap.querySelector('.csel-val');
+            if (valueNode && selectedOption) {
+                valueNode.textContent = selectedOption.text;
+                valueNode.classList.toggle('csel-val--ph', !selectedOption.value);
+            }
+            wrap.querySelectorAll('.csel-opt').forEach(function (optionNode) {
+                optionNode.classList.toggle('csel-opt--sel', optionNode.dataset.value === select.value);
+            });
+        }
+
+        function restorePreviousRole() {
+            suppressChange = true;
+            select.value = previousRole;
+            syncCustomSelect();
+            window.setTimeout(function () {
+                suppressChange = false;
+            }, 0);
+        }
+
+        select.addEventListener('change', function () {
+            if (suppressChange) return;
+
+            var nextRole = select.value;
+            var isSelfSuperadminDemotion = accountId > 0
+                && accountId === currentAdminId
+                && originalRole === 'superadmin'
+                && nextRole !== 'superadmin';
+
+            if (!isSelfSuperadminDemotion) {
+                previousRole = nextRole;
+                return;
+            }
+
+            if (!window.AdminDeleteConfirm || typeof window.AdminDeleteConfirm.ask !== 'function') {
+                previousRole = nextRole;
+                return;
+            }
+
+            window.AdminDeleteConfirm.ask({
+                title: 'Change your role?',
+                message: 'You are changing your own role from Super Admin. After you save changes, you will be signed out and your dashboard will use the new role access the next time you sign in. Continue only if another active super admin can still manage accounts.',
+                confirmLabel: 'Continue',
+                cancelLabel: 'Cancel',
+            }).then(function (confirmed) {
+                if (confirmed) {
+                    previousRole = nextRole;
+                    return;
+                }
+                restorePreviousRole();
+            });
+        });
+    }
+
     function bindStatusAction(modal) {
         var wrap = modal.querySelector('[data-account-status-action]');
         if (!wrap) return;
@@ -233,21 +309,47 @@
         var copy = wrap.querySelector('[data-account-status-copy]');
         var button = wrap.querySelector('[data-account-status-toggle]');
         if (!input || !title || !copy || !button) return;
+        var accountId = parseInt(modal.getAttribute('data-account-id') || '0', 10);
+        var currentAdminId = parseInt(modal.getAttribute('data-current-admin-id') || '0', 10);
 
         function renderStatus() {
             var active = input.value === '1';
             title.textContent = active ? 'Active' : 'Inactive';
             copy.textContent = active
-                ? 'This account can currently sign in.'
-                : 'This account is currently blocked from signing in.';
+                ? 'This account can sign in. Save changes after deactivating to apply the update.'
+                : 'This account cannot sign in. Save changes after activating to apply the update.';
             button.textContent = active ? 'Deactivate Account' : 'Activate Account';
             button.classList.toggle('btn-danger-soft', active);
             button.classList.toggle('btn-p', !active);
         }
 
-        button.addEventListener('click', function () {
+        function flipStatus() {
             input.value = input.value === '1' ? '0' : '1';
             renderStatus();
+        }
+
+        button.addEventListener('click', function () {
+            var isSelfDeactivation = input.value === '1' && accountId > 0 && accountId === currentAdminId;
+            if (!isSelfDeactivation) {
+                flipStatus();
+                return;
+            }
+
+            if (!window.AdminDeleteConfirm || typeof window.AdminDeleteConfirm.ask !== 'function') {
+                flipStatus();
+                return;
+            }
+
+            window.AdminDeleteConfirm.ask({
+                title: 'Deactivate your account?',
+                message: 'You are deactivating your own account. After you save changes, you may be unable to sign in. Continue only if another active super admin can manage accounts.',
+                confirmLabel: 'Continue',
+                cancelLabel: 'Cancel',
+            }).then(function (confirmed) {
+                if (confirmed) {
+                    flipStatus();
+                }
+            });
         });
 
         renderStatus();

@@ -122,6 +122,27 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
         $routes->get('posts/(:num)/edit', 'Admin\PostsAdmin::edit/$1');
         $routes->put('posts/(:num)', 'Admin\PostsAdmin::update/$1');
         $routes->delete('posts/(:num)', 'Admin\PostsAdmin::delete/$1');
+
+        // Incubatees Management
+        $routes->get('incubatees', 'Admin\IncubateesAdmin::index');
+        $routes->get('incubatees/create', 'Admin\IncubateesAdmin::create');
+        $routes->post('incubatees', 'Admin\IncubateesAdmin::store');
+        $routes->post('incubatees/reorder', 'Admin\IncubateesAdmin::saveOrder');
+        $routes->get('incubatees/(:num)/edit', 'Admin\IncubateesAdmin::edit/$1');
+        $routes->post('incubatees/(:num)/update', 'Admin\IncubateesAdmin::update/$1');
+        $routes->post('incubatees/(:num)/delete', 'Admin\IncubateesAdmin::delete/$1');
+
+        // Cohort Management (AJAX)
+        $routes->post('cohorts/add', 'Admin\IncubateesAdmin::addCohort');
+        $routes->post('cohorts/(:num)/delete', 'Admin\IncubateesAdmin::deleteCohort/$1');
+
+        // Apply Page FAQ Management
+        $routes->get('faqs', 'Admin\FaqsAdmin::index');
+        $routes->post('faqs', 'Admin\FaqsAdmin::store');
+        $routes->post('faqs/section', 'Admin\FaqsAdmin::updateSection');
+        $routes->post('faqs/(:num)/update', 'Admin\FaqsAdmin::update/$1');
+        $routes->post('faqs/(:num)/move/(:alpha)', 'Admin\FaqsAdmin::move/$1/$2');
+        $routes->post('faqs/(:num)/delete', 'Admin\FaqsAdmin::delete/$1');
     });
 
     // ── admin + superadmin ───────────────────────────────────────────────
@@ -142,23 +163,6 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
         $routes->delete('messages/(:num)', 'Admin\MessagesAdmin::delete/$1');
         $routes->post('messages/bulk', 'Admin\MessagesAdmin::bulkAction');
 
-        // Incubatees Management
-        $routes->get('incubatees', 'Admin\IncubateesAdmin::index');
-        $routes->get('incubatees/create', 'Admin\IncubateesAdmin::create');
-        $routes->post('incubatees', 'Admin\IncubateesAdmin::store');
-        $routes->post('incubatees/reorder', 'Admin\IncubateesAdmin::saveOrder');
-        $routes->get('incubatees/(:num)/edit', 'Admin\IncubateesAdmin::edit/$1');
-        $routes->post('incubatees/(:num)/update', 'Admin\IncubateesAdmin::update/$1');
-        $routes->post('incubatees/(:num)/delete', 'Admin\IncubateesAdmin::delete/$1');
-
-        // Apply Page FAQ Management
-        $routes->get('faqs', 'Admin\FaqsAdmin::index');
-        $routes->post('faqs', 'Admin\FaqsAdmin::store');
-        $routes->post('faqs/section', 'Admin\FaqsAdmin::updateSection');
-        $routes->post('faqs/(:num)/update', 'Admin\FaqsAdmin::update/$1');
-        $routes->post('faqs/(:num)/move/(:alpha)', 'Admin\FaqsAdmin::move/$1/$2');
-        $routes->post('faqs/(:num)/delete', 'Admin\FaqsAdmin::delete/$1');
-
         // Organization
         $routes->get('organization', 'Admin\OrganizationAdmin::index');
         $routes->get('organization/modal', 'Admin\OrganizationAdmin::modalCreate');
@@ -172,10 +176,6 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
         $routes->post('organization/members/(:num)/update', 'Admin\OrganizationAdmin::update/$1');
         $routes->post('organization/members/(:num)/delete', 'Admin\OrganizationAdmin::delete/$1');
         $routes->post('organization/members/(:num)/move/(:alpha)', 'Admin\OrganizationAdmin::move/$1/$2');
-
-        // Cohort Management (AJAX)
-        $routes->post('cohorts/add', 'Admin\IncubateesAdmin::addCohort');
-        $routes->post('cohorts/(:num)/delete', 'Admin\IncubateesAdmin::deleteCohort/$1');
 
         // Legacy redirect for old bookmarks
         $routes->addRedirect('games', 'admin/settings');
