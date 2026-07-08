@@ -66,6 +66,11 @@ class AdminsManagement extends BaseController
             return redirect()->back()->withInput();
         }
 
+        if (! empty($result['requiresReauth'])) {
+            session()->destroy();
+            return redirect()->to('/asog-admin')->with('success', 'Your role was updated. Please sign in again to continue with your new access.');
+        }
+
         setToast('success', $result['message']);
         return redirect()->to('admin/accounts');
     }
@@ -166,6 +171,8 @@ class AdminsManagement extends BaseController
         return $this->response->setJSON([
             'ok' => true,
             'message' => $result['message'],
+            'requiresReauth' => ! empty($result['requiresReauth']),
+            'logoutUrl' => site_url('asog-admin/logout'),
         ]);
     }
 
@@ -182,6 +189,11 @@ class AdminsManagement extends BaseController
         $admin = $this->adminModel->find($id);
         if ($admin === null) {
             return redirect()->to('admin/accounts')->with('error', 'Admin not found.');
+        }
+
+        if ($this->wouldRemoveLastActiveSuperadmin($admin, null, false)) {
+            setToast('error', $this->lastSuperadminMessage());
+            return redirect()->to('admin/accounts');
         }
 
         if ($this->adminModel->delete($id)) {
@@ -226,6 +238,11 @@ class AdminsManagement extends BaseController
 
     private function updateAccountFromRequest(int $id): array
     {
+        $admin = $this->adminModel->find($id);
+        if (! is_array($admin)) {
+            return ['ok' => false, 'message' => 'Account not found.'];
+        }
+
         $fullName    = trim((string) $this->request->getPost('fullName'));
         $email    = trim((string) $this->request->getPost('email'));
         $role     = $this->sanitizeRole((string) $this->request->getPost('role'));
@@ -239,6 +256,10 @@ class AdminsManagement extends BaseController
             return ['ok' => false, 'message' => 'That email is already used by another admin.'];
         }
 
+        if ($this->wouldRemoveLastActiveSuperadmin($admin, $role, $isActive)) {
+            return ['ok' => false, 'message' => $this->lastSuperadminMessage()];
+        }
+
         $updateData = [
             'fullName' => $fullName,
             'email'    => $email,
@@ -250,13 +271,63 @@ class AdminsManagement extends BaseController
             return ['ok' => false, 'message' => 'Error: ' . implode(', ', $this->adminModel->errors())];
         }
 
-        return ['ok' => true, 'message' => 'Account updated.'];
+        return [
+            'ok' => true,
+            'message' => 'Account updated.',
+            'requiresReauth' => $this->requiresReauthAfterSelfUpdate($admin, $role, $isActive),
+        ];
     }
 
     private function sanitizeRole(string $role): string
     {
         $role = trim($role);
         return in_array($role, ['superadmin', 'admin', 'editor'], true) ? $role : 'superadmin';
+    }
+
+    private function requiresReauthAfterSelfUpdate(array $admin, string $nextRole, bool $nextActive): bool
+    {
+        $adminId = (int) ($admin['id'] ?? 0);
+        $currentAdminId = (int) session()->get('admin_id');
+
+        if ($adminId === 0 || $adminId !== $currentAdminId) {
+            return false;
+        }
+
+        $currentRole = (string) session()->get('admin_role');
+
+        return $currentRole !== $nextRole || ! $nextActive;
+    }
+
+    private function wouldRemoveLastActiveSuperadmin(array $admin, ?string $nextRole, bool $nextActive): bool
+    {
+        $adminId = (int) ($admin['id'] ?? 0);
+        $currentlyActiveSuperadmin = (string) ($admin['role'] ?? '') === 'superadmin'
+            && (int) ($admin['isActive'] ?? 0) === 1;
+        $willRemainActiveSuperadmin = $nextRole === 'superadmin' && $nextActive;
+
+        if (! $currentlyActiveSuperadmin || $willRemainActiveSuperadmin) {
+            return false;
+        }
+
+        return $this->activeSuperadminCount($adminId) === 0;
+    }
+
+    private function activeSuperadminCount(?int $excludeId = null): int
+    {
+        $builder = $this->adminModel->builder()
+            ->where('role', 'superadmin')
+            ->where('isActive', 1);
+
+        if ($excludeId !== null && $excludeId > 0) {
+            $builder->where('id !=', $excludeId);
+        }
+
+        return (int) $builder->countAllResults();
+    }
+
+    private function lastSuperadminMessage(): string
+    {
+        return 'At least one active super admin is required. Add or activate another super admin before changing this account.';
     }
 
     private function renderAccountModal(array $data): string

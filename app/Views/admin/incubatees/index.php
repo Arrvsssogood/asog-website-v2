@@ -69,6 +69,13 @@
     </div>
     <div class="inc-admin-toolbar-actions">
         <div class="toolbar-actions">
+            <a href="<?= site_url('incubatees') ?>" target="_blank" rel="noopener" class="btn btn-o">
+                View Incubatees page
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h8v8"/>
+                </svg>
+            </a>
             <button type="button" class="cm-manage-btn" id="cmManageBtn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
                 Add Cohort

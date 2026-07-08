@@ -9,13 +9,14 @@ $roleValue = (string) ($formData['role'] ?? old('role', $isEdit ? ($modalAdmin['
 $fullNameValue = (string) ($formData['fullName'] ?? old('fullName', $isEdit ? ($modalAdmin['fullName'] ?? '') : ''));
 $emailValue = (string) ($formData['email'] ?? old('email', $isEdit ? ($modalAdmin['email'] ?? '') : ''));
 $isActiveValue = (string) ($formData['isActive'] ?? old('isActive', $isEdit ? (string) ($modalAdmin['isActive'] ?? '1') : '1')) !== '0';
+$currentAdminId = (int) session()->get('admin_id');
+$originalRoleValue = $isEdit ? (string) ($modalAdmin['role'] ?? '') : '';
 ?>
-<div class="account-admin-modal" data-account-modal>
+<div class="account-admin-modal" data-account-modal data-account-id="<?= $adminId ?>" data-current-admin-id="<?= $currentAdminId ?>" data-original-role="<?= esc($originalRoleValue) ?>">
     <button type="button" class="account-admin-modal-backdrop" data-account-modal-close aria-label="Close modal"></button>
     <div class="account-admin-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="accountModalTitle">
         <div class="account-admin-modal-head">
             <div>
-                <span>Admin access</span>
                 <h2 id="accountModalTitle"><?= $isEdit ? 'Edit Account' : 'New Account' ?></h2>
                 <p><?= $isEdit ? 'Update account details, role, and access status.' : 'Create an account. Google sign-in can be linked later from Settings.' ?></p>
             </div>
@@ -52,7 +53,7 @@ $isActiveValue = (string) ($formData['isActive'] ?? old('isActive', $isEdit ? (s
 
                         <label class="account-admin-field">
                             <span>Role</span>
-                            <select name="role" class="lf-select" required>
+                            <select name="role" class="lf-select" required data-account-role-select data-original-role="<?= esc($originalRoleValue) ?>">
                                 <option value="admin" <?= $roleValue === 'admin' ? 'selected' : '' ?>>Admin</option>
                                 <option value="superadmin" <?= $roleValue === 'superadmin' ? 'selected' : '' ?>>Super Admin</option>
                                 <option value="editor" <?= $roleValue === 'editor' ? 'selected' : '' ?>>Editor</option>
@@ -69,8 +70,8 @@ $isActiveValue = (string) ($formData['isActive'] ?? old('isActive', $isEdit ? (s
                                 <span>Account access</span>
                                 <strong data-account-status-title><?= $isActiveValue ? 'Active' : 'Inactive' ?></strong>
                                 <small data-account-status-copy><?= $isActiveValue
-                                    ? 'This account can currently sign in.'
-                                    : 'This account is currently blocked from signing in.' ?></small>
+                                    ? 'This account can sign in. Save changes after deactivating to apply the update.'
+                                    : 'This account cannot sign in. Save changes after activating to apply the update.' ?></small>
                             </div>
                             <button type="button" class="btn <?= $isActiveValue ? 'btn-danger-soft' : 'btn-p' ?>" data-account-status-toggle>
                                 <?= $isActiveValue ? 'Deactivate Account' : 'Activate Account' ?>

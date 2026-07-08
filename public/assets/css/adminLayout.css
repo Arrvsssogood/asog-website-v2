@@ -134,6 +134,7 @@ button {
 .side-foot {
   margin-top: auto;
   padding-top: 0.5rem;
+  padding-bottom: 0.85rem;
   border-top: 1px solid #eceae6;
 }
 
@@ -150,6 +151,28 @@ button {
 .side-foot .user strong {
   color: #1e293b;
   font-weight: 600;
+}
+
+.side-role-label {
+  margin-bottom: 0.32rem;
+  color: #03558c;
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.side-role-label--superadmin {
+  color: #d48a05;
+}
+
+.side-role-label--admin {
+  color: #03558c;
+}
+
+.side-role-label--editor {
+  color: #0c75a6;
 }
 
 .side-foot .out {

@@ -81,22 +81,22 @@ class SettingsAdmin extends BaseController
             'applicationEndDate'    => $applicationEndDate,
             'applicationWindowStatus' => $applicationWindowStatus,
             'gmailStatus' => [
-                'label'       => $gmailReady ? 'Ready' : 'Not configured',
+                'label'       => $gmailReady ? 'Ready' : 'Needs setup',
                 'state'       => $gmailReady ? 'ready' : 'off',
                 'description' => $gmailReady
-                    ? 'Site email delivery is configured for transactional messages.'
-                    : 'Site email delivery is not fully configured.',
+                    ? 'Email sending is ready for website messages.'
+                    : 'Email sending needs setup before messages can be sent.',
                 'detail'      => $gmailReady ? trim((string) $gmailConfig->senderEmail) : '',
             ],
             'recaptchaStatus' => [
-                'label'       => $recaptchaReady ? 'Enabled' : 'Disabled',
+                'label'       => $recaptchaReady ? 'On' : 'Off',
                 'state'       => $recaptchaReady ? 'ready' : 'off',
                 'description' => $recaptchaReady
-                    ? 'Public forms have score-based spam protection enabled.'
-                    : 'Public form spam protection is disabled or incomplete.',
+                    ? 'Spam protection is on for public forms.'
+                    : 'Spam protection is off or missing a key.',
             ],
             'loaderStatus' => [
-                'label'       => $landingLoaderEnabled ? 'Enabled' : 'Disabled',
+                'label'       => $landingLoaderEnabled ? 'On' : 'Off',
                 'state'       => $landingLoaderEnabled ? 'ready' : 'off',
                 'description' => $landingLoaderEnabled
                     ? 'Runs once per browser session on the homepage.'
@@ -282,7 +282,7 @@ class SettingsAdmin extends BaseController
         if ($startDate === '' && $endDate === '') {
             return [
                 'label' => 'Always open',
-                'description' => 'No application timeline is currently configured.',
+                'description' => 'No application dates are set.',
                 'state' => 'open',
             ];
         }
