@@ -240,7 +240,7 @@ class SettingsAdmin extends BaseController
         $settingModel = new LandingSettingModel();
 
         // Remove the previous template file (if any) before storing the new path.
-        $previousPath = trim((string) $settingModel->getValue(LandingSettingModel::KEY_APPLY_LEAN_CANVAS_TEMPLATE, ''));
+        $previousPath = $this->normalizeLeanCanvasTemplatePath(trim((string) $settingModel->getValue(LandingSettingModel::KEY_APPLY_LEAN_CANVAS_TEMPLATE, '')));
         if ($previousPath !== '' && $previousPath !== $path) {
             $uploader->delete($previousPath);
         }
@@ -260,7 +260,7 @@ class SettingsAdmin extends BaseController
     public function deleteLeanCanvasTemplate()
     {
         $settingModel = new LandingSettingModel();
-        $relativePath = trim((string) $settingModel->getValue(LandingSettingModel::KEY_APPLY_LEAN_CANVAS_TEMPLATE, ''));
+        $relativePath = $this->normalizeLeanCanvasTemplatePath(trim((string) $settingModel->getValue(LandingSettingModel::KEY_APPLY_LEAN_CANVAS_TEMPLATE, '')));
 
         if ($relativePath === '') {
             setToast('error', 'There is no Lean Canvas template to delete.');
@@ -276,31 +276,6 @@ class SettingsAdmin extends BaseController
 
         setToast('success', 'Lean Canvas template deleted.');
         return redirect()->to(site_url('admin/settings'));
-    }
-
-    /**
-     * Return metadata for the current Lean Canvas template so the Preview modal
-     * can render it (PDF inline via iframe, DOCX as a download link).
-     */
-    public function leanCanvasTemplatePreview()
-    {
-        $settingModel = new LandingSettingModel();
-        $template = $this->resolveLeanCanvasTemplate($settingModel);
-
-        if ($template['path'] === '') {
-            return $this->response->setStatusCode(404)->setJSON([
-                'ok'     => false,
-                'message' => 'No Lean Canvas template is currently uploaded.',
-            ]);
-        }
-
-        return $this->response->setJSON([
-            'ok'   => true,
-            'url'  => $template['url'],
-            'name' => $template['name'],
-            'mime' => $template['mime'],
-            'isPdf' => $template['isPdf'],
-        ]);
     }
 
     public function updateSiteExperience()
@@ -433,7 +408,8 @@ class SettingsAdmin extends BaseController
     private function resolveLeanCanvasTemplate(LandingSettingModel $settingModel): array
     {
         $uploader = new DocumentUpload();
-        $relativePath = trim((string) $settingModel->getValue(LandingSettingModel::KEY_APPLY_LEAN_CANVAS_TEMPLATE, ''));
+        $storedPath = trim((string) $settingModel->getValue(LandingSettingModel::KEY_APPLY_LEAN_CANVAS_TEMPLATE, ''));
+        $relativePath = $this->normalizeLeanCanvasTemplatePath($storedPath);
 
         if ($relativePath === '') {
             return [
@@ -446,8 +422,7 @@ class SettingsAdmin extends BaseController
         }
 
         // Only report a template if the underlying file still exists.
-        $fullPath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR
-            . ltrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relativePath), DIRECTORY_SEPARATOR);
+        $fullPath = $this->resolveLeanCanvasTemplateFile($relativePath);
 
         if (! is_file($fullPath)) {
             return [
@@ -472,5 +447,30 @@ class SettingsAdmin extends BaseController
             'mime'  => $mime,
             'isPdf' => $mime === 'application/pdf',
         ];
+    }
+
+    private function normalizeLeanCanvasTemplatePath(string $path): string
+    {
+        $path = trim($path);
+
+        if ($path === '') {
+            return '';
+        }
+
+        if (filter_var($path, FILTER_VALIDATE_URL)) {
+            $path = (string) (parse_url($path, PHP_URL_PATH) ?? '');
+        }
+
+        $path = str_replace('\\', '/', $path);
+        $path = preg_replace('#^.*?/uploads/#', '', $path) ?? $path;
+        $path = preg_replace('#^(?:writable/)?uploads/#', '', ltrim($path, '/')) ?? $path;
+
+        return ltrim($path, '/');
+    }
+
+    private function resolveLeanCanvasTemplateFile(string $relativePath): string
+    {
+        return WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR
+            . ltrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relativePath), DIRECTORY_SEPARATOR);
     }
 }

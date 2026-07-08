@@ -201,7 +201,6 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
         // Lean Canvas Template Management
         $routes->post('settings/lean-canvas-template', 'Admin\SettingsAdmin::uploadLeanCanvasTemplate');
         $routes->post('settings/lean-canvas-template/delete', 'Admin\SettingsAdmin::deleteLeanCanvasTemplate');
-        $routes->get('settings/lean-canvas-template/preview', 'Admin\SettingsAdmin::leanCanvasTemplatePreview');
 
         // Account Management
         $routes->get('accounts', 'Admin\AdminsManagement::index');

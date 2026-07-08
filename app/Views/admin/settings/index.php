@@ -46,6 +46,7 @@ $leanCanvasTemplate = $leanCanvasTemplate ?? [
     'isPdf' => false,
 ];
 $leanCanvasTemplateName = trim((string) ($leanCanvasTemplate['name'] ?? ''));
+$leanCanvasTemplateUrl = trim((string) ($leanCanvasTemplate['url'] ?? ''));
 $hasLeanCanvasTemplate = $leanCanvasTemplateName !== '';
 ?>
 
@@ -144,7 +145,6 @@ $hasLeanCanvasTemplate = $leanCanvasTemplateName !== '';
         </div>
 
         <div class="settings-card settings-template-card" id="leanCanvasTemplateCard"
-             data-preview-url="<?= esc(site_url('admin/settings/lean-canvas-template/preview'), 'attr') ?>"
              data-delete-url="<?= esc(site_url('admin/settings/lean-canvas-template/delete'), 'attr') ?>"
              data-has-template="<?= $hasLeanCanvasTemplate ? '1' : '0' ?>">
             <div class="settings-head">
@@ -153,50 +153,64 @@ $hasLeanCanvasTemplate = $leanCanvasTemplateName !== '';
                 <p class="settings-copy">Manage the Lean Canvas template that applicants download from the public Apply form. Accepted formats: PDF or Word (.doc, .docx), up to 10&nbsp;MB.</p>
             </div>
 
-                <div class="settings-template-row">
-                    <div class="settings-template-info">
-                        <strong>Current Template</strong>
-                        <span class="settings-template-status">
-                            <?php if ($hasLeanCanvasTemplate): ?>
-                                <span class="settings-template-name" title="<?= esc($leanCanvasTemplateName, 'attr') ?>">
-                                    <svg class="settings-template-file-icon" fill="currentColor" viewBox="0 0 20 20"><path d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H4zm7 1.5L16.5 9H12a1 1 0 01-1-1V3.5z"/></svg>
-                                    <?= esc($leanCanvasTemplateName) ?>
-                                </span>
-                            <?php else: ?>
-                                <span class="settings-template-empty">No template uploaded &mdash; applicants will not see a downloadable template on the Apply form.</span>
-                            <?php endif; ?>
+            <div class="settings-template-row">
+                <span class="settings-template-icon" aria-hidden="true">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 2.75H7.5A2.25 2.25 0 005.25 5v14A2.25 2.25 0 007.5 21.25h9A2.25 2.25 0 0018.75 19V7.25l-4.5-4.5z"/><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 2.75v4.5h4.5M8.75 12h6.5M8.75 15.25h6.5"/></svg>
+                </span>
+                <div class="settings-template-info">
+                    <?php if ($hasLeanCanvasTemplate): ?>
+                        <span class="settings-template-line">
+                            <strong>Current file:</strong>
+                            <span class="settings-template-name" title="<?= esc($leanCanvasTemplateName, 'attr') ?>"><?= esc($leanCanvasTemplateName) ?></span>
                         </span>
-                    </div>
+                    <?php else: ?>
+                        <span class="settings-template-empty">No template uploaded &mdash; applicants will not see a downloadable template on the Apply form.</span>
+                    <?php endif; ?>
+                </div>
 
+                <?php if ($hasLeanCanvasTemplate): ?>
                     <div class="settings-template-actions">
-                        <button type="button" class="btn btn-o" id="leanCanvasPreviewBtn" <?= $hasLeanCanvasTemplate ? '' : 'disabled' ?>>
-                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                            Preview
+                        <?php if ($leanCanvasTemplateUrl !== ''): ?>
+                            <a class="btn btn-o settings-template-download-btn" href="<?= esc($leanCanvasTemplateUrl, 'attr') ?>" download="<?= esc($leanCanvasTemplateName, 'attr') ?>">
+                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                                Download
+                            </a>
+                        <?php endif; ?>
+                        <button type="button" class="btn btn-o" id="leanCanvasReplaceBtn">
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M14 3.75H7.75A1.75 1.75 0 006 5.5v13A1.75 1.75 0 007.75 20.25h8.5A1.75 1.75 0 0018 18.5V7.75L14 3.75z"/><path stroke-linecap="round" stroke-linejoin="round" d="M14 3.75v4h4M9 13.25h4.5m-2-2l2 2-2 2"/></svg>
+                            Replace
                         </button>
-                        <button type="button" class="settings-template-delete-btn" id="leanCanvasDeleteBtn" <?= $hasLeanCanvasTemplate ? '' : 'disabled' ?>
+                        <button type="button" class="btn btn-d settings-template-delete-btn" id="leanCanvasDeleteBtn"
                             data-confirm-title="Delete Lean Canvas template?"
                             data-confirm-message="Applicants will no longer be able to download the template from the Apply form until a new one is uploaded. This action cannot be undone.">
                             <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"/></svg>
                             Delete
                         </button>
                     </div>
-                </div>
+                <?php endif; ?>
+            </div>
 
-                <form method="POST" action="<?= site_url('admin/settings/lean-canvas-template') ?>" enctype="multipart/form-data" class="settings-form settings-template-form" id="leanCanvasTemplateForm">
-                    <?= csrf_field() ?>
-                    <div class="settings-template-upload">
-                        <div class="settings-template-chooser">
-                            <button type="button" class="file-upload-button" id="leanCanvasChooseBtn">Choose File</button>
-                            <span class="settings-template-file-status" id="leanCanvasFileStatus"><?= $hasLeanCanvasTemplate ? esc($leanCanvasTemplateName) : 'No file chosen' ?></span>
-                            <input id="leanCanvasTemplateFile" type="file" name="leanCanvasTemplate"
-                                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                                class="hidden" style="display:none;position:absolute;opacity:0;width:0;height:0;pointer-events:none">
-                        </div>
-                        <div class="settings-actions">
-                            <button type="submit" class="btn btn-p" id="leanCanvasTemplateSubmit" disabled>Upload Template</button>
-                        </div>
+            <form method="POST" action="<?= site_url('admin/settings/lean-canvas-template') ?>" enctype="multipart/form-data" class="settings-form settings-template-form" id="leanCanvasTemplateForm" <?= $hasLeanCanvasTemplate ? 'hidden' : '' ?>>
+                <?= csrf_field() ?>
+                <div class="settings-template-upload">
+                    <div class="settings-template-chooser">
+                        <label class="file-upload-button" id="leanCanvasChooseBtn" for="leanCanvasTemplateFile" role="button" tabindex="0">Choose File</label>
+                        <span class="settings-template-file-status" id="leanCanvasFileStatus">No file chosen</span>
+                        <input id="leanCanvasTemplateFile" type="file" name="leanCanvasTemplate"
+                            accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                            class="settings-file-input">
                     </div>
-                </form>
+                    <div class="settings-actions">
+                        <?php if ($hasLeanCanvasTemplate): ?>
+                            <button type="button" class="btn btn-o" id="leanCanvasCancelReplaceBtn">Cancel</button>
+                        <?php endif; ?>
+                        <button type="submit" class="btn btn-p" id="leanCanvasTemplateSubmit" disabled>
+                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16V4m0 0l-4 4m4-4l4 4M5 16.75V18a2 2 0 002 2h10a2 2 0 002-2v-1.25"/></svg>
+                            Upload
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
     </section>
 
@@ -437,30 +451,3 @@ $hasLeanCanvasTemplate = $leanCanvasTemplateName !== '';
         </div>
     </section>
 </div>
-
-<?php if ($canManageSiteSettings): ?>
-<div id="leanCanvasPreviewModal" class="lc-modal" aria-hidden="true">
-    <div class="lc-modal-backdrop" data-lean-canvas-preview-close></div>
-    <div class="lc-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="leanCanvasPreviewTitle">
-        <div class="lc-modal-header">
-            <div>
-                <span class="lc-modal-header-kicker">Lean Canvas</span>
-                <h2 id="leanCanvasPreviewTitle" class="lc-modal-header-title">Template Preview</h2>
-            </div>
-            <button type="button" class="lc-modal-close" data-lean-canvas-preview-close aria-label="Close preview">
-                <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-        </div>
-        <div class="lc-modal-body" id="leanCanvasPreviewBody">
-            <div class="lc-modal-loading">Loading template&hellip;</div>
-        </div>
-        <div class="lc-modal-footer" id="leanCanvasPreviewFoot" hidden>
-            <a class="lc-modal-download" id="leanCanvasPreviewDownload" href="#" download>Download</a>
-        </div>
-    </div>
-</div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js" defer></script>
-<script src="<?= base_url('assets/js/admin/settings/leanCanvas.js') ?>" defer></script>
-<?php endif; ?>
