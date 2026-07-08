@@ -38,12 +38,12 @@ $fallbackHeroImage = base_url('assets/img/incubatees.webp');
         <!-- Gold accent rule -->
         <div class="hero-kicker flex items-center gap-3 md:gap-10 mb-3 md:mb-6">
             <div class="w-6 md:w-10 h-[2px] bg-gold shrink-0"></div>
-            <span class="inline-flex items-center gap-2 md:gap-3 text-[.5rem] md:text-[.56rem] font-bold tracking-[.2em] md:tracking-[.28em] uppercase text-gold/80">
-                <span>
+            <span class="hero-kicker-copy inline-flex items-center whitespace-nowrap gap-1 md:gap-1.5">
+                <span class="hero-kicker-label inline-flex items-center font-bold tracking-[.2em] md:tracking-[.28em] uppercase text-gold/80">
                     <?= $hasSlides ? 'Featured Story' : 'Bicol Region\'s Premier Incubator' ?>
                 </span>
                 <?php if ($heroPageTotal > 0): ?>
-                <span data-hero-page-indicator aria-live="polite" class="text-gold/70">
+                <span data-hero-page-indicator aria-live="polite" class="hero-kicker-page inline-flex items-center font-bold tracking-[.12em] uppercase text-gold/70">
                     1/<?= esc($heroPageTotal) ?>
                 </span>
                 <?php endif; ?>
