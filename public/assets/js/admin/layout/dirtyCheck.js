@@ -37,20 +37,14 @@
             });
         }
 
-        function baseline() {
-            baselineState = serializeForm(form);
-            console.log("BASELINE", baselineState);
-            check();
+        function check() {
+            if (baselineState === null) return;
+            applyButtonState(serializeForm(form) !== baselineState);
         }
 
-        function check() {
-            var current = serializeForm(form);
-
-            if (current !== baselineState) {
-                console.log("CURRENT", current);
-            }
-
-            applyButtonState(current !== baselineState);
+        function baseline() {
+            baselineState = serializeForm(form);
+            check();
         }
 
         form.addEventListener('input', check);
@@ -75,14 +69,17 @@
     // Auto-init for static forms with data-dirty-check attribute
     function autoInit() {
         document.querySelectorAll('form[data-dirty-check]').forEach(function (form) {
+            // Guard against double-binding if autoInit ever runs more than once,
+            // and skip forms already wired up explicitly via DirtyCheck.watch().
+            if (form.dataset.dirtyCheckBound === '1') return;
+            form.dataset.dirtyCheckBound = '1';
+
             var btnSelector = form.dataset.dirtyBtn || 'button[type="submit"]';
             var buttons = Array.from(form.querySelectorAll(btnSelector));
             if (!buttons.length) return;
 
             var tracker = watch(form, { buttons: buttons });
-            requestAnimationFrame(function () {
-                setTimeout(function () { tracker.baseline(); }, 50);
-            });
+            tracker.baseline();
         });
     }
 
