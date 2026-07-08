@@ -71,7 +71,9 @@ $routes->post('/api/games/guess-startup/abandon', 'Api\Games::abandon');
  * Post images live in public/uploads/posts/ and are served directly.
  * ────────────────────────────────────────────────────────────────────────────
  */
-$routes->get('uploads/applications/(.+)', 'Uploads::serve/$1');
+$routes->get('uploads/applications/(.+)', 'Uploads::serve/applications/$1');
+$routes->get('uploads/templates/(.+)', 'Uploads::serve/templates/$1');
+$routes->options('uploads/(.+)', 'Uploads::options/$1');
 
 /*
  * ────────────────────────────────────────────────────────────────────────────
@@ -195,6 +197,11 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
         $routes->post('settings/homepage-incubatees-filter', 'Admin\SettingsAdmin::updateLandingFilter');
         $routes->post('settings/applications', 'Admin\SettingsAdmin::updateApplicationSettings');
         $routes->post('settings/site-experience', 'Admin\SettingsAdmin::updateSiteExperience');
+
+        // Lean Canvas Template Management
+        $routes->post('settings/lean-canvas-template', 'Admin\SettingsAdmin::uploadLeanCanvasTemplate');
+        $routes->post('settings/lean-canvas-template/delete', 'Admin\SettingsAdmin::deleteLeanCanvasTemplate');
+        $routes->get('settings/lean-canvas-template/preview', 'Admin\SettingsAdmin::leanCanvasTemplatePreview');
 
         // Account Management
         $routes->get('accounts', 'Admin\AdminsManagement::index');
