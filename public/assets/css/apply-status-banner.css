@@ -1,0 +1,87 @@
+/* ── Application Status — outer wrap ── */
+.apply-status-wrap {
+    background: #F8F6F2;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+/* ── settings-notice (mirrored from adminSettings.css) ── */
+.apply-status-wrap .settings-notice {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    border: 1px solid rgba(3, 85, 140, 0.14);
+    border-radius: 0.45rem;
+    background: #f7fbfe;
+    padding: 0.9rem 1rem;
+    max-width: 880px;
+    width: 100%;
+}
+
+.apply-status-wrap .settings-notice svg {
+    width: 26px;
+    height: 26px;
+    margin-top: 0;
+    color: #43A7DB;
+    stroke: currentColor;
+    flex: 0 0 auto;
+}
+
+.apply-status-wrap .settings-notice div {
+    display: grid;
+    gap: 0.16rem;
+    min-width: 0;
+}
+
+.apply-status-wrap .settings-notice strong {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.28rem;
+    color: #1e293b;
+    font-size: 0.86rem;
+    line-height: 1.25;
+}
+
+.apply-status-wrap .settings-notice strong span {
+    color: #64748b;
+    font-size: 0.80rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    line-height: 1.2;
+    text-transform: uppercase;
+}
+
+.apply-status-wrap .settings-notice p {
+    margin: 0;
+    color: #64748b;
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+/* — Not Yet Open — yellow */
+.apply-status-wrap .settings-notice-upcoming {
+    border-color: rgba(248, 175, 33, 0.28);
+    background: #fffaf0;
+}
+
+.apply-status-wrap .settings-notice-upcoming svg {
+    color: #F8AF21;
+}
+
+/* — Closed — red */
+.apply-status-wrap .settings-notice-closed {
+    border-color: rgba(190, 18, 60, 0.18);
+    background: #fff7f7;
+}
+
+.apply-status-wrap .settings-notice-closed svg {
+    color: #be123c;
+}
+
+@media (max-width: 640px) {
+    .apply-status-wrap {
+        padding: 1rem;
+    }
+}
