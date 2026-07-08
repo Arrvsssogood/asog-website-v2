@@ -84,22 +84,22 @@ class SettingsAdmin extends BaseController
             'applicationWindowStatus' => $applicationWindowStatus,
             'leanCanvasTemplate'    => $leanCanvasTemplate,
             'gmailStatus' => [
-                'label'       => $gmailReady ? 'Ready' : 'Not configured',
+                'label'       => $gmailReady ? 'Ready' : 'Needs setup',
                 'state'       => $gmailReady ? 'ready' : 'off',
                 'description' => $gmailReady
-                    ? 'Site email delivery is configured for transactional messages.'
-                    : 'Site email delivery is not fully configured.',
+                    ? 'Email sending is ready for website messages.'
+                    : 'Email sending needs setup before messages can be sent.',
                 'detail'      => $gmailReady ? trim((string) $gmailConfig->senderEmail) : '',
             ],
             'recaptchaStatus' => [
-                'label'       => $recaptchaReady ? 'Enabled' : 'Disabled',
+                'label'       => $recaptchaReady ? 'On' : 'Off',
                 'state'       => $recaptchaReady ? 'ready' : 'off',
                 'description' => $recaptchaReady
-                    ? 'Public forms have score-based spam protection enabled.'
-                    : 'Public form spam protection is disabled or incomplete.',
+                    ? 'Spam protection is on for public forms.'
+                    : 'Spam protection is off or missing a key.',
             ],
             'loaderStatus' => [
-                'label'       => $landingLoaderEnabled ? 'Enabled' : 'Disabled',
+                'label'       => $landingLoaderEnabled ? 'On' : 'Off',
                 'state'       => $landingLoaderEnabled ? 'ready' : 'off',
                 'description' => $landingLoaderEnabled
                     ? 'Runs once per browser session on the homepage.'
@@ -207,6 +207,12 @@ class SettingsAdmin extends BaseController
             return redirect()->to(site_url('admin/settings'))->withInput();
         }
 
+        $this->notifySystemUpdate(
+            'Application settings updated',
+            'Public application availability or submission rules were changed.',
+            site_url('admin/settings')
+        );
+
         setToast('success', 'Application settings updated.');
         return redirect()->to(site_url('admin/settings'));
     }
@@ -307,6 +313,12 @@ class SettingsAdmin extends BaseController
             return redirect()->to(site_url('admin/settings'));
         }
 
+        $this->notifySystemUpdate(
+            'Site experience updated',
+            'Homepage experience settings were changed.',
+            site_url('admin/settings')
+        );
+
         setToast('success', 'Site experience settings updated.');
         return redirect()->to(site_url('admin/settings'));
     }
@@ -364,6 +376,15 @@ class SettingsAdmin extends BaseController
         return $value;
     }
 
+    private function notifySystemUpdate(string $title, string $body, ?string $link = null): void
+    {
+        try {
+            $this->adminNotificationModel->createSystemUpdate($title, $body, $link, 'high');
+        } catch (\Throwable $e) {
+            log_message('error', '[SettingsAdmin] createSystemUpdate notification failed: ' . $e->getMessage());
+        }
+    }
+
     private function applicationWindowStatus(string $startDate, string $endDate): array
     {
         $today = (new \DateTimeImmutable('today', new \DateTimeZone(config('App')->appTimezone)))->format('Y-m-d');
@@ -371,7 +392,7 @@ class SettingsAdmin extends BaseController
         if ($startDate === '' && $endDate === '') {
             return [
                 'label' => 'Always open',
-                'description' => 'No application timeline is currently configured.',
+                'description' => 'No application dates are set.',
                 'state' => 'open',
             ];
         }

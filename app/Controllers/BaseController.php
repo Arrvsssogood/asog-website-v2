@@ -15,6 +15,7 @@ use App\Models\IncubateeApplicationModel;
 use App\Models\ContactMessageModel;
 use App\Models\AdminModel;
 use App\Models\CohortModel;
+use App\Models\AdminNotificationModel;
 
 // yung libraries
 use App\Libraries\ImageUpload;
@@ -40,6 +41,7 @@ abstract class BaseController extends Controller
     protected $contactModel;
     protected $adminModel;
     protected $cohortModel;
+    protected $adminNotificationModel;
     protected $db;
 
     // Libraries
@@ -59,6 +61,7 @@ abstract class BaseController extends Controller
         $this->contactModel     = new ContactMessageModel();
         $this->adminModel       = new AdminModel();
         $this->cohortModel      = new CohortModel();
+        $this->adminNotificationModel = new AdminNotificationModel();
         $this->db               = Database::connect();
 
         // Instantiate libraries
@@ -73,6 +76,16 @@ abstract class BaseController extends Controller
         $seg1 = strtolower((string) service('uri')->getSegment(1, ''));
         if ($seg1 === 'admin') {
             $sharedData['adminUnreadMessageCount'] = $this->contactModel->countUnread();
+            $role = (string) session()->get('admin_role');
+            if (in_array($role, ['admin', 'superadmin'], true)) {
+                try {
+                    $sharedData['adminUnreadNotificationCount'] = $this->adminNotificationModel->countUnread();
+                    $sharedData['adminNotifications'] = $this->adminNotificationModel->getLatest(8);
+                } catch (\Throwable $e) {
+                    $sharedData['adminUnreadNotificationCount'] = 0;
+                    $sharedData['adminNotifications'] = [];
+                }
+            }
         }
 
         $renderer->setData($sharedData);

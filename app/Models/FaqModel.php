@@ -6,6 +6,10 @@ use CodeIgniter\Model;
 
 class FaqModel extends Model
 {
+    private const CACHE_TTL = 300;
+    private const CACHE_PUBLISHED = 'asog_faqs_published';
+    private const CACHE_ALL_ORDERED = 'asog_faqs_all_ordered';
+
     protected $table            = 'faqs';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
@@ -29,19 +33,41 @@ class FaqModel extends Model
         'isPublished' => 'required|in_list[0,1]',
     ];
 
+    protected $afterInsert = ['clearFaqCache'];
+    protected $afterUpdate = ['clearFaqCache'];
+    protected $afterDelete = ['clearFaqCache'];
+
     public function getPublished(): array
     {
-        return $this->where('isPublished', 1)
+        $cache = service('cache');
+        $cached = $cache->get(self::CACHE_PUBLISHED);
+        if (is_array($cached)) {
+            return $cached;
+        }
+
+        $rows = $this->where('isPublished', 1)
             ->orderBy('sortOrder', 'ASC')
             ->orderBy('id', 'ASC')
             ->findAll();
+        $cache->save(self::CACHE_PUBLISHED, $rows, self::CACHE_TTL);
+
+        return $rows;
     }
 
     public function getAllOrdered(): array
     {
-        return $this->orderBy('sortOrder', 'ASC')
+        $cache = service('cache');
+        $cached = $cache->get(self::CACHE_ALL_ORDERED);
+        if (is_array($cached)) {
+            return $cached;
+        }
+
+        $rows = $this->orderBy('sortOrder', 'ASC')
             ->orderBy('id', 'ASC')
             ->findAll();
+        $cache->save(self::CACHE_ALL_ORDERED, $rows, self::CACHE_TTL);
+
+        return $rows;
     }
 
     public function getNextSortOrder(): int
@@ -59,5 +85,13 @@ class FaqModel extends Model
                 $this->update((int) $faq['id'], ['sortOrder' => $expected]);
             }
         }
+    }
+
+    protected function clearFaqCache(array $data): array
+    {
+        service('cache')->delete(self::CACHE_PUBLISHED);
+        service('cache')->delete(self::CACHE_ALL_ORDERED);
+
+        return $data;
     }
 }

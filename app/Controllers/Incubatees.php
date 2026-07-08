@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Libraries\GmailMailer;
+use App\Libraries\ImageUpload;
 use App\Libraries\RecaptchaVerifier;
 use App\Models\FaqModel;
 use App\Models\IncubateeApplicationModel;
@@ -247,7 +248,7 @@ class Incubatees extends BaseController
                             ->with('error', 'Only PDF files are accepted for CV.');
                     }
 
-                    $newName = $file->getRandomName();
+                    $newName = ImageUpload::readableFileName($file, 'team-cv', 'pdf');
                     $file->move(WRITEPATH . 'uploads/applications', $newName);
                     $uploadedPaths[] = 'uploads/applications/' . $newName;
                 }
@@ -278,7 +279,7 @@ class Incubatees extends BaseController
                     ->with('errors', array_merge($applicationModel->errors(), ['leanCanvas' => 'Only PDF or Word (.docx) files are accepted for the Lean Canvas.']));
             }
 
-            $newName = $leanCanvasFile->getRandomName();
+            $newName = ImageUpload::readableFileName($leanCanvasFile, 'lean-canvas');
             $leanCanvasFile->move(WRITEPATH . 'uploads/applications', $newName);
             $data['leanCanvasPath'] = 'uploads/applications/' . $newName;
         } else {
@@ -289,7 +290,12 @@ class Incubatees extends BaseController
         }
 
         // Save application
-        if ($applicationModel->insert($data)) {
+        $applicationId = $applicationModel->insert($data);
+        if ($applicationId) {
+            $notificationData = $data;
+            $notificationData['id'] = (int) $applicationId;
+            $this->notifyNewApplication($notificationData);
+
             // Send a copy of their responses via email
             $this->sendConfirmationEmail($data);
 
@@ -443,7 +449,7 @@ class Incubatees extends BaseController
                             ->with('error', 'Only PDF files are accepted for CV.');
                     }
 
-                    $newName = $file->getRandomName();
+                    $newName = ImageUpload::readableFileName($file, 'team-cv', 'pdf');
                     $file->move(WRITEPATH . 'uploads/applications', $newName);
                     $uploadedPaths[] = 'uploads/applications/' . $newName;
                 }
@@ -474,7 +480,7 @@ class Incubatees extends BaseController
                     ->with('errors', array_merge($applicationModel->errors(), ['leanCanvas' => 'Only PDF or Word (.docx) files are accepted for the Lean Canvas.']));
             }
 
-            $newName = $leanCanvasFile->getRandomName();
+            $newName = ImageUpload::readableFileName($leanCanvasFile, 'lean-canvas');
             $leanCanvasFile->move(WRITEPATH . 'uploads/applications', $newName);
             $data['leanCanvasPath'] = 'uploads/applications/' . $newName;
         }
@@ -493,6 +499,10 @@ class Incubatees extends BaseController
         $updateData['revalidatedAt'] = date('Y-m-d H:i:s');
 
         if ($applicationModel->update((int) $app['id'], $updateData)) {
+            $notificationData = $updateData;
+            $notificationData['id'] = (int) $app['id'];
+            $this->notifyRevalidationResubmitted($notificationData);
+
             $this->sendConfirmationEmail($data, true);
 
             return redirect()->to(site_url('apply/form/thank-you'))
@@ -508,6 +518,24 @@ class Incubatees extends BaseController
     // ──────────────────────────────────────────────
     // EMAIL — send applicant a copy of their responses
     // ──────────────────────────────────────────────
+    private function notifyNewApplication(array $application): void
+    {
+        try {
+            $this->adminNotificationModel->createNewApplication($application);
+        } catch (\Throwable $e) {
+            log_message('error', '[Incubatees] createNewApplication notification failed: ' . $e->getMessage());
+        }
+    }
+
+    private function notifyRevalidationResubmitted(array $application): void
+    {
+        try {
+            $this->adminNotificationModel->createRevalidationResubmitted($application);
+        } catch (\Throwable $e) {
+            log_message('error', '[Incubatees] createRevalidationResubmitted notification failed: ' . $e->getMessage());
+        }
+    }
+
     private function sendConfirmationEmail(array $data, bool $isUpdate = false): void
     {
         $body = view('emails/application_confirmation', [

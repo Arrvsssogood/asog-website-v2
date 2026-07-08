@@ -9,6 +9,8 @@ use CodeIgniter\Model;
  */
 class LandingSettingModel extends Model
 {
+    private const CACHE_TTL = 300;
+
     public const KEY_INCUBATEES_FILTER = 'landingIncubateesCohortFilter';
     public const KEY_GUESS_STARTUP_ENABLED = 'guessStartupEnabled';
     public const KEY_GUESS_STARTUP_VISIBLE = 'guessStartupVisible';
@@ -38,13 +40,25 @@ class LandingSettingModel extends Model
 
     public function getValue(string $key, ?string $default = null): ?string
     {
+        $cache = service('cache');
+        $cacheKey = $this->cacheKey($key);
+        $cached = $cache->get($cacheKey);
+
+        if (is_array($cached) && array_key_exists('value', $cached)) {
+            return $cached['value'] !== null ? (string) $cached['value'] : $default;
+        }
+
         $row = $this->where('settingKey', $key)->first();
 
         if (! is_array($row) || ! array_key_exists('settingValue', $row)) {
+            $cache->save($cacheKey, ['value' => null], self::CACHE_TTL);
             return $default;
         }
 
-        return $row['settingValue'] !== null ? (string) $row['settingValue'] : $default;
+        $value = $row['settingValue'] !== null ? (string) $row['settingValue'] : null;
+        $cache->save($cacheKey, ['value' => $value], self::CACHE_TTL);
+
+        return $value !== null ? $value : $default;
     }
 
     public function setValue(string $key, ?string $value): bool
@@ -52,12 +66,28 @@ class LandingSettingModel extends Model
         $existing = $this->where('settingKey', $key)->first();
 
         if (is_array($existing) && isset($existing['id'])) {
-            return (bool) $this->update((int) $existing['id'], ['settingValue' => $value]);
+            $saved = (bool) $this->update((int) $existing['id'], ['settingValue' => $value]);
+            $this->clearValueCache($key);
+
+            return $saved;
         }
 
-        return (bool) $this->insert([
+        $saved = (bool) $this->insert([
             'settingKey'   => $key,
             'settingValue' => $value,
         ]);
+        $this->clearValueCache($key);
+
+        return $saved;
+    }
+
+    private function cacheKey(string $key): string
+    {
+        return 'asog_landing_setting_' . hash('sha256', $key);
+    }
+
+    private function clearValueCache(string $key): void
+    {
+        service('cache')->delete($this->cacheKey($key));
     }
 }

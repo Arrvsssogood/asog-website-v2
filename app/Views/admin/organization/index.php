@@ -7,7 +7,7 @@
     </div>
     <div class="org-admin-toolbar-actions">
         <a href="<?= site_url('organization') ?>" target="_blank" rel="noopener" class="btn btn-o">
-            View page
+            View Organization page
             <svg viewBox="0 0 24 24" fill="none" stroke-width="2" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7"/>
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h8v8"/>

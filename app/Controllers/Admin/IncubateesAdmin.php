@@ -169,6 +169,8 @@ class IncubateesAdmin extends BaseController
             ]);
         }
 
+        $this->incubateeModel->clearPublicCache();
+
         return $this->response->setJSON([
             'ok' => true,
         ]);
@@ -495,6 +497,8 @@ class IncubateesAdmin extends BaseController
             setToast('error', 'Update failed. Please try again.');
             return redirect()->back()->withInput();
         }
+
+        $this->incubateeModel->clearPublicCache();
 
         setToast('success', 'Incubatee saved successfully.');
         return redirect()->to(site_url('admin/incubatees/' . $id . '/edit'));

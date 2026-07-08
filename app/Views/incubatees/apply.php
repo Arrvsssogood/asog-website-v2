@@ -2,8 +2,47 @@
      ║  BE AN INCUBATEE — Guidelines (editorial layout)                    ║
      ╚══════════════════════════════════════════════════════════════════════╝ -->
 
+<!-- ── Application Status Banner (shown only when not yet open or closed) ── -->
+<?php
+    // ── Page-level application window state ──
+    $appState      = $applicationWindow['state'] ?? 'open';
+    $appIsOpen     = ($appState === 'open');
+    $appIsUpcoming = ($appState === 'upcoming');
+    $appIsClosed   = ($appState === 'closed');
+    $showBanner    = ($appIsUpcoming || $appIsClosed);
+
+    if ($showBanner):
+        if ($appIsUpcoming) {
+            $__bannerStatus = 'CURRENTLY CLOSED';
+            $__bannerDesc   = 'We\'re not accepting applications at the moment. Stay tuned — we\'ll welcome new incubatees soon!';
+            $__bannerMod    = 'settings-notice-upcoming';
+        } else {
+            $__bannerStatus = 'CLOSED';
+            $__bannerDesc   = 'The application period has ended. You may send an expression of interest through the contact form or wait for the next application period.';
+            $__bannerMod    = 'settings-notice-closed';
+        }
+?>
+<div class="apply-status-wrap">
+    <div class="settings-notice <?= esc($__bannerMod) ?>" role="status" aria-live="polite">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 10.5v6"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h.01"></path>
+        </svg>
+        <div>
+            <strong><span><?= esc($__bannerStatus) ?></span></strong>
+            <p><?= esc($__bannerDesc) ?></p>
+        </div>
+    </div>
+</div>
+<?php endif; // $showBanner ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/apply-status-banner.css') ?>">
+
 <!-- ── 1 · Eligibility — open typography, no containers ── -->
-<section class="relative bg-off py-20 md:py-28 px-6 md:px-10 lg:px-14 overflow-hidden">
+<section class="relative bg-off <?= $showBanner
+    ? 'pt-12 pb-16 md:pt-16 md:pb-28'
+    : 'py-20 md:py-28' ?> 
+    px-6 md:px-10 lg:px-14 overflow-hidden">
     <div class="ai-grid"></div>
     <div class="ai-grid-fade"></div>
 
@@ -343,16 +382,14 @@ $faqColumns = array_chunk($faqs, (int) ceil(count($faqs) / 2), true);
             07 — Apply
         </span>
         <?php
-            $isApplicationOpen = ! empty($applicationWindow['isOpen']);
-            $isApplicationUpcoming = ($applicationWindow['state'] ?? 'open') === 'upcoming';
-            $isApplicationClosed = ($applicationWindow['state'] ?? 'open') === 'closed';
-            $applicationTitle = $isApplicationOpen
+            // Reuses $appIsOpen / $appIsUpcoming / $appIsClosed set at the top of this view.
+            $applicationTitle = $appIsOpen
                 ? 'Ready to get started?'
                 : (string) ($applicationWindow['title'] ?? 'Applications are not available');
-            $applicationCopy = $isApplicationOpen
+            $applicationCopy = $appIsOpen
                 ? 'Fill out our application form and the ASOG TBI team will reach out to schedule your screening and next steps.'
                 : (string) ($applicationWindow['message'] ?? 'Applications are not available right now.');
-            if (! $isApplicationOpen && empty($showApplicationDates) && $isApplicationUpcoming) {
+            if (! $appIsOpen && empty($showApplicationDates) && $appIsUpcoming) {
                 $applicationCopy = 'Applications for the ASOG TBI incubation program are not yet open. Please check back once the application period begins.';
             }
         ?>
@@ -363,7 +400,7 @@ $faqColumns = array_chunk($faqs, (int) ceil(count($faqs) / 2), true);
             <?= esc($applicationCopy) ?>
         </p>
         <?php if (! empty($showApplicationDates)): ?>
-            <?php if ($isApplicationOpen && ! empty($applicationDeadlineLabel)): ?>
+            <?php if ($appIsOpen && ! empty($applicationDeadlineLabel)): ?>
                 <p class="mb-6 inline-flex items-center justify-center gap-2 text-[.68rem] md:text-[.74rem] font-bold leading-none tracking-[.16em] uppercase text-dark/70">
                     <svg class="w-4 h-4 flex-none text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/>
@@ -371,7 +408,7 @@ $faqColumns = array_chunk($faqs, (int) ceil(count($faqs) / 2), true);
                     Application ends on
                     <strong class="text-gold font-bold"><?= esc((string) $applicationDeadlineLabel) ?></strong>
                 </p>
-            <?php elseif ($isApplicationUpcoming && ! empty($applicationStartLabel)): ?>
+            <?php elseif ($appIsUpcoming && ! empty($applicationStartLabel)): ?>
                 <p class="mb-6 inline-flex items-center justify-center gap-2 text-[.68rem] md:text-[.74rem] font-bold leading-none tracking-[.16em] uppercase text-dark/70">
                     <svg class="w-4 h-4 flex-none text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/>
@@ -379,7 +416,7 @@ $faqColumns = array_chunk($faqs, (int) ceil(count($faqs) / 2), true);
                     Application starts on
                     <strong class="text-gold font-bold"><?= esc((string) $applicationStartLabel) ?></strong>
                 </p>
-            <?php elseif ($isApplicationClosed && ! empty($applicationDeadlineLabel)): ?>
+            <?php elseif ($appIsClosed && ! empty($applicationDeadlineLabel)): ?>
                 <p class="mb-6 inline-flex items-center justify-center gap-2 text-[.68rem] md:text-[.74rem] font-bold leading-none tracking-[.16em] uppercase text-dark/70">
                     <svg class="w-4 h-4 flex-none text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/>
@@ -389,7 +426,7 @@ $faqColumns = array_chunk($faqs, (int) ceil(count($faqs) / 2), true);
                 </p>
             <?php endif; ?>
         <?php endif; ?>
-        <?php if ($isApplicationOpen): ?>
+        <?php if ($appIsOpen): ?>
         <a href="<?= site_url('apply/form') ?>"
             class="inline-block font-body text-[.62rem] lg:text-[.7rem] font-bold tracking-[.14em] uppercase text-dark bg-gold px-9 py-4 rounded-sm no-underline transition-colors duration-200 hover:bg-gold-dk">
             Apply Now →

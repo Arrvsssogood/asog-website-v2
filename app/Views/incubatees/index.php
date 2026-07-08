@@ -15,8 +15,6 @@ $firstCohort    = $hasCohorts ? $cohorts[0]['name'] : '';
 ?>
 
 <link rel="stylesheet" href="<?= base_url('assets/css/incubatees.css') ?>">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    crossorigin="anonymous" referrerpolicy="no-referrer">
 
 <section class="ib-s relative min-h-screen py-20 pb-16">
     <div class="ib-w mx-auto px-6 md:px-10 lg:px-14">
@@ -179,6 +177,7 @@ $firstCohort    = $hasCohorts ? $cohorts[0]['name'] : '';
     </div>
 </div>
 
+<script src="<?= base_url('assets/loader/vendor/gsap.min.js') ?>" defer></script>
 <script src="<?= base_url('assets/js/features/incubatees/incubateesLoader.js') ?>" defer
     data-api-url="<?= site_url('api/incubatees') ?>"
     data-app-script="<?= base_url('assets/js/features/incubatees/incubatees.js') ?>"></script>

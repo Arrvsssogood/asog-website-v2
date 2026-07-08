@@ -6,8 +6,8 @@
     <title><?= esc($pageTitle ?? 'Admin') ?> — ASOG TBI</title>
     <link rel="icon" href="<?= base_url('favicon.ico') ?>" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="<?= base_url('icon.png') ?>">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet"/>
-    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="<?= base_url('assets/css/localFonts.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/vendor/quill/quill.snow.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/adminLayout.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/adminCustomSelect.css') ?>">
 </head>
@@ -25,7 +25,14 @@
         <div class="side-sep"></div>
 
         <div class="side-label">Menu</div>
-        <?php $sessionRole = session()->get('admin_role'); ?>
+        <?php
+            $sessionRole = (string) session()->get('admin_role');
+            $sessionRoleLabel = [
+                'superadmin' => 'Super Admin',
+                'admin' => 'Admin',
+                'editor' => 'Editor',
+            ][$sessionRole] ?? ucfirst($sessionRole ?: 'User');
+        ?>
         <nav class="side-nav">
             <a href="<?= site_url('admin') ?>" class="<?= ($activePage ?? '') === 'dashboard' ? 'on' : '' ?>">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1"/></svg>
@@ -35,11 +42,6 @@
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 12h10"/></svg>
                 Posts
             </a>
-            <?php if (in_array($sessionRole, ['admin', 'superadmin'], true)): ?>
-            <a href="<?= site_url('admin/applications') ?>" class="<?= ($activePage ?? '') === 'applications' ? 'on' : '' ?>">
-                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                Applications
-            </a>
             <a href="<?= site_url('admin/incubatees') ?>" class="<?= ($activePage ?? '') === 'incubatees' ? 'on' : '' ?>">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                 Incubatees
@@ -47,6 +49,11 @@
             <a href="<?= site_url('admin/faqs') ?>" class="<?= ($activePage ?? '') === 'faqs' ? 'on' : '' ?>">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M8.228 9a3.75 3.75 0 117.252 1.344c-.584 1.238-1.98 1.656-2.73 2.406-.45.45-.75.9-.75 1.5M12 18h.008"/><circle cx="12" cy="12" r="9"/></svg>
                 FAQs
+            </a>
+            <?php if (in_array($sessionRole, ['admin', 'superadmin'], true)): ?>
+            <a href="<?= site_url('admin/applications') ?>" class="<?= ($activePage ?? '') === 'applications' ? 'on' : '' ?>">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Applications
             </a>
             <a href="<?= site_url('admin/organization') ?>" class="<?= ($activePage ?? '') === 'organization' ? 'on' : '' ?>">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4l8 4-8 4-8-4 8-4z"/><path stroke-linecap="round" stroke-linejoin="round" d="M4 12l8 4 8-4"/><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l8 4 8-4"/></svg>
@@ -83,6 +90,7 @@
 
         <div class="side-foot">
             <div class="side-foot-user">
+                <div class="side-role-label side-role-label--<?= esc($sessionRole, 'attr') ?>"><?= esc($sessionRoleLabel) ?></div>
                 <div class="user"><strong><?= esc(session()->get('admin_name') ?? 'Admin') ?></strong></div>
                 <div class="user"><?= esc(session()->get('admin_email') ?? '') ?></div>
             </div>
@@ -104,8 +112,80 @@
                     <?= esc($pageTitle ?? 'Dashboard') ?>
                 <?php endif; ?>
             </h1>
-            <div class="bar-date">
-                <?= date('l, M j, Y') ?>
+            <div class="bar-tools">
+                <?php
+                    $canViewNotifications = in_array($sessionRole ?? '', ['admin', 'superadmin'], true);
+                    $notifications = $adminNotifications ?? [];
+                    $unreadNotifications = (int) ($adminUnreadNotificationCount ?? 0);
+                ?>
+                <?php if ($canViewNotifications): ?>
+                <div class="admin-notifications" data-admin-notifications>
+                    <button type="button"
+                        class="admin-notifications-trigger"
+                        data-admin-notifications-trigger
+                        aria-label="Open admin notifications"
+                        aria-expanded="false">
+                        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2a2 2 0 01-.6 1.4L4 17h5"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17a3 3 0 006 0"/>
+                        </svg>
+                        <?php if ($unreadNotifications > 0): ?>
+                            <span class="admin-notifications-count" data-admin-notifications-count><?= $unreadNotifications > 9 ? '9+' : $unreadNotifications ?></span>
+                        <?php endif; ?>
+                    </button>
+                    <div class="admin-notifications-menu" data-admin-notifications-menu>
+                        <div class="admin-notifications-head">
+                            <div>
+                                <strong>Notifications</strong>
+                                <span data-admin-notifications-unread-label><?= $unreadNotifications ?> unread</span>
+                            </div>
+                            <?php if (! empty($notifications)): ?>
+                                <button type="button"
+                                    data-admin-notifications-read-all
+                                    data-read-url="<?= site_url('admin/notifications/read-all') ?>">
+                                    Mark all read
+                                </button>
+                            <?php endif; ?>
+                        </div>
+                        <div class="admin-notifications-list">
+                            <?php if (empty($notifications)): ?>
+                                <div class="admin-notifications-empty">No notifications yet.</div>
+                            <?php else: ?>
+                                <?php foreach ($notifications as $notification): ?>
+                                    <?php
+                                        $notificationId = (int) ($notification['id'] ?? 0);
+                                        $isRead = ! empty($notification['isRead']);
+                                        $type = (string) ($notification['type'] ?? 'system_update');
+                                        $href = (string) ($notification['link'] ?? site_url('admin'));
+                                        $created = (string) ($notification['createdAt'] ?? '');
+                                        $timeLabel = $created !== '' && strtotime($created) !== false
+                                            ? date('M j, g:i A', strtotime($created))
+                                            : '';
+                                    ?>
+                                    <a href="<?= esc($href, 'attr') ?>"
+                                        class="admin-notification-item <?= $isRead ? 'is-read' : 'is-unread' ?>"
+                                        data-admin-notification-item
+                                        data-read-url="<?= site_url('admin/notifications/' . $notificationId . '/read') ?>">
+                                        <span class="admin-notification-dot type-<?= esc($type, 'attr') ?>"></span>
+                                        <span class="admin-notification-copy">
+                                            <strong><?= esc((string) ($notification['title'] ?? 'Notification')) ?></strong>
+                                            <?php if (! empty($notification['body'])): ?>
+                                                <span><?= esc((string) $notification['body']) ?></span>
+                                            <?php endif; ?>
+                                            <?php if ($timeLabel !== ''): ?>
+                                                <small><?= esc($timeLabel) ?></small>
+                                            <?php endif; ?>
+                                        </span>
+                                    </a>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+                <div class="bar-date">
+                    <?= date('l, M j, Y') ?>
+                </div>
             </div>
         </header>
 

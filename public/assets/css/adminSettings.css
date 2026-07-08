@@ -105,13 +105,23 @@
     padding: 0.9rem 1rem;
 }
 
-.settings-notice svg {
-    width: 26px;
-    height: 26px;
-    margin-top: 0;
-    color: #43A7DB;
-    stroke: currentColor;
+.settings-notice-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
     flex: 0 0 auto;
+    background: #fff;
+    color: #03558c;
+    border: 1px solid rgba(3, 85, 140, .12);
+}
+
+.settings-notice-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
 }
 
 .settings-notice div {
@@ -151,8 +161,9 @@
     background: #fffaf0;
 }
 
-.settings-notice-upcoming svg {
+.settings-notice-upcoming .settings-notice-icon {
     color: #F8AF21;
+    border-color: rgba(248, 175, 33, .32);
 }
 
 .settings-notice-closed {
@@ -160,8 +171,9 @@
     background: #fff7f7;
 }
 
-.settings-notice-closed svg {
+.settings-notice-closed .settings-notice-icon {
     color: #be123c;
+    border-color: rgba(190, 18, 60, .2);
 }
 
 .settings-toggle-copy,
