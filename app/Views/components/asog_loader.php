@@ -16,23 +16,11 @@ $importMap = [
     aria-live="polite"
     aria-busy="true"
 >
-    <svg data-asog-loader-filters aria-hidden="true" focusable="false">
-        <defs>
-            <filter id="asog-loader-threshold">
-                <feColorMatrix
-                    in="SourceGraphic"
-                    type="matrix"
-                    values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 255 -140"
-                />
-            </filter>
-        </defs>
-    </svg>
     <div data-asog-loader-word-morph aria-hidden="true">
         <span data-asog-loader-word-a></span>
         <span data-asog-loader-word-b></span>
     </div>
     <div data-asog-loader-stage aria-hidden="true"></div>
-    <div data-asog-loader-shine aria-hidden="true"></div>
     <img
         data-asog-loader-logo
         data-src="<?= esc($logoUrl) ?>"
