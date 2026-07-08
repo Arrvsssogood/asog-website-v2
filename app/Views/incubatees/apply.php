@@ -14,7 +14,7 @@
     if ($showBanner):
         if ($appIsUpcoming) {
             $__bannerStatus = 'CURRENTLY CLOSED';
-            $__bannerDesc   = 'We\'re not accepting applications at the moment. Stay tuned — we\'ll welcome new founders soon!';
+            $__bannerDesc   = 'We\'re not accepting applications at the moment. Stay tuned — we\'ll welcome new incubatees soon!';
             $__bannerMod    = 'settings-notice-upcoming';
         } else {
             $__bannerStatus = 'CLOSED';
