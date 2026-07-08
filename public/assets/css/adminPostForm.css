@@ -143,6 +143,150 @@
     outline-offset: 2px
 }
 
+.ql-image-caption {
+    margin: .6rem 0 .3rem
+}
+
+.ql-image-caption img {
+    max-width: 100%;
+    border-radius: .3rem;
+    display: block;
+    cursor: pointer
+}
+
+.ql-image-caption figcaption {
+    margin-top: .35rem;
+    font-size: .72rem;
+    line-height: 1.5;
+    color: #64748b;
+    font-style: italic;
+    min-height: 1.1em
+}
+
+.ql-image-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(2, 13, 24, .55);
+    backdrop-filter: blur(3px);
+    padding: 1rem
+}
+
+.ql-image-dialog-overlay[hidden] {
+    display: none
+}
+
+.ql-image-dialog {
+    width: min(92vw, 520px);
+    background: #fff;
+    border: 1px solid rgba(2, 13, 24, .12);
+    border-radius: 16px;
+    box-shadow: 0 24px 70px rgba(2, 13, 24, .28);
+    padding: 1rem 1rem .9rem
+}
+
+.ql-image-dialog__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    margin-bottom: .9rem
+}
+
+.ql-image-dialog__title {
+    font: 600 .95rem/1.2 'DM Sans', sans-serif;
+    color: #0f172a
+}
+
+.ql-image-dialog__preview-wrap {
+    border: 1px solid rgba(2, 13, 24, .08);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f8fafc;
+    margin-bottom: .9rem
+}
+
+.ql-image-dialog__preview {
+    display: block;
+    width: 100%;
+    max-height: 240px;
+    object-fit: contain;
+    background: #f8fafc
+}
+
+.ql-image-dialog__field {
+    display: block
+}
+
+.ql-image-dialog__label {
+    display: block;
+    font: 600 .74rem/1.1 'DM Sans', sans-serif;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #475569;
+    margin-bottom: .45rem
+}
+
+.ql-image-dialog__caption {
+    display: block;
+    width: 100%;
+    resize: vertical;
+    min-height: 92px;
+    border: 1px solid rgba(2, 13, 24, .14);
+    border-radius: 12px;
+    padding: .75rem .85rem;
+    font: 400 .95rem/1.45 'DM Sans', sans-serif;
+    color: #0f172a;
+    outline: none
+}
+
+.ql-image-dialog__actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    margin-top: 1rem
+}
+
+.ql-image-dialog__action-group {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-left: auto
+}
+
+.ql-image-dialog__delete,
+.ql-image-dialog__cancel,
+.ql-image-dialog__save {
+    border-radius: 10px;
+    padding: .65rem .85rem;
+    font: 600 .82rem/1 'DM Sans', sans-serif;
+    cursor: pointer
+}
+
+.ql-image-dialog__delete {
+    border: 1px solid rgba(2, 13, 24, .12);
+    background: #fff;
+    color: #b91c1c
+}
+
+.ql-image-dialog__cancel {
+    border: 1px solid rgba(2, 13, 24, .12);
+    background: #fff;
+    color: #0f172a
+}
+
+.ql-image-dialog__save {
+    border: 0;
+    background: #03558C;
+    color: #fff;
+    padding: .65rem .95rem;
+    font-weight: 700
+}
+
 /* ── Cover image upload ────────────────── */
 .upload-zone {
     border: 1.5px dashed #d4d0ca;

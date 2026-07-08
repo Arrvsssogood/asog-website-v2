@@ -158,4 +158,29 @@ $formUrl = $isEdit
     </div>
 </form>
 
+<div class="ql-image-dialog-overlay" id="qlImageDialogOverlay" hidden>
+    <div class="ql-image-dialog" role="dialog" aria-modal="true" aria-labelledby="qlImageDialogTitle">
+        <div class="ql-image-dialog__header">
+            <div class="ql-image-dialog__title" id="qlImageDialogTitle">Image</div>
+        </div>
+
+        <div class="ql-image-dialog__preview-wrap">
+            <img class="ql-image-dialog__preview" id="qlImageDialogPreview" alt="">
+        </div>
+
+        <label class="ql-image-dialog__field">
+            <span class="ql-image-dialog__label">Caption</span>
+            <textarea class="ql-image-dialog__caption" id="qlImageDialogCaption" rows="4" aria-label="Image caption"></textarea>
+        </label>
+
+        <div class="ql-image-dialog__actions">
+            <button type="button" class="ql-image-dialog__delete" id="qlImageDialogDelete">Delete image</button>
+            <div class="ql-image-dialog__action-group">
+                <button type="button" class="ql-image-dialog__cancel" id="qlImageDialogCancel">Cancel</button>
+                <button type="button" class="ql-image-dialog__save" id="qlImageDialogSave">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="<?= base_url('assets/js/admin/posts/form.js') ?>"></script>
