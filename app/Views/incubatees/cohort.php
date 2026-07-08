@@ -151,6 +151,7 @@ $sealUrl       = base_url('assets/img/ASOG TBI/WebP/ASOG-TBI-stacked-v2.webp');
     </div>
 </div>
 
+<script src="<?= base_url('assets/loader/vendor/gsap.min.js') ?>" defer></script>
 <script src="<?= base_url('assets/js/features/incubatees/incubateesLoader.js') ?>" defer
     data-api-url="<?= site_url('api/incubatees') ?>" data-cohort="<?= esc($cohortLabel, 'attr') ?>"
     data-app-script="<?= base_url('assets/js/features/incubatees/incubatees.js') ?>"></script>
