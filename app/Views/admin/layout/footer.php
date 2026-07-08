@@ -20,5 +20,6 @@
 <script src="<?= base_url('assets/js/admin/applications/index.js') ?>" defer></script>
 <script src="<?= base_url('assets/js/admin/messages/index.js') ?>" defer></script>
 <script src="<?= base_url('assets/js/admin/admins/index.js') ?>" defer></script>
+<script src="<?= base_url('assets/js/admin/layout/dirtyCheck.js') ?>" defer></script>
 </body>
 </html>

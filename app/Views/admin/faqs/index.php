@@ -22,7 +22,7 @@
             <p>Manage the public FAQ heading and introduction shown above the question list.</p>
         </div>
 
-        <form method="POST" action="<?= site_url('admin/faqs/section') ?>" class="faq-admin-form">
+        <form method="POST" action="<?= site_url('admin/faqs/section') ?>" class="faq-admin-form" data-dirty-check data-dirty-btn=".btn-p">
             <?= csrf_field() ?>
 
             <label class="faq-admin-field">
@@ -56,7 +56,7 @@
             <p>New questions are added to the end of the current order.</p>
         </div>
 
-        <form method="POST" action="<?= site_url('admin/faqs') ?>" class="faq-admin-form">
+        <form method="POST" action="<?= site_url('admin/faqs') ?>" class="faq-admin-form" data-dirty-check data-dirty-btn=".btn-p">
             <?= csrf_field() ?>
 
             <label class="faq-admin-field">
@@ -141,7 +141,7 @@
                     </div>
                 </div>
 
-                <form method="POST" action="<?= site_url('admin/faqs/' . $id . '/update') ?>" class="faq-admin-form faq-admin-edit-form">
+                <form method="POST" action="<?= site_url('admin/faqs/' . $id . '/update') ?>" class="faq-admin-form faq-admin-edit-form" data-dirty-check data-dirty-btn=".btn-p">
                     <?= csrf_field() ?>
 
                     <label class="faq-admin-field">

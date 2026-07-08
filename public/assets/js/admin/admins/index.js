@@ -190,6 +190,20 @@
         bindRoleAction(modal);
         bindStatusAction(modal);
 
+        // Dirty check
+        var modalForm = modal.querySelector('form[data-account-modal-form]');
+        if (modalForm && window.DirtyCheck) {
+            var saveBtn = modalForm.querySelector('button[type="submit"]');
+            if (saveBtn) {
+                var tracker = window.DirtyCheck.watch(modalForm, {
+                    buttons: [saveBtn],
+                });
+                requestAnimationFrame(function () {
+                    setTimeout(function () { tracker.baseline(); }, 50);
+                });
+            }
+        }
+
         var form = modal.querySelector('form[data-account-modal-form]');
         if (!form) return;
 
@@ -334,6 +348,7 @@
         function flipStatus() {
             input.value = input.value === '1' ? '0' : '1';
             renderStatus();
+            input.dispatchEvent(new Event('input', { bubbles: true }));
         }
 
         button.addEventListener('click', function () {

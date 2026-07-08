@@ -502,7 +502,18 @@
 
         const form = modal.querySelector('form[data-modal-form]');
         if (!form) return;
-
+        
+        // Dirty check
+        if (window.DirtyCheck) {
+            const saveBtn = form.querySelector('.btn-p');
+            if (saveBtn) {
+                const tracker = window.DirtyCheck.watch(form, { buttons: [saveBtn] });
+                requestAnimationFrame(function () {
+                    setTimeout(function () { tracker.baseline(); }, 50);
+                });
+            }
+        }
+        
         form.addEventListener('submit', async (event) => {
             event.preventDefault();
             const submitBtn = form.querySelector('button[type="submit"]');

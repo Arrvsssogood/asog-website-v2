@@ -16,7 +16,7 @@ $formUrl = $isEdit
 
 <link rel="stylesheet" href="<?= base_url('assets/css/adminPostForm.css') ?>">
 
-<form action="<?= $formUrl ?>" method="POST" enctype="multipart/form-data" id="postForm">
+<form action="<?= $formUrl ?>" method="POST" enctype="multipart/form-data" id="postForm" data-dirty-check data-dirty-btn=".form-actions button.btn-o[type=submit]">
     <?= csrf_field() ?>
     <?php if ($isEdit): ?>
     <input type="hidden" name="_method" value="PUT" />
@@ -121,14 +121,14 @@ $formUrl = $isEdit
 
                 <?php if ($isEdit && $post['isPublished']): ?>
 
-                    <button type="submit" name="action" value="draft" class="btn-o">
+                    <button type="submit" name="action" value="draft" class="btn-p">
                         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
                         </svg>
                         Unpublish
                     </button>
 
-                    <button type="submit" name="action" value="publish" class="btn-p">
+                    <button type="submit" name="action" value="publish" class="btn-o">
                         <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                         </svg>

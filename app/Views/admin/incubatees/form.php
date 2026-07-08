@@ -750,7 +750,7 @@ $sdgTitles = [
 }
 </style>
 
-<form action="<?= $formUrl ?>" method="POST" enctype="multipart/form-data" id="incubateeForm">
+<form action="<?= $formUrl ?>" method="POST" enctype="multipart/form-data" id="incubateeForm" data-dirty-check data-dirty-btn=".btn-p">
     <?= csrf_field() ?>
 
     <div class="form-card">
