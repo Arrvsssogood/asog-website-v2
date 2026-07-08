@@ -95,6 +95,7 @@ class PostsAdmin extends BaseController
     public function store()
     {
         $slugInput = trim((string) $this->request->getPost('slug'));
+        $action = $this->request->getPost('action');
 
         $data = [
             'title'            => $this->request->getPost('title'),
@@ -102,7 +103,7 @@ class PostsAdmin extends BaseController
             'shortDescription' => $this->request->getPost('shortDescription'),
             'content'          => $this->request->getPost('content'),
             'category'         => $this->request->getPost('category'),
-            'isPublished'      => $this->request->getPost('isPublished') ? 1 : 0,
+            'isPublished'      => $action === 'publish' ? 1 : 0,
             'isFeatured'       => $this->request->getPost('isFeatured') ? 1 : 0,
             'authorName'       => $this->request->getPost('authorName') ?: 'ASOG TBI',
         ];
@@ -165,12 +166,14 @@ class PostsAdmin extends BaseController
             return redirect()->back()->withInput();
         }
 
-        $newId = (int) $this->postModel->getInsertID();
-        setToast('success', 'Post saved successfully.');
-        if ($newId > 0) {
-            return redirect()->to(site_url('admin/posts/' . $newId . '/edit'));
-        }
-        return redirect()->back();
+        setToast(
+            'success',
+            $action === 'publish'
+                ? 'Post published successfully.'
+                : 'Draft saved successfully.'
+        );
+
+        return redirect()->to(site_url('admin/posts'));
     }
 
     public function edit(int $id)
@@ -205,6 +208,7 @@ class PostsAdmin extends BaseController
         }
 
         $slugInput = trim((string) $this->request->getPost('slug'));
+        $action = $this->request->getPost('action');
 
         $data = [
             'title'            => $this->request->getPost('title'),
@@ -212,7 +216,7 @@ class PostsAdmin extends BaseController
             'shortDescription' => $this->request->getPost('shortDescription'),
             'content'          => $this->request->getPost('content'),
             'category'         => $this->request->getPost('category'),
-            'isPublished'      => $this->request->getPost('isPublished') ? 1 : 0,
+            'isPublished'      => $action === 'publish' ? 1 : 0,
             'isFeatured'       => $this->request->getPost('isFeatured') ? 1 : 0,
             'authorName'       => $this->request->getPost('authorName') ?: 'ASOG TBI',
         ];
@@ -282,8 +286,14 @@ class PostsAdmin extends BaseController
             return redirect()->back()->withInput();
         }
 
-        setToast('success', 'Post saved successfully.');
-        return redirect()->to(site_url('admin/posts/' . $id . '/edit'));
+        setToast(
+            'success',
+            $action === 'publish'
+                ? 'Post updated successfully.'
+                : 'Draft updated successfully.'
+        );
+
+        return redirect()->to(site_url('admin/posts'));
     }
 
     /**
