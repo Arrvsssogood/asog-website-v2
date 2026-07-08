@@ -6,6 +6,9 @@ use CodeIgniter\Model;
 
 class OrganizationMemberModel extends Model
 {
+    private const CACHE_TTL = 300;
+    private const CACHE_VERSION_KEY = 'asog_organization_public_version';
+
     public const SECTION_CORE_TEAM = 'core_team';
     public const SECTION_TBI_STAFF = 'tbi_staff';
     public const SECTION_INTERN = 'intern';
@@ -60,6 +63,10 @@ class OrganizationMemberModel extends Model
         'isPublished'    => 'required|in_list[0,1]',
     ];
 
+    protected $afterInsert = ['clearPublicCacheAfterWrite'];
+    protected $afterUpdate = ['clearPublicCacheAfterWrite'];
+    protected $afterDelete = ['clearPublicCacheAfterWrite'];
+
     public function getBySection(string $section, ?string $mentorCategory = null): array
     {
         $builder = $this->where('section', $section);
@@ -107,11 +114,21 @@ class OrganizationMemberModel extends Model
 
     public function getPublishedBySection(string $section): array
     {
-        return $this->where('section', $section)
+        $cache = service('cache');
+        $cacheKey = $this->cacheKey('section_' . hash('sha256', $section));
+        $cached = $cache->get($cacheKey);
+        if (is_array($cached)) {
+            return $cached;
+        }
+
+        $rows = $this->where('section', $section)
             ->where('isPublished', 1)
             ->orderBy('sortOrder', 'ASC')
             ->orderBy('id', 'ASC')
             ->findAll();
+        $cache->save($cacheKey, $rows, self::CACHE_TTL);
+
+        return $rows;
     }
 
     public function getGroupedPublished(): array
@@ -157,5 +174,30 @@ class OrganizationMemberModel extends Model
             self::SECTION_MENTOR    => 'Mentors',
             default                 => ucfirst(str_replace('_', ' ', $section)),
         };
+    }
+
+    public function clearPublicCache(): void
+    {
+        $cache = service('cache');
+        $cache->save(self::CACHE_VERSION_KEY, time() . '_' . random_int(1000, 9999), 86400);
+    }
+
+    protected function clearPublicCacheAfterWrite(array $data): array
+    {
+        $this->clearPublicCache();
+
+        return $data;
+    }
+
+    private function cacheKey(string $suffix): string
+    {
+        return 'asog_organization_public_' . $this->cacheVersion() . '_' . $suffix;
+    }
+
+    private function cacheVersion(): string
+    {
+        $version = service('cache')->get(self::CACHE_VERSION_KEY);
+
+        return is_string($version) && $version !== '' ? $version : '1';
     }
 }

@@ -79,6 +79,8 @@ class OrganizationAdmin extends BaseController
             ]);
         }
 
+        $memberModel->clearPublicCache();
+
         return $this->response->setJSON([
             'ok' => true,
         ]);

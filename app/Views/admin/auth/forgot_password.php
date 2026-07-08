@@ -7,9 +7,7 @@
     <title>Forgot password — ASOG TBI</title>
     <link rel="icon" href="<?= base_url('favicon.ico') ?>" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="<?= base_url('icon.png') ?>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Serif+Display&display=swap"
-        rel="stylesheet">
+    <link rel="stylesheet" href="<?= base_url('assets/css/localFonts.css') ?>">
     <style>
     * {
         margin: 0;
