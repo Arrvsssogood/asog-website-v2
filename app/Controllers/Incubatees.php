@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Libraries\GmailMailer;
+use App\Libraries\ImageUpload;
 use App\Libraries\RecaptchaVerifier;
 use App\Models\FaqModel;
 use App\Models\IncubateeApplicationModel;
@@ -247,7 +248,7 @@ class Incubatees extends BaseController
                             ->with('error', 'Only PDF files are accepted for CV.');
                     }
 
-                    $newName = $file->getRandomName();
+                    $newName = ImageUpload::readableFileName($file, 'team-cv', 'pdf');
                     $file->move(WRITEPATH . 'uploads/applications', $newName);
                     $uploadedPaths[] = 'uploads/applications/' . $newName;
                 }
@@ -278,7 +279,7 @@ class Incubatees extends BaseController
                     ->with('errors', array_merge($applicationModel->errors(), ['leanCanvas' => 'Only PDF or Word (.docx) files are accepted for the Lean Canvas.']));
             }
 
-            $newName = $leanCanvasFile->getRandomName();
+            $newName = ImageUpload::readableFileName($leanCanvasFile, 'lean-canvas');
             $leanCanvasFile->move(WRITEPATH . 'uploads/applications', $newName);
             $data['leanCanvasPath'] = 'uploads/applications/' . $newName;
         } else {
@@ -443,7 +444,7 @@ class Incubatees extends BaseController
                             ->with('error', 'Only PDF files are accepted for CV.');
                     }
 
-                    $newName = $file->getRandomName();
+                    $newName = ImageUpload::readableFileName($file, 'team-cv', 'pdf');
                     $file->move(WRITEPATH . 'uploads/applications', $newName);
                     $uploadedPaths[] = 'uploads/applications/' . $newName;
                 }
@@ -474,7 +475,7 @@ class Incubatees extends BaseController
                     ->with('errors', array_merge($applicationModel->errors(), ['leanCanvas' => 'Only PDF or Word (.docx) files are accepted for the Lean Canvas.']));
             }
 
-            $newName = $leanCanvasFile->getRandomName();
+            $newName = ImageUpload::readableFileName($leanCanvasFile, 'lean-canvas');
             $leanCanvasFile->move(WRITEPATH . 'uploads/applications', $newName);
             $data['leanCanvasPath'] = 'uploads/applications/' . $newName;
         }
