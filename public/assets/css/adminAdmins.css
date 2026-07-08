@@ -567,6 +567,17 @@
     line-height: 1.4;
 }
 
+.account-admin-onboarding-note {
+    margin-top: .75rem;
+    border: 1px solid rgba(67, 167, 219, .22);
+    border-radius: .42rem;
+    background: #eef8fd;
+    color: #475569;
+    font-size: .72rem;
+    line-height: 1.55;
+    padding: .58rem .68rem;
+}
+
 .account-admin-status-action {
     display: flex;
     align-items: center;

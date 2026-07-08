@@ -59,7 +59,12 @@ $originalRoleValue = $isEdit ? (string) ($modalAdmin['role'] ?? '') : '';
                                 <option value="editor" <?= $roleValue === 'editor' ? 'selected' : '' ?>>Editor</option>
                             </select>
                         </label>
-                    </div>
+                        </div>
+                    <?php if (! $isEdit): ?>
+                        <div class="account-admin-onboarding-note">
+                            After saving, the account is created immediately and the set-password email is sent in the background. They can also use Google sign-in if their Google account uses the same email.
+                        </div>
+                    <?php endif; ?>
                 </section>
 
                 <?php if ($isEdit): ?>
