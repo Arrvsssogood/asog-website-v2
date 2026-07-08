@@ -12,7 +12,7 @@ $pageTitle = $isEdit ? 'Edit Account' : 'New Account';
     </a>
 </div>
 
-<form action="<?= site_url($isEdit ? 'admin/accounts/' . $admin['id'] : 'admin/accounts') ?>" method="POST" class="form-container">
+<form action="<?= site_url($isEdit ? 'admin/accounts/' . $admin['id'] : 'admin/accounts') ?>" method="POST" class="form-container" data-dirty-check data-dirty-btn=".btn-p">
     <?= csrf_field() ?>
     <?php if ($isEdit): ?>
         <input type="hidden" name="_method" value="PUT">

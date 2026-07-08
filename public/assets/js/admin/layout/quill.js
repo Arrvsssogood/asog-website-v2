@@ -376,6 +376,20 @@ document.addEventListener('DOMContentLoaded', function () {
       });
     });
 
+    if (hiddenInput && hiddenInput.value) {
+      quill.root.innerHTML = hiddenInput.value;
+    }
+
+    quill.on('text-change', function () {
+      if (hiddenInput) {
+        var newVal = quill.root.innerHTML;
+        if (hiddenInput.value !== newVal) {
+          hiddenInput.value = newVal;
+          hiddenInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
+    });
+
     var form = editorEl.closest('form');
     if (form) {
       form.addEventListener('submit', function () {

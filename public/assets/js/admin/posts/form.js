@@ -75,4 +75,18 @@
             slugInput.value = slugify(titleInput.value);
         }
     }
+
+    /* ── Form Dirty Checking ──────────────── */
+
+    var postForm = document.getElementById('postForm');
+    if (postForm && window.DirtyCheck) {
+
+        var saveButtons = Array.prototype.slice.call(
+            postForm.querySelectorAll('.form-actions button.btn-o[type="submit"]')
+        );
+
+        var tracker = window.DirtyCheck.watch(postForm, { buttons: saveButtons });
+
+        tracker.baseline();
+    }
 })();

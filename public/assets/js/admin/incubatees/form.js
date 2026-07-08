@@ -285,7 +285,10 @@
                 }
                 // Clear the existing photo path since we have a new upload
                 var hidden = zone.querySelector('input[name="tm_photo_existing[]"]');
-                if (hidden) hidden.value = '';
+                if (hidden) {
+                    hidden.value = '';
+                    hidden.dispatchEvent(new Event('input', { bubbles: true }));
+                }
             };
             reader.readAsDataURL(file);
         }

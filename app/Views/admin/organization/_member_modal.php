@@ -45,7 +45,7 @@ $isCurrentlyFeatured = (string) ($formData['isFeatured'] ?? old('isFeatured', $i
             </div>
         <?php endif; ?>
 
-        <form method="POST" action="<?= $formUrl ?>" enctype="multipart/form-data" data-modal-form class="org-admin-form org-admin-modal-form">
+        <form method="POST" action="<?= $formUrl ?>" enctype="multipart/form-data" data-modal-form data-dirty-check data-dirty-btn=".btn-p" class="org-admin-form org-admin-modal-form">
             <?= csrf_field() ?>
 
             <div class="org-admin-modal-body">
