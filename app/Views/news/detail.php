@@ -45,6 +45,16 @@
             <?= $post['content'] ?? '' ?>
         </div>
 
+        <style>
+            .prose-content figure figcaption {
+                font-style: italic;
+                margin-top: .35rem;
+                font-size: .95rem;
+                line-height: 1.5;
+                color: rgba(3, 85, 140, .72);
+            }
+        </style>
+
         <?php
             $postCategory = strtolower((string) ($post['category'] ?? ''));
             $showStoryShare = true;
