@@ -40,6 +40,12 @@
   function init(root) {
     bindToggleLabels(root);
     bindPasswordToggles(root);
+
+    if (window.AdminLeanCanvas && typeof window.AdminLeanCanvas.init === 'function') {
+      return window.AdminLeanCanvas.init(root);
+    }
+
+    return function () {};
   }
 
   if (window.AdminShell && typeof window.AdminShell.register === 'function') {

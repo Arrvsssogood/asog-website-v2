@@ -13,6 +13,7 @@
 <script src="<?= base_url('assets/js/admin/layout/adminShell.js') ?>" defer></script>
 <script src="<?= base_url('assets/js/admin/layout/deleteConfirm.js') ?>" defer></script>
 <script src="<?= base_url('assets/js/admin/layout/notifications.js') ?>" defer></script>
+<script src="<?= base_url('assets/js/admin/settings/leanCanvas.js') ?>" defer></script>
 <script src="<?= base_url('assets/js/admin/settings/index.js') ?>" defer></script>
 <script src="<?= base_url('assets/js/admin/posts/index.js') ?>" defer></script>
 <script src="<?= base_url('assets/js/admin/incubatees/index.js') ?>" defer></script>
