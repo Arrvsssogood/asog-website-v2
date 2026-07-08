@@ -36,6 +36,7 @@ class Filters extends BaseFilters
         'performance'   => PerformanceMetrics::class,
         'auth'          => \App\Filters\AuthFilter::class,
         'role'          => \App\Filters\RoleFilter::class,
+        'nostore'       => \App\Filters\NoStoreCacheFilter::class,
     ];
 
     /**
@@ -119,6 +120,22 @@ class Filters extends BaseFilters
                 'apply/form',
                 'incubatees/apply/form',
                 'games/guess-the-startup/profile',
+            ],
+        ],
+        'nostore' => [
+            'after' => [
+                'asog-admin',
+                'asog-admin/*',
+                'admin',
+                'admin/*',
+                'apply/form',
+                'apply/form/*',
+                'apply/revalidate/*',
+                'contact',
+                'contact/*',
+                'games/guess-the-startup',
+                'games/guess-the-startup/*',
+                'deployment/run-migrations',
             ],
         ],
     ];

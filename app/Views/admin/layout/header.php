@@ -6,6 +6,9 @@
     <title><?= esc($pageTitle ?? 'Admin') ?> — ASOG TBI</title>
     <link rel="icon" href="<?= base_url('favicon.ico') ?>" sizes="any">
     <link rel="icon" type="image/png" sizes="32x32" href="<?= base_url('icon.png') ?>">
+    <link rel="preload" as="font" href="<?= base_url('assets/fonts/dm-sans-normal-400.ttf') ?>" type="font/ttf" crossorigin>
+    <link rel="preload" as="font" href="<?= base_url('assets/fonts/dm-sans-normal-600.ttf') ?>" type="font/ttf" crossorigin>
+    <link rel="preload" as="image" href="<?= base_url('assets/img/ASOG TBI/WebP/ASOG-TBI_full-colored_stacked-white.webp') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/localFonts.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/vendor/quill/quill.snow.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/adminLayout.css') ?>">
@@ -16,7 +19,7 @@
 
     <aside class="side">
         <div class="side-brand">
-            <?= responsiveStaticImg('assets/img/ASOG TBI/WebP/ASOG-TBI_seal', 'default', 'ASOG TBI', 'side-logo') ?>
+            <?= responsiveStaticImg('assets/img/ASOG TBI/WebP/ASOG-TBI_full-colored_stacked-white', 'default', 'ASOG TBI', 'side-logo') ?>
             <div class="side-brand-text">
                 <h2>ASOG TBI</h2>
                 <span>Content Manager</span>

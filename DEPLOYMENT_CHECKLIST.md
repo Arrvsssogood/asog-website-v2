@@ -199,6 +199,8 @@ Use this only if Hostinger does not provide SSH or terminal access.
   - [ ] enable `opcache`
   - [ ] save and retest the site
 - [ ] If using Hostinger Cache Manager / LiteSpeed cache, enable it only with safe exclusions.
+- [ ] Treat Hostinger/LiteSpeed page cache as public-page acceleration only, not cache-everything mode.
+- [ ] In hPanel, open `Advanced > Cache Manager` and find `Exclude URLs`, `Cache exclusions`, or purge/exclusion rules.
 - [ ] Exclude these paths from server-level page cache:
   - [ ] `/asog-admin*`
   - [ ] `/admin*`
@@ -207,6 +209,22 @@ Use this only if Hostinger does not provide SSH or terminal access.
   - [ ] `/contact*` if POST responses are cached by the host
   - [ ] `/games/guess-the-startup*` if logged-in/session game state is active
   - [ ] `/deployment/run-migrations*`
+- [ ] If Hostinger supports query/path pattern exclusions, also exclude:
+  - [ ] `*token=*`
+- [ ] Reason for exclusions:
+  - [ ] admin routes must never cache authenticated pages
+  - [ ] apply/contact routes contain CSRF, validation, reCAPTCHA, and form state
+  - [ ] revalidation links are private token URLs
+  - [ ] game routes can contain player/session state
+  - [ ] migration route is temporary and must never be cached
+- [ ] Confirm app-level `no-store` headers are active on dynamic/admin routes:
+  - [ ] `/asog-admin`
+  - [ ] `/admin`
+  - [ ] `/apply/form`
+  - [ ] `/apply/revalidate/{token}`
+  - [ ] `/contact`
+  - [ ] `/games/guess-the-startup`
+  - [ ] `/deployment/run-migrations`
 - [ ] After enabling Hostinger cache, verify public settings changes still appear after clearing app/host cache.
 - [ ] Do not enable any cache option that caches authenticated admin/editor HTML.
 
