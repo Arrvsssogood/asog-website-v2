@@ -10,7 +10,7 @@ use CodeIgniter\HTTP\Files\UploadedFile;
  * Usage:
  *   $uploader = new \App\Libraries\ImageUpload();
  *   $path = $uploader->upload($file, 'posts');
- *   // returns relative path like "uploads/posts/abc123.webp" or null on failure
+ *   // returns relative path like "uploads/posts/company-logo-a1b2c3d4.webp" or null on failure
  */
 class ImageUpload
 {
@@ -90,8 +90,7 @@ class ImageUpload
             return null;
         }
 
-        // Generate unique filename
-        $newName = $file->getRandomName();
+        $newName = self::readableFileName($file, 'image', $this->extensionForMime($mimeType));
 
         try {
             $file->move($destination, $newName);
@@ -141,6 +140,54 @@ class ImageUpload
     public function getError(): string
     {
         return $this->error;
+    }
+
+    public static function readableFileName(UploadedFile $file, string $fallbackBase = 'upload', ?string $extension = null): string
+    {
+        $clientName = trim((string) $file->getClientName());
+        $base = pathinfo($clientName, PATHINFO_FILENAME);
+        $base = self::slugFileBase($base !== '' ? $base : $fallbackBase);
+
+        if ($base === '') {
+            $base = self::slugFileBase($fallbackBase) ?: 'upload';
+        }
+
+        $base = substr($base, 0, 64);
+        $base = trim($base, '-');
+        $suffix = bin2hex(random_bytes(4));
+        $ext = strtolower(trim((string) ($extension ?: $file->getClientExtension()), '.'));
+
+        if ($ext === '') {
+            $ext = strtolower(pathinfo($clientName, PATHINFO_EXTENSION));
+        }
+
+        return $base . '-' . $suffix . ($ext !== '' ? '.' . $ext : '');
+    }
+
+    private static function slugFileBase(string $value): string
+    {
+        $value = trim($value);
+        $converted = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+        if (is_string($converted) && $converted !== '') {
+            $value = $converted;
+        }
+
+        $value = strtolower($value);
+        $value = preg_replace('/[^a-z0-9]+/', '-', $value) ?? '';
+        $value = preg_replace('/-+/', '-', $value) ?? '';
+
+        return trim($value, '-');
+    }
+
+    private function extensionForMime(string $mimeType): ?string
+    {
+        return match ($mimeType) {
+            'image/jpeg' => 'jpg',
+            'image/png'  => 'png',
+            'image/gif'  => 'gif',
+            'image/webp' => 'webp',
+            default      => null,
+        };
     }
 
 }
