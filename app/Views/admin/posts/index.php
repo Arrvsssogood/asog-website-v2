@@ -53,7 +53,6 @@ $featuredStories = $featuredStories ?? array_values(array_filter($posts ?? [], s
     </div>
 </div>
 <?php endif; ?>
-
 <?php if (empty($posts)): ?>
     <div class="empty-row">No posts yet. <a href="<?= site_url('admin/posts/create') ?>">Create one.</a></div>
 <?php else: ?>
@@ -151,73 +150,4 @@ $featuredStories = $featuredStories ?? array_values(array_filter($posts ?? [], s
         </div>
     <?php endif; ?>
 
-
-<?php endif; ?>
-
-<?php if (!empty($supportsSortOrder)): ?>
-<script>
-(function () {
-    var modal = document.getElementById('featureOrderModal');
-    var openBtn = document.getElementById('featuredOrderBtn');
-    var list = document.getElementById('featureOrderList');
-    if (!modal || !openBtn || !list) return;
-
-    function openModal() {
-        modal.classList.add('is-open');
-        modal.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeModal() {
-        modal.classList.remove('is-open');
-        modal.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = '';
-    }
-
-    openBtn.addEventListener('click', openModal);
-    modal.addEventListener('click', function (event) {
-        if (event.target.matches('[data-close-modal="true"]')) {
-            closeModal();
-        }
-    });
-
-    document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' && modal.classList.contains('is-open')) {
-            closeModal();
-        }
-    });
-
-    var dragging = null;
-
-    list.addEventListener('dragstart', function (event) {
-        var item = event.target.closest('.feature-order-item');
-        if (!item) return;
-        dragging = item;
-        item.classList.add('is-dragging');
-        event.dataTransfer.effectAllowed = 'move';
-    });
-
-    list.addEventListener('dragend', function () {
-        if (dragging) {
-            dragging.classList.remove('is-dragging');
-        }
-        dragging = null;
-    });
-
-    list.addEventListener('dragover', function (event) {
-        if (!dragging) return;
-        event.preventDefault();
-        var over = event.target.closest('.feature-order-item');
-        if (!over || over === dragging) return;
-
-        var rect = over.getBoundingClientRect();
-        var before = event.clientY < rect.top + rect.height / 2;
-        if (before) {
-            list.insertBefore(dragging, over);
-        } else {
-            list.insertBefore(dragging, over.nextSibling);
-        }
-    });
-})();
-</script>
 <?php endif; ?>

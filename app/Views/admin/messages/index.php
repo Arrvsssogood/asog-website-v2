@@ -236,4 +236,3 @@ $baseUrl = site_url('admin/messages') . '?' . http_build_query([
 
 <div class="toast" id="toast"></div>
 <div id="adminMessagesConfig" data-base-url="<?= site_url('admin/messages') ?>"></div>
-<script src="<?= base_url('assets/js/admin/messages/index.js') ?>" defer></script>

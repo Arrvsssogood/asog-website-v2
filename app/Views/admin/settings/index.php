@@ -463,24 +463,4 @@ $hasLeanCanvasTemplate = $leanCanvasTemplateName !== '';
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js" defer></script>
 <script src="<?= base_url('assets/js/admin/settings/leanCanvas.js') ?>" defer></script>
-<script>
-(() => {
-    document.querySelectorAll('[data-toggle-form]').forEach((form) => {
-        form.querySelectorAll('.settings-switch').forEach((switchEl) => {
-            const checkbox = switchEl.querySelector('input[type="checkbox"]');
-            const stateLabel = switchEl.querySelector('.settings-switch-label');
-            if (!checkbox || !stateLabel) {
-                return;
-            }
-
-            const updateLabel = () => {
-                stateLabel.textContent = checkbox.checked ? 'ON' : 'OFF';
-            };
-
-            checkbox.addEventListener('change', updateLabel);
-            updateLabel();
-        });
-    });
-})();
-</script>
 <?php endif; ?>
