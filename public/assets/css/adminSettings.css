@@ -317,7 +317,14 @@
 }
 
 .settings-field-compact {
-    min-width: 220px;
+    min-width: 140px;
+    max-width: 200px;
+    flex: 0 0 auto;
+}
+
+.settings-field-compact .settings-select {
+    min-width: 0;
+    width: 100%;
 }
 
 .settings-field input:focus,
@@ -419,3 +426,422 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ─── Lean Canvas Template card ───────────────────────────── */
+.settings-template-card {
+    margin-top: 1rem;
+}
+
+/* Choose File button — mirrors the public apply form's file-upload-button */
+.settings-template-chooser .file-upload-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #03558C;
+    border-radius: 0.125rem;
+    background: #03558C;
+    padding: 0.5rem 1rem;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    line-height: 1;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+    flex: 0 0 auto;
+}
+
+.settings-template-chooser .file-upload-button:hover {
+    background: #fff;
+    border-color: #03558C;
+    color: #03558C;
+}
+
+.settings-template-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border: 1px solid #e4e2dd;
+    border-radius: 0.45rem;
+    background: #faf9f7;
+    padding: 0.8rem 0.9rem;
+    margin: 1.1rem 1.1rem 0;
+}
+
+.settings-template-info {
+    display: grid;
+    gap: 0.2rem;
+    min-width: 0;
+}
+
+.settings-template-info strong {
+    color: #1e293b;
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+
+.settings-template-status {
+    color: #64748b;
+    font-size: 0.72rem;
+    line-height: 1.5;
+}
+
+.settings-template-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #03558c;
+    font-weight: 600;
+    max-width: 100%;
+}
+
+.settings-template-name .settings-template-file-icon {
+    width: 14px;
+    height: 14px;
+    color: #ef4444;
+    flex: 0 0 auto;
+}
+
+.settings-template-empty {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.settings-template-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 0 0 auto;
+}
+
+.settings-template-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.settings-template-actions .btn[disabled],
+.settings-template-actions .settings-template-delete-btn[disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Delete button — red like admin table delete, with hover fill */
+.settings-template-delete-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    border: 1px solid #fecaca;
+    border-radius: 0.3rem;
+    background: transparent;
+    color: #dc2626;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 0.46rem 0.85rem;
+    min-height: 34px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.settings-template-delete-btn:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+    color: #fff;
+}
+
+.settings-template-form {
+    padding: 0 1.1rem 1.1rem;
+    border-top: 1px dashed #eceae6;
+    margin-top: 0.95rem;
+    padding-top: 1rem;
+}
+
+.settings-template-upload {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.settings-template-chooser {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1 1 240px;
+    min-width: 0;
+}
+
+.settings-template-file-status {
+    font-size: 0.78rem;
+    color: #475569;
+    max-width: 340px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.settings-template-upload .settings-actions {
+    flex: 0 0 auto;
+}
+
+.settings-template-upload .btn {
+    min-height: 34px;
+}
+
+/* Utility: hide elements (admin layout doesn't load Tailwind's .hidden) */
+.settings-template-chooser .hidden,
+.settings-template-upload .hidden {
+    display: none !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LEAN CANVAS PREVIEW MODAL — matches apply-form guidelines modal style
+   (admin layout doesn't load Tailwind, so all styles are defined here)
+   ══════════════════════════════════════════════════════════════ */
+
+/* Outer wrapper — hidden by default, shown via JS */
+.lc-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+.lc-modal.is-open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Backdrop */
+.lc-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(2, 13, 24, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+/* Dialog */
+.lc-modal-dialog {
+    position: relative;
+    width: 100%;
+    max-width: 820px;
+    max-height: 88vh;
+    overflow-y: auto;
+    background: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,.25);
+    border: 1px solid rgba(3, 85, 140, 0.1);
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+}
+.lc-modal.is-open .lc-modal-dialog {
+    transform: scale(1);
+}
+
+/* Header */
+.lc-modal-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(255,255,255,.95);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(3, 85, 140, 0.08);
+}
+.lc-modal-header-kicker {
+    font-size: .48rem;
+    font-weight: 700;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: #F8AF21;
+    display: block;
+    margin-bottom: .125rem;
+}
+.lc-modal-header-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1rem;
+    color: #1e293b;
+    margin: 0;
+}
+
+/* Close button */
+.lc-modal-close {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: .375rem;
+    background: transparent;
+    border: 1px solid rgba(3, 85, 140, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(30,41,59,.3);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.lc-modal-close:hover {
+    background: rgba(248, 175, 33, 0.08);
+    color: #F8AF21;
+}
+.lc-modal-close svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Body — loading / iframe container */
+.lc-modal-body {
+    min-height: 320px;
+    background: #f8fafc;
+}
+.lc-modal-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    min-height: 320px;
+    font-size: .8rem;
+    color: #64748b;
+}
+.lc-modal-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 320px;
+    font-size: .8rem;
+    color: #991b1b;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+}
+.lc-modal-iframe {
+    display: block;
+    width: 100%;
+    height: 70vh;
+    border: 0;
+    background: #fff;
+}
+
+/* Footer */
+.lc-modal-footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    background: rgba(255,255,255,.95);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .75rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(3, 85, 140, 0.08);
+}
+.lc-modal-footer[hidden] {
+    display: none;
+}
+.lc-modal-download {
+    display: inline-flex;
+    align-items: center;
+    gap: .375rem;
+    font-size: .6rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: #fff;
+    text-decoration: none;
+    background: #03558C;
+    padding: .625rem 1.25rem;
+    border-radius: .125rem;
+    transition: background 0.2s;
+}
+.lc-modal-download:hover {
+    background: #020d18;
+}
+
+/* Mammoth.js rendered DOCX content */
+.lc-mammoth-content {
+    padding: 2rem 2.5rem;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    font-size: .9rem;
+    line-height: 1.65;
+    color: #1e293b;
+    background: #fff;
+}
+.lc-mammoth-content h1,
+.lc-mammoth-content h2,
+.lc-mammoth-content h3,
+.lc-mammoth-content h4 {
+    font-family: 'DM Serif Display', Georgia, serif;
+    color: #03558C;
+    margin: 1.2em 0 .4em;
+    line-height: 1.2;
+}
+.lc-mammoth-content h1 { font-size: 1.5rem; }
+.lc-mammoth-content h2 { font-size: 1.25rem; }
+.lc-mammoth-content h3 { font-size: 1.1rem; }
+.lc-mammoth-content p { margin: 0 0 .75em; }
+.lc-mammoth-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0;
+}
+.lc-mammoth-content td,
+.lc-mammoth-content th {
+    border: 1px solid #e4e2dd;
+    padding: .5rem .75rem;
+    text-align: left;
+    font-size: .82rem;
+}
+.lc-mammoth-content th {
+    background: #faf9f7;
+    font-weight: 700;
+}
+.lc-mammoth-content ul,
+.lc-mammoth-content ol {
+    padding-left: 1.5rem;
+    margin: .5em 0;
+}
+.lc-mammoth-content li { margin-bottom: .3em; }
+.lc-mammoth-content img { max-width: 100%; height: auto; }
+
+/* Thin scrollbar (matches guidelines-scroll) */
+.lc-modal-dialog::-webkit-scrollbar { width: 6px; }
+.lc-modal-dialog::-webkit-scrollbar-track { background: #f8f6f2; border-radius: 3px; }
+.lc-modal-dialog::-webkit-scrollbar-thumb { background: rgba(3,85,140,.18); border-radius: 3px; }
+.lc-modal-dialog::-webkit-scrollbar-thumb:hover { background: rgba(3,85,140,.35); }
+.lc-modal-dialog { scrollbar-width: thin; scrollbar-color: rgba(3,85,140,.18) #f8f6f2; }
+
+/* Body scroll lock when modal is open */
+body.lc-modal-open {
+    overflow: hidden;
+}
+
+@media (max-width: 640px) {
+    .settings-template-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .settings-template-upload {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+

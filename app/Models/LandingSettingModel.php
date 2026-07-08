@@ -21,6 +21,7 @@ class LandingSettingModel extends Model
     public const KEY_APPLY_START_DATE = 'apply_start_date';
     public const KEY_APPLY_END_DATE = 'apply_end_date';
     public const KEY_APPLY_SHOW_DEADLINE = 'apply_show_deadline';
+    public const KEY_APPLY_LEAN_CANVAS_TEMPLATE = 'apply_lean_canvas_template';
     public const KEY_LANDING_LOADER_ENABLED = 'landing_loader_enabled';
 
     protected $table            = 'landing_settings';

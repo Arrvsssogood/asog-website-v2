@@ -663,6 +663,23 @@ class Incubatees extends BaseController
 
     private function buildApplyFormViewData(array $formInput = [], array $formErrors = [], ?string $formError = null, array $extra = []): array
     {
+        // Resolve the Lean Canvas template URL from admin settings.
+        // When none is uploaded, return empty — the view will show a disabled
+        // download button with a message instead of falling back to a built-in default.
+        $landingSettings = new LandingSettingModel();
+        $templateRelativePath = trim((string) $landingSettings->getValue(LandingSettingModel::KEY_APPLY_LEAN_CANVAS_TEMPLATE, ''));
+        $leanCanvasTemplateUrl = '';
+        $leanCanvasTemplateName = '';
+
+        if ($templateRelativePath !== '') {
+            $fullPath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR
+                . ltrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $templateRelativePath), DIRECTORY_SEPARATOR);
+            if (is_file($fullPath)) {
+                $leanCanvasTemplateUrl = site_url('uploads/' . str_replace('\\', '/', $templateRelativePath));
+                $leanCanvasTemplateName = basename($templateRelativePath);
+            }
+        }
+
         return array_merge([
             'title' => 'Application Form - ASOG TBI',
             'heroSubtitle' => 'Incubation Program',
@@ -676,6 +693,8 @@ class Incubatees extends BaseController
             'formInput' => $formInput,
             'formErrors' => $formErrors,
             'formError' => $formError,
+            'leanCanvasTemplateUrl'  => $leanCanvasTemplateUrl,
+            'leanCanvasTemplateName' => $leanCanvasTemplateName,
         ], $extra);
     }
 
