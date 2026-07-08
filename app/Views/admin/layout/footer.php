@@ -15,6 +15,9 @@
 <script src="<?= base_url('assets/js/admin/layout/notifications.js') ?>" defer></script>
 <script src="<?= base_url('assets/js/admin/settings/index.js') ?>" defer></script>
 <script src="<?= base_url('assets/js/admin/posts/index.js') ?>" defer></script>
+<script src="<?= base_url('assets/js/admin/incubatees/index.js') ?>" defer></script>
+<script src="<?= base_url('assets/js/admin/organization/index.js') ?>" defer></script>
+<script src="<?= base_url('assets/js/admin/applications/index.js') ?>" defer></script>
 <script src="<?= base_url('assets/js/admin/messages/index.js') ?>" defer></script>
 <script src="<?= base_url('assets/js/admin/admins/index.js') ?>" defer></script>
 <script src="<?= base_url('assets/js/admin/layout/dirtyCheck.js') ?>" defer></script>

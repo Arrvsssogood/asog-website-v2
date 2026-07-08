@@ -11,6 +11,9 @@
     dashboard: true,
     faqs: true,
     posts: true,
+    incubatees: true,
+    organization: true,
+    applications: true,
     messages: true,
     admins: true,
     settings: true
@@ -35,6 +38,9 @@
     if (/(^|\/)admin\/settings$/.test(path)) return 'settings';
     if (/(^|\/)admin\/faqs$/.test(path)) return 'faqs';
     if (/(^|\/)admin\/posts$/.test(path)) return 'posts';
+    if (/(^|\/)admin\/incubatees$/.test(path)) return 'incubatees';
+    if (/(^|\/)admin\/organization$/.test(path)) return 'organization';
+    if (/(^|\/)admin\/applications$/.test(path)) return 'applications';
     if (/(^|\/)admin\/messages$/.test(path)) return 'messages';
     if (/(^|\/)admin\/accounts$/.test(path)) return 'admins';
     if (/(^|\/)admin$/.test(path)) return 'dashboard';
@@ -54,6 +60,8 @@
 
     var href = link.getAttribute('href') || '';
     if (!href || href.charAt(0) === '#') return false;
+    if (/\/(modal|create|edit|callback|logout|download)(?:\/|\?|$)/.test(href)) return false;
+    if (/(token=|\/revalidate\/|\/gmail-api\/|\/google\/)/.test(href)) return false;
 
     var url;
     try {
@@ -64,6 +72,36 @@
 
     if (!isSafeShellUrl(url)) return false;
     return normalizePath(url.pathname) !== normalizePath(window.location.pathname) || url.search !== window.location.search;
+  }
+
+  function listen(root, target, eventName, selectorOrHandler, handler, options) {
+    var controller = root && root.__adminShellController;
+    var listener;
+
+    if (!target || !eventName) {
+      return function () {};
+    }
+
+    if (typeof selectorOrHandler === 'function') {
+      listener = selectorOrHandler;
+    } else {
+      listener = function (event) {
+        var matched = event.target && event.target.closest ? event.target.closest(selectorOrHandler) : null;
+        if (!matched || (target !== document && target !== window && !target.contains(matched))) return;
+        handler.call(matched, event, matched);
+      };
+    }
+
+    var finalOptions = options || {};
+    if (controller && typeof AbortController !== 'undefined') {
+      finalOptions = Object.assign({}, finalOptions, { signal: controller.signal });
+    }
+
+    target.addEventListener(eventName, listener, finalOptions);
+
+    return function () {
+      target.removeEventListener(eventName, listener, finalOptions);
+    };
   }
 
   function setLoading(isActive) {
@@ -200,6 +238,12 @@
   }
 
   function runDestroy() {
+    var main = getMain();
+    if (main && main.__adminShellController) {
+      main.__adminShellController.abort();
+      main.__adminShellController = null;
+    }
+
     if (typeof currentDestroy !== 'function') return;
     try {
       currentDestroy();
@@ -212,6 +256,9 @@
   function runInit(page, root) {
     currentPage = page || getMainPage(root);
     var entry = registry[currentPage];
+    if (root && typeof AbortController !== 'undefined') {
+      root.__adminShellController = new AbortController();
+    }
     if (!entry || typeof entry.init !== 'function') {
       currentDestroy = null;
       return;
@@ -574,6 +621,7 @@
   window.AdminShell = window.AdminShell || {};
   window.AdminShell.register = register;
   window.AdminShell.load = load;
+  window.AdminShell.on = listen;
   window.AdminShell.updateHistory = updateHistory;
   window.AdminShell.refresh = function () {
     return load(window.location.href, { replaceHistory: true });
