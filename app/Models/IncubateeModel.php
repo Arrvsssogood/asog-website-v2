@@ -9,6 +9,9 @@ use CodeIgniter\Model;
 **/
 class IncubateeModel extends Model
 {
+    private const CACHE_TTL = 300;
+    private const CACHE_VERSION_KEY = 'asog_incubatees_public_version';
+
     protected $table            = 'incubatees';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
@@ -38,6 +41,10 @@ class IncubateeModel extends Model
         'isPublished',
     ];
 
+    protected $afterInsert = ['clearPublicCacheAfterWrite'];
+    protected $afterUpdate = ['clearPublicCacheAfterWrite'];
+    protected $afterDelete = ['clearPublicCacheAfterWrite'];
+
     // ─── Query Helpers ───────────────────────────────────────
 
     /**  
@@ -45,10 +52,20 @@ class IncubateeModel extends Model
     **/
     public function getPublished(): array
     {
-        return $this->where('isPublished', 1)
+        $cache = service('cache');
+        $cacheKey = $this->cacheKey('published');
+        $cached = $cache->get($cacheKey);
+        if (is_array($cached)) {
+            return $cached;
+        }
+
+        $rows = $this->where('isPublished', 1)
                     ->orderBy('sortOrder', 'ASC')
                     ->orderBy('createdAt', 'DESC')
                     ->findAll();
+        $cache->save($cacheKey, $rows, self::CACHE_TTL);
+
+        return $rows;
     }
 
     /**  
@@ -58,9 +75,7 @@ class IncubateeModel extends Model
     **/
     public function getFeatured(): ?array
     {
-        $published = $this->where('isPublished', 1)
-                          ->orderBy('sortOrder', 'ASC')
-                          ->findAll();
+        $published = $this->getPublished();
 
         if (empty($published)) {
             return null;
@@ -77,9 +92,13 @@ class IncubateeModel extends Model
     **/
     public function getBySlug(string $slug): ?array
     {
-        return $this->where('slug', $slug)
-                    ->where('isPublished', 1)
-                    ->first();
+        foreach ($this->getPublished() as $incubatee) {
+            if ((string) ($incubatee['slug'] ?? '') === $slug) {
+                return $incubatee;
+            }
+        }
+
+        return null;
     }
 
     /**  
@@ -87,11 +106,10 @@ class IncubateeModel extends Model
     **/
     public function getPublishedByCohort(string $cohort): array
     {
-        return $this->where('isPublished', 1)
-                    ->where('cohort', $cohort)
-                    ->orderBy('sortOrder', 'ASC')
-                    ->orderBy('createdAt', 'DESC')
-                    ->findAll();
+        return array_values(array_filter(
+            $this->getPublished(),
+            static fn (array $incubatee): bool => (string) ($incubatee['cohort'] ?? '') === $cohort
+        ));
     }
 
     /**  
@@ -100,15 +118,18 @@ class IncubateeModel extends Model
     **/
     public function getDistinctCohorts(): array
     {
-        $rows = $this->select('cohort')
-                     ->where('isPublished', 1)
-                     ->where('cohort IS NOT NULL')
-                     ->where('cohort !=', '')
-                     ->groupBy('cohort')
-                     ->orderBy('cohort', 'ASC')
-                     ->findAll();
+        $cohorts = [];
+        foreach ($this->getPublished() as $incubatee) {
+            $cohort = trim((string) ($incubatee['cohort'] ?? ''));
+            if ($cohort !== '') {
+                $cohorts[$cohort] = true;
+            }
+        }
 
-        return array_column($rows, 'cohort');
+        $cohortNames = array_keys($cohorts);
+        sort($cohortNames, SORT_NATURAL | SORT_FLAG_CASE);
+
+        return $cohortNames;
     }
 
     /**  
@@ -148,5 +169,30 @@ class IncubateeModel extends Model
         }
 
         return $slug;
+    }
+
+    public function clearPublicCache(): void
+    {
+        $cache = service('cache');
+        $cache->save(self::CACHE_VERSION_KEY, time() . '_' . random_int(1000, 9999), 86400);
+    }
+
+    protected function clearPublicCacheAfterWrite(array $data): array
+    {
+        $this->clearPublicCache();
+
+        return $data;
+    }
+
+    private function cacheKey(string $suffix): string
+    {
+        return 'asog_incubatees_public_' . $this->cacheVersion() . '_' . $suffix;
+    }
+
+    private function cacheVersion(): string
+    {
+        $version = service('cache')->get(self::CACHE_VERSION_KEY);
+
+        return is_string($version) && $version !== '' ? $version : '1';
     }
 }

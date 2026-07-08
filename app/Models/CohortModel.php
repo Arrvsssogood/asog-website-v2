@@ -11,6 +11,10 @@ use CodeIgniter\Model;
  */
 class CohortModel extends Model
 {
+    private const CACHE_TTL = 300;
+    private const CACHE_ACTIVE = 'asog_cohorts_active';
+    private const CACHE_ACTIVE_NAMES = 'asog_cohorts_active_names';
+
     protected $table            = 'cohorts';
     protected $primaryKey       = 'id';
     protected $useAutoIncrement = true;
@@ -31,6 +35,10 @@ class CohortModel extends Model
         'number' => 'required|integer|is_unique[cohorts.number,id,{id}]',
     ];
 
+    protected $afterInsert = ['clearCohortCache'];
+    protected $afterUpdate = ['clearCohortCache'];
+    protected $afterDelete = ['clearCohortCache'];
+
     // ─── Query Helpers ───────────────────────────────────────
 
     /**
@@ -38,9 +46,18 @@ class CohortModel extends Model
      */
     public function getActive(): array
     {
-        return $this->where('isActive', 1)
+        $cache = service('cache');
+        $cached = $cache->get(self::CACHE_ACTIVE);
+        if (is_array($cached)) {
+            return $cached;
+        }
+
+        $rows = $this->where('isActive', 1)
                     ->orderBy('number', 'ASC')
                     ->findAll();
+        $cache->save(self::CACHE_ACTIVE, $rows, self::CACHE_TTL);
+
+        return $rows;
     }
 
     /**
@@ -49,7 +66,16 @@ class CohortModel extends Model
      */
     public function getActiveNames(): array
     {
-        return array_column($this->getActive(), 'name');
+        $cache = service('cache');
+        $cached = $cache->get(self::CACHE_ACTIVE_NAMES);
+        if (is_array($cached)) {
+            return $cached;
+        }
+
+        $names = array_column($this->getActive(), 'name');
+        $cache->save(self::CACHE_ACTIVE_NAMES, $names, self::CACHE_TTL);
+
+        return $names;
     }
 
     /**
@@ -67,5 +93,13 @@ class CohortModel extends Model
     {
         $max = $this->selectMax('number')->first();
         return ($max['number'] ?? 0) + 1;
+    }
+
+    protected function clearCohortCache(array $data): array
+    {
+        service('cache')->delete(self::CACHE_ACTIVE);
+        service('cache')->delete(self::CACHE_ACTIVE_NAMES);
+
+        return $data;
     }
 }

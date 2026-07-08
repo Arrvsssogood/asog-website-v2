@@ -101,6 +101,8 @@ phpunit
 vendor/
 !public/assets/loader/vendor/
 !public/assets/loader/vendor/*.js
+!public/assets/vendor/
+!public/assets/vendor/**
 
 #-------------------------
 # IDE / Development Files

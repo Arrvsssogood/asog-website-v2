@@ -176,7 +176,41 @@ Use this only if Hostinger does not provide SSH or terminal access.
 - [ ] Submit a test upload from the admin panel and confirm the file renders publicly.
 - [ ] Submit a test application with CV and Lean Canvas files and confirm download links work.
 
-## 8. Admin Settings Checks
+## 8. Hostinger Performance And Cache Setup
+
+- [ ] Confirm CI4 is using the file cache driver in `app/Config/Cache.php`:
+  ```php
+  public string $handler = 'file';
+  ```
+- [ ] Confirm `writable/cache` is writable in production.
+- [ ] Keep file-cache usage narrow to avoid Hostinger inode pressure:
+  - [ ] cache shared blocks such as settings, FAQ lists, cohorts, and public display lists
+  - [ ] do not add one cache file per user, row, token, or request
+  - [ ] keep TTLs short for changing data, usually 5 to 10 minutes
+- [ ] Add a daily Hostinger cron job to clear old file cache entries.
+  - Use the real production path from hPanel.
+  - Example shape:
+    ```bash
+    cd /home/u123456789/domains/asogtbi.com/public_html && /usr/local/bin/php spark cache:clear
+    ```
+- [ ] In hPanel, enable PHP OPcache:
+  - [ ] open `Advanced > PHP Configuration`
+  - [ ] open PHP extensions/settings
+  - [ ] enable `opcache`
+  - [ ] save and retest the site
+- [ ] If using Hostinger Cache Manager / LiteSpeed cache, enable it only with safe exclusions.
+- [ ] Exclude these paths from server-level page cache:
+  - [ ] `/asog-admin*`
+  - [ ] `/admin*`
+  - [ ] `/apply/form*`
+  - [ ] `/apply/revalidate*`
+  - [ ] `/contact*` if POST responses are cached by the host
+  - [ ] `/games/guess-the-startup*` if logged-in/session game state is active
+  - [ ] `/deployment/run-migrations*`
+- [ ] After enabling Hostinger cache, verify public settings changes still appear after clearing app/host cache.
+- [ ] Do not enable any cache option that caches authenticated admin/editor HTML.
+
+## 9. Admin Settings Checks
 
 - [ ] Log in at `/asog-admin`.
 - [ ] Confirm Google admin login works.
@@ -192,7 +226,7 @@ Use this only if Hostinger does not provide SSH or terminal access.
   - [ ] Gmail API status is ready
   - [ ] reCAPTCHA status is enabled
 
-## 9. Public-site Smoke Tests
+## 10. Public-site Smoke Tests
 
 - [ ] Home page loads and loader behavior is acceptable.
 - [ ] Hero slider starts correctly after the loader.
@@ -207,7 +241,7 @@ Use this only if Hostinger does not provide SSH or terminal access.
 - [ ] Contact page loads.
 - [ ] Sitemap loads at `/sitemap.xml`.
 
-## 10. Form And Email Smoke Tests
+## 11. Form And Email Smoke Tests
 
 - [ ] Contact form saves the message and sends the admin notification.
 - [ ] New application submission saves, uploads files, and sends applicant confirmation.
@@ -218,7 +252,7 @@ Use this only if Hostinger does not provide SSH or terminal access.
 - [ ] Email logo images render from the public production domain.
 - [ ] reCAPTCHA passes on production for contact, application, and revalidation forms.
 
-## 11. Rollback Notes
+## 12. Rollback Notes
 
 - [ ] Keep the pre-deployment database export until the release is verified.
 - [ ] Keep the previous working Git commit hash from `main`.
@@ -226,7 +260,7 @@ Use this only if Hostinger does not provide SSH or terminal access.
 - [ ] If migrations complete and data is wrong, restore the database backup before retrying.
 - [ ] If emails fail, disable only the affected email-dependent feature if necessary; do not roll back data changes unless the core workflow is broken.
 
-## 12. Final Lockdown
+## 13. Final Lockdown
 
 - [ ] `deploymentMigrations.enabled = false`
 - [ ] `deploymentMigrations.token = ''`
