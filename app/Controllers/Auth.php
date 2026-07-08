@@ -115,7 +115,7 @@ class Auth extends BaseController
         $admin      = $adminModel->findByGoogleAccount($email, $googleSub);
 
         if ($admin === null) {
-            return redirect()->to('/asog-admin')->with('error', 'This Google account is not linked to an authorized admin profile.');
+            return redirect()->to('/asog-admin')->with('error', 'This Google account is not linked to an authorized account.');
         }
 
         $updateData = [
@@ -124,7 +124,8 @@ class Auth extends BaseController
             'lastLoginAt' => date('Y-m-d H:i:s'),
         ];
 
-        if ($fullName !== '') {
+        $existingName = trim((string) ($admin['fullName'] ?? ''));
+        if ($fullName !== '' && ($existingName === '' || strcasecmp($existingName, 'Pending Google Name') === 0)) {
             $updateData['fullName'] = $fullName;
             $admin['fullName']      = $fullName;
         }

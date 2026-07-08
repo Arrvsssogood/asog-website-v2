@@ -180,7 +180,7 @@ class AdminModel extends Model
             $builder->where('isActive', 0);
         }
 
-        if (in_array($role, ['superadmin', 'admin'], true)) {
+        if (in_array($role, ['superadmin', 'admin', 'editor'], true)) {
             $builder->where('role', $role);
         }
 
@@ -224,6 +224,7 @@ class AdminModel extends Model
             'inactive'   => $this->db->table($this->table)->where('isActive', 0)->countAllResults(),
             'superadmin' => $this->db->table($this->table)->where('role', 'superadmin')->countAllResults(),
             'admin'      => $this->db->table($this->table)->where('role', 'admin')->countAllResults(),
+            'editor'     => $this->db->table($this->table)->where('role', 'editor')->countAllResults(),
         ];
     }
 }

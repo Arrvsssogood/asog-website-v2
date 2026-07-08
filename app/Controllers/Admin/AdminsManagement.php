@@ -18,7 +18,7 @@ class AdminsManagement extends BaseController
         $status    = trim((string) ($this->request->getGet('status') ?? 'all'));
         $status    = in_array($status, ['all', 'active', 'inactive'], true) ? $status : 'all';
         $role      = trim((string) ($this->request->getGet('role') ?? 'all'));
-        $role      = in_array($role, ['all', 'superadmin', 'admin'], true) ? $role : 'all';
+        $role      = in_array($role, ['all', 'superadmin', 'admin', 'editor'], true) ? $role : 'all';
         $sort      = trim((string) ($this->request->getGet('sort') ?? 'fullName'));
         $direction = trim((string) ($this->request->getGet('direction') ?? 'ASC'));
         $page      = max(1, (int) ($this->request->getGet('page') ?? 1));
@@ -195,8 +195,13 @@ class AdminsManagement extends BaseController
 
     private function createAccountFromRequest(): array
     {
+        $fullName = trim((string) $this->request->getPost('fullName'));
         $email = trim((string) $this->request->getPost('email'));
         $role  = $this->sanitizeRole((string) $this->request->getPost('role'));
+
+        if ($fullName === '') {
+            return ['ok' => false, 'message' => 'Full name is required.'];
+        }
 
         if ($this->adminModel->isEmailTaken($email)) {
             return ['ok' => false, 'message' => 'That email is already used by another admin.'];
@@ -205,7 +210,7 @@ class AdminsManagement extends BaseController
         $tempPassword = bin2hex(random_bytes(8));
 
         $data = [
-            'fullName' => 'Pending Google Name',
+            'fullName' => $fullName,
             'email'    => $email,
             'password' => $tempPassword,
             'role'     => $role,
@@ -221,22 +226,24 @@ class AdminsManagement extends BaseController
 
     private function updateAccountFromRequest(int $id): array
     {
-        $email       = trim((string) $this->request->getPost('email'));
-        $googleEmail = trim((string) $this->request->getPost('googleEmail'));
-        $googleSub   = trim((string) $this->request->getPost('googleSub'));
-        $role        = $this->sanitizeRole((string) $this->request->getPost('role'));
-        $isActive    = (bool) $this->request->getPost('isActive');
+        $fullName    = trim((string) $this->request->getPost('fullName'));
+        $email    = trim((string) $this->request->getPost('email'));
+        $role     = $this->sanitizeRole((string) $this->request->getPost('role'));
+        $isActive = $this->request->getPost('isActive') === '1';
+
+        if ($fullName === '') {
+            return ['ok' => false, 'message' => 'Full name is required.'];
+        }
 
         if ($this->adminModel->isEmailTaken($email, $id)) {
             return ['ok' => false, 'message' => 'That email is already used by another admin.'];
         }
 
         $updateData = [
-            'email'       => $email,
-            'googleEmail' => $googleEmail === '' ? null : $googleEmail,
-            'googleSub'   => $googleSub === '' ? null : $googleSub,
-            'role'        => $role,
-            'isActive'    => $isActive ? 1 : 0,
+            'fullName' => $fullName,
+            'email'    => $email,
+            'role'     => $role,
+            'isActive' => $isActive ? 1 : 0,
         ];
 
         if (! $this->adminModel->update($id, $updateData)) {

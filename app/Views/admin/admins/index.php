@@ -27,7 +27,7 @@ function sortClass(string $col, string $currentSort, string $currentDir): string
 <div class="accounts-admin-toolbar">
     <div>
         <span class="accounts-admin-count"><?= $total ?> account<?= $total !== 1 ? 's' : '' ?></span>
-        <p>Manage admin access, roles, Google links, and account status.</p>
+        <p>Manage account access, roles, Google linking status, and availability.</p>
     </div>
     <div class="toolbar-actions">
         <a href="<?= site_url('admin/accounts/create') ?>" class="btn btn-p js-account-modal-trigger" data-modal-url="<?= site_url('admin/accounts/modal') ?>">New Account</a>
@@ -52,6 +52,10 @@ function sortClass(string $col, string $currentSort, string $currentDir): string
         <div class="n" id="statAdmin"><?= $counts['admin'] ?></div>
         <div class="t">Admins</div>
     </div>
+    <div class="stat stat-editor">
+        <div class="n" id="statEditor"><?= $counts['editor'] ?? 0 ?></div>
+        <div class="t">Editors</div>
+    </div>
 </div>
 
 <!-- Filter Bar -->
@@ -75,6 +79,7 @@ function sortClass(string $col, string $currentSort, string $currentDir): string
                 <option value="all"        <?= $currentRole === 'all'        ? 'selected' : '' ?>>All Roles</option>
                 <option value="superadmin" <?= $currentRole === 'superadmin' ? 'selected' : '' ?>>Super Admin</option>
                 <option value="admin"      <?= $currentRole === 'admin'      ? 'selected' : '' ?>>Admin</option>
+                <option value="editor"     <?= $currentRole === 'editor'     ? 'selected' : '' ?>>Editor</option>
             </select>
             <input type="hidden" name="sort"      value="<?= esc($currentSort) ?>">
             <input type="hidden" name="direction" value="<?= esc($currentDir) ?>">

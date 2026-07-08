@@ -6,9 +6,8 @@ $formUrl = $modalSubmitUrl ?? ($isEdit
     : site_url('admin/accounts/modal'));
 $errors = $modalErrors ?? [];
 $roleValue = (string) ($formData['role'] ?? old('role', $isEdit ? ($modalAdmin['role'] ?? 'superadmin') : 'superadmin'));
+$fullNameValue = (string) ($formData['fullName'] ?? old('fullName', $isEdit ? ($modalAdmin['fullName'] ?? '') : ''));
 $emailValue = (string) ($formData['email'] ?? old('email', $isEdit ? ($modalAdmin['email'] ?? '') : ''));
-$googleEmailValue = (string) ($formData['googleEmail'] ?? old('googleEmail', $isEdit ? ($modalAdmin['googleEmail'] ?? '') : ''));
-$googleSubValue = (string) ($formData['googleSub'] ?? old('googleSub', $isEdit ? ($modalAdmin['googleSub'] ?? '') : ''));
 $isActiveValue = (string) ($formData['isActive'] ?? old('isActive', $isEdit ? (string) ($modalAdmin['isActive'] ?? '1') : '1')) !== '0';
 ?>
 <div class="account-admin-modal" data-account-modal>
@@ -18,7 +17,7 @@ $isActiveValue = (string) ($formData['isActive'] ?? old('isActive', $isEdit ? (s
             <div>
                 <span>Admin access</span>
                 <h2 id="accountModalTitle"><?= $isEdit ? 'Edit Account' : 'New Account' ?></h2>
-                <p><?= $isEdit ? 'Update account access, Google link details, and status.' : 'Create an admin login invitation for Google authorization.' ?></p>
+                <p><?= $isEdit ? 'Update account details, role, and access status.' : 'Create an account. Google sign-in can be linked later from Settings.' ?></p>
             </div>
             <button type="button" class="account-admin-modal-close" data-account-modal-close aria-label="Close modal">
                 <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
@@ -41,12 +40,10 @@ $isActiveValue = (string) ($formData['isActive'] ?? old('isActive', $isEdit ? (s
             <div class="account-admin-modal-body">
                 <section class="account-admin-modal-section">
                     <div class="account-admin-modal-grid">
-                        <?php if ($isEdit): ?>
-                            <div class="account-admin-field">
-                                <span>Full name</span>
-                                <div class="account-admin-field-static"><?= esc((string) ($modalAdmin['fullName'] ?? 'Pending Google Name')) ?></div>
-                            </div>
-                        <?php endif; ?>
+                        <label class="account-admin-field">
+                            <span>Full name</span>
+                            <input type="text" name="fullName" value="<?= esc($fullNameValue) ?>" maxlength="150" required placeholder="Juan Dela Cruz">
+                        </label>
 
                         <label class="account-admin-field">
                             <span>Email</span>
@@ -66,29 +63,20 @@ $isActiveValue = (string) ($formData['isActive'] ?? old('isActive', $isEdit ? (s
 
                 <?php if ($isEdit): ?>
                     <section class="account-admin-modal-section">
-                        <div class="account-admin-modal-grid">
-                            <label class="account-admin-field">
-                                <span>Google email</span>
-                                <input type="email" name="googleEmail" value="<?= esc($googleEmailValue) ?>" placeholder="user@gmail.com">
-                            </label>
-                            <label class="account-admin-field">
-                                <span>Google ID</span>
-                                <input type="text" name="googleSub" value="<?= esc($googleSubValue) ?>" placeholder="Google account identifier">
-                            </label>
+                        <div class="account-admin-status-action" data-account-status-action>
+                            <input type="hidden" name="isActive" value="<?= $isActiveValue ? '1' : '0' ?>" data-account-status-input>
+                            <div>
+                                <span>Account access</span>
+                                <strong data-account-status-title><?= $isActiveValue ? 'Active' : 'Inactive' ?></strong>
+                                <small data-account-status-copy><?= $isActiveValue
+                                    ? 'This account can currently sign in.'
+                                    : 'This account is currently blocked from signing in.' ?></small>
+                            </div>
+                            <button type="button" class="btn <?= $isActiveValue ? 'btn-danger-soft' : 'btn-p' ?>" data-account-status-toggle>
+                                <?= $isActiveValue ? 'Deactivate Account' : 'Activate Account' ?>
+                            </button>
                         </div>
                     </section>
-
-                    <label class="account-admin-switch-row">
-                        <input type="hidden" name="isActive" value="0">
-                        <span class="account-switch-copy">
-                            <strong>Active account</strong>
-                            <small>Allow this admin to sign in and access the dashboard.</small>
-                        </span>
-                        <span class="account-switch">
-                            <input type="checkbox" name="isActive" value="1" <?= $isActiveValue ? 'checked' : '' ?>>
-                            <span class="track"></span>
-                        </span>
-                    </label>
                 <?php endif; ?>
             </div>
 

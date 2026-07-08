@@ -18,6 +18,7 @@ $routes->get('/landing', 'Landing::index');
 $routes->match(['GET', 'HEAD'], '/sitemap.xml', 'Sitemap::index');
 $routes->get('/about', 'About::index');
 $routes->get('/about/logo', 'About::logo');
+$routes->get('/deployment/run-migrations', 'Deployment::runMigrations');
 
 /*
  * ────────────────────────────────────────────────────────────────────────────
@@ -100,6 +101,14 @@ $routes->post('/asog-admin/reset-password/(:segment)', 'Auth::updateForgottenPas
  */
 $routes->group('admin', ['filter' => 'auth'], function ($routes) {
 
+    // Self-service Google linking for any signed-in admin role.
+    $routes->get('google-account', 'Admin\GoogleAccount::index');
+    $routes->get('google-account/connect', 'Admin\GoogleAccount::connect');
+    $routes->get('google-account/callback', 'Admin\GoogleAccount::callback');
+    $routes->post('google-account/unlink', 'Admin\GoogleAccount::unlink');
+    $routes->get('settings', 'Admin\SettingsAdmin::index');
+    $routes->post('settings/password', 'Admin\SettingsAdmin::updatePassword');
+
     // ── editor + admin + superadmin ──────────────────────────────────────
     $routes->group('', ['filter' => 'role:editor'], function ($routes) {
         $routes->get('/', 'Admin\Dashboard::index');
@@ -176,11 +185,11 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->group('', ['filter' => 'role:superadmin'], function ($routes) {
 
         // Site Settings
-        $routes->get('settings', 'Admin\SettingsAdmin::index');
         $routes->post('settings/guess-startup/availability', 'Admin\SettingsAdmin::updateGuessStartupAvailability');
         $routes->post('settings/interns-visibility', 'Admin\SettingsAdmin::updateInternsVisibility');
         $routes->post('settings/homepage-incubatees-filter', 'Admin\SettingsAdmin::updateLandingFilter');
         $routes->post('settings/applications', 'Admin\SettingsAdmin::updateApplicationSettings');
+        $routes->post('settings/site-experience', 'Admin\SettingsAdmin::updateSiteExperience');
 
         // Account Management
         $routes->get('accounts', 'Admin\AdminsManagement::index');

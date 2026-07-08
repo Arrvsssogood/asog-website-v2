@@ -22,6 +22,15 @@ $pageTitle = $isEdit ? 'Edit Account' : 'New Account';
 
     <div class="form-grid">
         <div class="form-group">
+            <label for="fullName">Full name *</label>
+            <input type="text" id="fullName" name="fullName"
+                value="<?= esc($isEdit ? ($admin['fullName'] ?? '') : old('fullName')) ?>"
+                maxlength="150"
+                required
+                placeholder="Juan Dela Cruz">
+        </div>
+
+        <div class="form-group">
             <label for="email">Email *</label>
             <input type="email" id="email" name="email" 
                 value="<?= esc($isEdit ? $admin['email'] : old('email')) ?>" 
@@ -40,31 +49,7 @@ $pageTitle = $isEdit ? 'Edit Account' : 'New Account';
     </div>
 
     <?php if ($isEdit): ?>
-    <div class="form-sep"></div>
-    <h3>Google OAuth</h3>
-
-    <div class="form-grid">
-        <div class="form-group">
-            <label for="googleEmail">Google Email</label>
-            <input type="email" id="googleEmail" name="googleEmail" 
-                value="<?= esc($admin['googleEmail'] ?? '') ?>" 
-                placeholder="user@gmail.com">
-        </div>
-
-        <div class="form-group">
-            <label for="googleSub">Google ID</label>
-            <input type="text" id="googleSub" name="googleSub" 
-                value="<?= esc($admin['googleSub'] ?? '') ?>" 
-                placeholder="Google account identifier">
-        </div>
-    </div>
-
-    <div class="form-group checkbox">
-        <input type="checkbox" id="isActive" name="isActive" 
-            value="1" 
-            <?= $admin['isActive'] ? 'checked' : '' ?>>
-        <label for="isActive">Active</label>
-    </div>
+        <input type="hidden" name="isActive" value="<?= ! empty($admin['isActive']) ? '1' : '0' ?>">
     <?php endif; ?>
 
     <div class="form-actions">

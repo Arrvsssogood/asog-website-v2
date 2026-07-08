@@ -6,7 +6,8 @@
 .org-admin-toolbar-actions .btn svg{width:13px;height:13px;stroke:currentColor}
 .org-admin-tab-row{display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin-bottom:.85rem}
 .org-admin-tabs{display:flex;flex-wrap:wrap;gap:.4rem}
-.org-reorder-mode-btn{margin-left:auto;justify-content:center;border:1px solid #e4e2dd;background:#fff;color:#64748b;font-size:.66rem;font-weight:600;padding:.42rem .7rem;border-radius:.3rem;line-height:1.2}
+.org-reorder-control-group{display:flex;align-items:center;gap:.45rem;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+.org-reorder-mode-btn{justify-content:center;border:1px solid #e4e2dd;background:#fff;color:#64748b;font-size:.66rem;font-weight:600;padding:.42rem .7rem;border-radius:.3rem;line-height:1.2}
 .org-reorder-mode-btn:hover:not(:disabled){border-color:#03558C;color:#03558C;background:#edf5fc}
 .org-reorder-mode-btn.btn-p{border-color:#03558C;background:#03558C;color:#fff}
 .org-reorder-mode-btn:disabled{opacity:.55;cursor:not-allowed}
@@ -20,10 +21,20 @@
 .org-admin-item{border:1px solid #eceae6;border-radius:10px;background:#fff;padding:.75rem .85rem}
 .org-admin-member-card{display:grid;gap:0;min-height:158px;padding:0;border-color:#e4e2dd;border-radius:.55rem;overflow:hidden;transition:border-color .15s,box-shadow .15s,background .15s}
 .org-admin-member-card:hover{border-color:#43A7DB;background:#fbfdff;box-shadow:0 0 0 3px rgba(67,167,219,.12)}
-.org-drag-row.is-reorderable{cursor:grab}
+.org-drag-row.is-reorderable{cursor:grab;user-select:none}
 .org-drag-row.is-reorderable:active{cursor:grabbing}
-.org-drag-row.is-dragging{opacity:.65;cursor:grabbing;background:#f8fbff}
+.org-drag-row.is-dragging{cursor:grabbing;background:#f8fbff}
+.org-drag-row.is-drag-hidden{display:none}
 .org-drag-row.org-drag-over{outline:2px dashed rgba(3,85,140,.45);outline-offset:3px;background:#f3fafe}
+.org-admin-member-card.org-drag-over{outline-offset:4px}
+.org-drag-placeholder{border:2px dashed rgba(3,85,140,.38);border-radius:10px;background:rgba(237,245,252,.78);box-shadow:inset 0 0 0 1px rgba(255,255,255,.65)}
+.org-admin-card-grid .org-drag-placeholder{min-height:158px}
+.org-admin-list:not(.org-admin-card-grid) .org-drag-placeholder{min-height:64px}
+.org-drag-preview{position:fixed;top:-1000px;left:-1000px;z-index:9999;background:#fff;border:1px solid #dbe7f0;border-radius:.55rem;box-shadow:0 14px 32px rgba(3,85,140,.18);opacity:1;pointer-events:none;overflow:hidden}
+.org-pointer-drag-preview{top:0;left:0;will-change:transform}
+.org-drag-preview .org-drag-handle{display:inline-flex}
+.org-drag-preview.org-admin-item{padding:.75rem .85rem}
+.org-drag-preview.org-admin-member-card{display:grid;min-height:158px}
 .org-drag-handle{display:none;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid #e4e2dd;border-radius:.3rem;background:#fff;color:#64748b;font-size:1rem;line-height:1;user-select:none;flex-shrink:0}
 .is-org-reorder-active .org-drag-row.is-reorderable .org-drag-handle{display:inline-flex}
 .org-drag-handle:hover{border-color:#03558C;color:#03558C;background:#edf5fc}
@@ -82,7 +93,9 @@
 .org-photo-upload-zone input[type=file]{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0}
 .org-photo-upload-label{font-size:.7rem;color:#94a3b8}
 .org-photo-upload-label strong{color:#03558C}
+.org-photo-upload-zone.has-preview .org-photo-upload-label{display:none}
 .org-photo-upload-preview{margin-top:.5rem;display:flex;align-items:center;justify-content:center;width:100%}
+.org-photo-upload-zone.has-preview .org-photo-upload-preview{margin-top:0}
 .org-photo-preview{max-width:104px;max-height:104px;border-radius:.35rem;object-fit:contain;border:1px solid #eceae6;background:#fff}
 .org-admin-switch-row{display:flex;align-items:center;justify-content:space-between;gap:.85rem;font-size:.78rem;color:#1e293b;background:#fff;border:1px solid #e4e2dd;border-radius:.45rem;padding:.72rem .78rem;min-width:0}
 .org-switch-copy{display:block;min-width:0}

@@ -333,7 +333,7 @@ $faqColumns = array_chunk($faqs, (int) ceil(count($faqs) / 2), true);
 <?php endif; ?>
 
 <!-- Final application CTA -->
-<section class="relative overflow-hidden bg-off py-20 md:py-28 px-6 md:px-10 lg:px-14" data-navhint="light">
+<section id="application-notice" class="relative overflow-hidden bg-off py-20 md:py-28 px-6 md:px-10 lg:px-14" data-navhint="light">
     <div class="ai-grid"></div>
     <div class="ai-grid-fade"></div>
 
@@ -342,16 +342,59 @@ $faqColumns = array_chunk($faqs, (int) ceil(count($faqs) / 2), true);
             class="text-[.68rem] md:text-[.74rem] lg:text-[.84rem] font-bold tracking-[.22em] uppercase text-gold block mb-3">
             07 — Apply
         </span>
+        <?php
+            $isApplicationOpen = ! empty($applicationWindow['isOpen']);
+            $isApplicationUpcoming = ($applicationWindow['state'] ?? 'open') === 'upcoming';
+            $isApplicationClosed = ($applicationWindow['state'] ?? 'open') === 'closed';
+            $applicationTitle = $isApplicationOpen
+                ? 'Ready to get started?'
+                : (string) ($applicationWindow['title'] ?? 'Applications are not available');
+            $applicationCopy = $isApplicationOpen
+                ? 'Fill out our application form and the ASOG TBI team will reach out to schedule your screening and next steps.'
+                : (string) ($applicationWindow['message'] ?? 'Applications are not available right now.');
+            if (! $isApplicationOpen && empty($showApplicationDates) && $isApplicationUpcoming) {
+                $applicationCopy = 'Applications for the ASOG TBI incubation program are not yet open. Please check back once the application period begins.';
+            }
+        ?>
         <h2 class="font-display text-[2rem] md:text-[2.65rem] lg:text-[3rem] text-dark leading-[1.08]">
-            Ready to get started?
+            <?= esc($applicationTitle) ?>
         </h2>
         <p class="mt-5 mb-8 max-w-[590px] text-[.88rem] lg:text-[.98rem] font-normal leading-[1.75] text-black">
-            Fill out our application form and the ASOG TBI team will reach out to schedule your screening and next steps.
+            <?= esc($applicationCopy) ?>
         </p>
+        <?php if (! empty($showApplicationDates)): ?>
+            <?php if ($isApplicationOpen && ! empty($applicationDeadlineLabel)): ?>
+                <p class="mb-6 inline-flex items-center justify-center gap-2 text-[.68rem] md:text-[.74rem] font-bold leading-none tracking-[.16em] uppercase text-dark/70">
+                    <svg class="w-4 h-4 flex-none text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/>
+                    </svg>
+                    Application ends on
+                    <strong class="text-gold font-bold"><?= esc((string) $applicationDeadlineLabel) ?></strong>
+                </p>
+            <?php elseif ($isApplicationUpcoming && ! empty($applicationStartLabel)): ?>
+                <p class="mb-6 inline-flex items-center justify-center gap-2 text-[.68rem] md:text-[.74rem] font-bold leading-none tracking-[.16em] uppercase text-dark/70">
+                    <svg class="w-4 h-4 flex-none text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/>
+                    </svg>
+                    Application starts on
+                    <strong class="text-gold font-bold"><?= esc((string) $applicationStartLabel) ?></strong>
+                </p>
+            <?php elseif ($isApplicationClosed && ! empty($applicationDeadlineLabel)): ?>
+                <p class="mb-6 inline-flex items-center justify-center gap-2 text-[.68rem] md:text-[.74rem] font-bold leading-none tracking-[.16em] uppercase text-dark/70">
+                    <svg class="w-4 h-4 flex-none text-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/>
+                    </svg>
+                    Application closed on
+                    <strong class="text-gold font-bold"><?= esc((string) $applicationDeadlineLabel) ?></strong>
+                </p>
+            <?php endif; ?>
+        <?php endif; ?>
+        <?php if ($isApplicationOpen): ?>
         <a href="<?= site_url('apply/form') ?>"
             class="inline-block font-body text-[.62rem] lg:text-[.7rem] font-bold tracking-[.14em] uppercase text-dark bg-gold px-9 py-4 rounded-sm no-underline transition-colors duration-200 hover:bg-gold-dk">
             Apply Now →
         </a>
+        <?php endif; ?>
     </div>
 </section>
 
