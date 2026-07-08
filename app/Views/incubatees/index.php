@@ -179,6 +179,7 @@ $firstCohort    = $hasCohorts ? $cohorts[0]['name'] : '';
     </div>
 </div>
 
+<script src="<?= base_url('assets/loader/vendor/gsap.min.js') ?>" defer></script>
 <script src="<?= base_url('assets/js/features/incubatees/incubateesLoader.js') ?>" defer
     data-api-url="<?= site_url('api/incubatees') ?>"
     data-app-script="<?= base_url('assets/js/features/incubatees/incubatees.js') ?>"></script>
