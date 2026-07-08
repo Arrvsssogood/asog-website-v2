@@ -208,6 +208,7 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
         $routes->get('accounts/modal/(:num)', 'Admin\AdminsManagement::modalEdit/$1');
         $routes->post('accounts/modal', 'Admin\AdminsManagement::modalStore');
         $routes->post('accounts/modal/(:num)', 'Admin\AdminsManagement::modalUpdate/$1');
+        $routes->post('accounts/(:num)/welcome-email', 'Admin\AdminsManagement::sendWelcomeEmail/$1');
         $routes->get('accounts/create', 'Admin\AdminsManagement::create');
         $routes->post('accounts', 'Admin\AdminsManagement::store');
         $routes->get('accounts/(:num)/edit', 'Admin\AdminsManagement::edit/$1');

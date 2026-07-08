@@ -3,6 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Libraries\GmailMailer;
 
 /**
  * AdminsManagement — CRUD for admin accounts and Google OAuth authorization.
@@ -142,7 +143,7 @@ class AdminsManagement extends BaseController
 
     public function modalStore()
     {
-        $result = $this->createAccountFromRequest();
+        $result = $this->createAccountFromRequest(false);
         if (! $result['ok']) {
             return $this->modalErrorResponse('add', null, [$result['message']]);
         }
@@ -150,7 +151,59 @@ class AdminsManagement extends BaseController
         return $this->response->setJSON([
             'ok' => true,
             'message' => $result['message'],
+            'welcomeEmailUrl' => ! empty($result['accountId']) ? site_url('admin/accounts/' . $result['accountId'] . '/welcome-email') : null,
+            'csrfName' => csrf_token(),
+            'csrfHash' => csrf_hash(),
         ]);
+    }
+
+    public function sendWelcomeEmail(int $id)
+    {
+        $admin = $this->adminModel->find($id);
+        if (! is_array($admin)) {
+            return $this->response->setStatusCode(404)->setJSON([
+                'ok' => false,
+                'message' => 'Account not found.',
+            ]);
+        }
+
+        if (empty($admin['isActive'])) {
+            return $this->response->setStatusCode(422)->setJSON([
+                'ok' => false,
+                'message' => 'Welcome email was not sent because the account is inactive.',
+            ]);
+        }
+
+        $token = bin2hex(random_bytes(32));
+        $tokenHash = hash('sha256', $token);
+        $expiresAt = date('Y-m-d H:i:s', time() + 86400);
+
+        if (! $this->adminModel->update($id, [
+            'resetToken' => $tokenHash,
+            'resetTokenExpiresAt' => $expiresAt,
+        ])) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'ok' => false,
+                'message' => 'Unable to prepare the set-password link.',
+            ]);
+        }
+
+        $email = strtolower(trim((string) ($admin['email'] ?? '')));
+        $sent = $this->sendWelcomeSetPasswordEmail(
+            $email,
+            (string) ($admin['fullName'] ?? 'there'),
+            (string) ($admin['role'] ?? 'admin'),
+            $token
+        );
+
+        return $this->response
+            ->setStatusCode($sent ? 200 : 502)
+            ->setJSON([
+                'ok' => $sent,
+                'message' => $sent
+                    ? 'Welcome email sent.'
+                    : 'Account was created, but the welcome email could not be sent. Ask the user to use Forgot Password.',
+            ]);
     }
 
     public function modalUpdate(int $id)
@@ -205,7 +258,7 @@ class AdminsManagement extends BaseController
         return redirect()->to('admin/accounts');
     }
 
-    private function createAccountFromRequest(): array
+    private function createAccountFromRequest(bool $sendWelcomeEmail = true): array
     {
         $fullName = trim((string) $this->request->getPost('fullName'));
         $email = trim((string) $this->request->getPost('email'));
@@ -229,11 +282,41 @@ class AdminsManagement extends BaseController
             'isActive' => 1,
         ];
 
+        $setupToken = null;
+        if ($sendWelcomeEmail) {
+            $setupToken = bin2hex(random_bytes(32));
+            $data['resetToken'] = hash('sha256', $setupToken);
+            $data['resetTokenExpiresAt'] = date('Y-m-d H:i:s', time() + 86400);
+        }
+
         if (! $this->adminModel->insert($data)) {
             return ['ok' => false, 'message' => 'Error: ' . implode(', ', $this->adminModel->errors())];
         }
 
-        return ['ok' => true, 'message' => 'Account added. Email: ' . $email . ' | Role: ' . ucfirst($role)];
+        $accountId = (int) $this->adminModel->getInsertID();
+
+        if (! $sendWelcomeEmail) {
+            return [
+                'ok' => true,
+                'accountId' => $accountId,
+                'message' => 'Account added. The welcome email will be sent in the background.',
+            ];
+        }
+
+        $sent = $setupToken !== null && $this->sendWelcomeSetPasswordEmail($email, $fullName, $role, $setupToken);
+        if (! $sent) {
+            return [
+                'ok' => true,
+                'accountId' => $accountId,
+                'message' => 'Account added, but the welcome email could not be sent. Ask the user to use Forgot Password to set their password.',
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'accountId' => $accountId,
+            'message' => 'Account added. A set-password email was sent to ' . $email . '.',
+        ];
     }
 
     private function updateAccountFromRequest(int $id): array
@@ -282,6 +365,29 @@ class AdminsManagement extends BaseController
     {
         $role = trim($role);
         return in_array($role, ['superadmin', 'admin', 'editor'], true) ? $role : 'superadmin';
+    }
+
+    private function sendWelcomeSetPasswordEmail(string $email, string $fullName, string $role, string $token): bool
+    {
+        $setupUrl = site_url('asog-admin/reset-password/' . $token);
+
+        try {
+            $gmail = new GmailMailer();
+            $sent = $gmail->send($email, 'Set Your ASOG TBI Account Password', view('emails/admin_account_welcome', [
+                'adminName' => $fullName,
+                'role' => $role,
+                'setupUrl' => $setupUrl,
+            ]));
+
+            if (! $sent) {
+                log_message('error', 'New account welcome email failed via Gmail API for ' . $email . '.');
+            }
+
+            return $sent;
+        } catch (\Throwable $e) {
+            log_message('error', 'New account welcome email exception for ' . $email . ': ' . $e->getMessage());
+            return false;
+        }
     }
 
     private function requiresReauthAfterSelfUpdate(array $admin, string $nextRole, bool $nextActive): bool

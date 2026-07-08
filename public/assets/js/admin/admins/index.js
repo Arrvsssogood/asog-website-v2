@@ -235,6 +235,7 @@
                     }
 
                     closeModal();
+                    sendWelcomeEmailInBackground(result.data);
                     if (result.data.requiresReauth) {
                         showAccountToast('info', 'Your access was updated. Please sign in again to continue.');
                         window.setTimeout(function () {
@@ -253,6 +254,37 @@
                     if (submitBtn) submitBtn.disabled = false;
                 });
         });
+    }
+
+    function sendWelcomeEmailInBackground(data) {
+        if (!data || !data.welcomeEmailUrl) return;
+
+        var formData = new FormData();
+        if (data.csrfName && data.csrfHash) {
+            formData.append(data.csrfName, data.csrfHash);
+        }
+
+        fetch(data.welcomeEmailUrl, {
+            method: 'POST',
+            body: formData,
+            cache: 'no-store',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        })
+            .then(function (response) {
+                return response.json().then(function (payload) {
+                    return { ok: response.ok, data: payload };
+                }).catch(function () {
+                    return { ok: response.ok, data: {} };
+                });
+            })
+            .then(function (result) {
+                if (!result.ok || result.data.ok === false) {
+                    showAccountToast('error', result.data.message || 'Account was created, but the welcome email could not be sent.');
+                }
+            })
+            .catch(function () {
+                showAccountToast('error', 'Account was created, but the welcome email could not be sent.');
+            });
     }
 
     function bindRoleAction(modal) {
