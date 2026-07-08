@@ -72,22 +72,3 @@
         </form>
     </section>
 </div>
-
-<script>
-(() => {
-    document.querySelectorAll('[data-settings-password-toggle]').forEach((button) => {
-        const input = document.getElementById(button.getAttribute('aria-controls') || '');
-        if (!input) {
-            return;
-        }
-
-        button.addEventListener('click', () => {
-            const willShow = input.type === 'password';
-            input.type = willShow ? 'text' : 'password';
-            button.classList.toggle('is-visible', willShow);
-            button.setAttribute('aria-pressed', willShow ? 'true' : 'false');
-            button.setAttribute('aria-label', willShow ? 'Hide password' : 'Show password');
-        });
-    });
-})();
-</script>

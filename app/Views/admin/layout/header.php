@@ -192,6 +192,6 @@
             </div>
         </header>
 
-        <div class="page">
+        <div class="page" data-admin-main data-admin-page="<?= esc((string) ($activePage ?? ''), 'attr') ?>" tabindex="-1">
             <?php helper('toast'); ?>
             <?= renderToast() ?>

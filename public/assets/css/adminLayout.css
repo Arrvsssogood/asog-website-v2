@@ -441,6 +441,14 @@ button {
 .page {
   padding: 1.6rem 2rem;
   flex: 1;
+  outline: none;
+  transition: opacity 0.16s ease, transform 0.16s ease;
+}
+
+.page.is-admin-shell-loading {
+  opacity: 0.48;
+  pointer-events: none;
+  transform: translateY(3px);
 }
 
 .btn {

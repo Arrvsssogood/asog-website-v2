@@ -372,26 +372,3 @@ $loaderStatus = $loaderStatus ?? [
         </div>
     </section>
 </div>
-
-<?php if ($canManageSiteSettings): ?>
-<script>
-(() => {
-    document.querySelectorAll('[data-toggle-form]').forEach((form) => {
-        form.querySelectorAll('.settings-switch').forEach((switchEl) => {
-            const checkbox = switchEl.querySelector('input[type="checkbox"]');
-            const stateLabel = switchEl.querySelector('.settings-switch-label');
-            if (!checkbox || !stateLabel) {
-                return;
-            }
-
-            const updateLabel = () => {
-                stateLabel.textContent = checkbox.checked ? 'ON' : 'OFF';
-            };
-
-            checkbox.addEventListener('change', updateLabel);
-            updateLabel();
-        });
-    });
-})();
-</script>
-<?php endif; ?>
