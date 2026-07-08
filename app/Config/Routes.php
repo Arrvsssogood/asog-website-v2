@@ -108,6 +108,7 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->post('google-account/unlink', 'Admin\GoogleAccount::unlink');
     $routes->get('settings', 'Admin\SettingsAdmin::index');
     $routes->post('settings/password', 'Admin\SettingsAdmin::updatePassword');
+    $routes->get('sidebar/status', 'Admin\Dashboard::sidebarStatus');
 
     // ── editor + admin + superadmin ──────────────────────────────────────
     $routes->group('', ['filter' => 'role:editor'], function ($routes) {

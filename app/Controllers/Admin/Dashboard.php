@@ -47,4 +47,56 @@ class Dashboard extends BaseController
              . view('admin/dashboard', $data)
              . view('admin/layout/footer');
     }
+
+    public function sidebarStatus()
+    {
+        $role = (string) session()->get('admin_role');
+        $roleLabel = [
+            'superadmin' => 'Super Admin',
+            'admin'      => 'Admin',
+            'editor'     => 'Editor',
+        ][$role] ?? ucfirst($role ?: 'User');
+
+        $unreadMessages = in_array($role, ['admin', 'superadmin'], true)
+            ? $this->contactModel->countUnread()
+            : 0;
+        $unreadNotifications = 0;
+
+        if (in_array($role, ['admin', 'superadmin'], true)) {
+            try {
+                $unreadNotifications = $this->adminNotificationModel->countUnread();
+            } catch (\Throwable $e) {
+                $unreadNotifications = 0;
+            }
+        }
+
+        $nav = ['dashboard', 'posts', 'incubatees', 'faqs', 'settings'];
+        if (in_array($role, ['admin', 'superadmin'], true)) {
+            $nav[] = 'applications';
+            $nav[] = 'organization';
+            $nav[] = 'messages';
+        }
+        if ($role === 'superadmin') {
+            $nav[] = 'admins';
+        }
+
+        return $this->response
+            ->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            ->setJSON([
+                'ok' => true,
+                'user' => [
+                    'name'      => (string) session()->get('admin_name'),
+                    'email'     => (string) session()->get('admin_email'),
+                    'role'      => $role,
+                    'roleLabel' => $roleLabel,
+                ],
+                'counts' => [
+                    'unreadMessages'      => $unreadMessages,
+                    'unreadNotifications' => $unreadNotifications,
+                ],
+                'nav' => [
+                    'allowed' => $nav,
+                ],
+            ]);
+    }
 }

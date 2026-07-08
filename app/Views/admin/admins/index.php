@@ -225,4 +225,3 @@ function sortClass(string $col, string $currentSort, string $currentDir): string
 
 <div id="adminAdminsConfig" data-base-url="<?= site_url('admin/accounts') ?>"></div>
 <div id="adminAccountModalRoot"></div>
-<script src="<?= base_url('assets/js/admin/admins/index.js') ?>" defer></script>

@@ -1,9 +1,13 @@
 (function () {
     'use strict';
 
-    var filterForm = document.getElementById('filterForm');
-    var configNode = document.getElementById('adminAdminsConfig');
-    var modalRoot = document.getElementById('adminAccountModalRoot');
+    function init(root) {
+    var scope = root && root.querySelector ? root : document;
+    var controller = new AbortController();
+    var signal = controller.signal;
+    var filterForm = scope.querySelector('#filterForm');
+    var configNode = scope.querySelector('#adminAdminsConfig');
+    var modalRoot = scope.querySelector('#adminAccountModalRoot');
     var baseUrl = configNode ? configNode.getAttribute('data-base-url') : '';
     var isFetchingPage = false;
 
@@ -51,7 +55,7 @@
             tblWrap.style.pointerEvents = 'none';
         }
 
-        return fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        return fetch(url, { cache: 'no-store', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(function (res) { return res.text(); })
             .then(function (htmlText) {
                 isFetchingPage = false;
@@ -64,7 +68,11 @@
                 syncClearButton(doc);
 
                 if (!options.skipHistory) {
-                    history.pushState(null, '', url);
+                    if (window.AdminShell && typeof window.AdminShell.updateHistory === 'function') {
+                        window.AdminShell.updateHistory(url);
+                    } else {
+                        history.pushState(null, '', url);
+                    }
                 }
 
                 bindTableEvents();
@@ -401,19 +409,30 @@
         if (!trigger) return;
         event.preventDefault();
         openModal(trigger.getAttribute('data-modal-url'));
-    });
+    }, { signal: signal });
 
     document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape' && modalRoot && modalRoot.querySelector('[data-account-modal]')) {
             closeModal();
         }
-    });
-
-    window.addEventListener('popstate', function () {
-        loadPage(location.href, { skipHistory: true });
-    });
+    }, { signal: signal });
 
     bindFilterControls();
     bindTableEvents();
     openModalFromQuery();
+
+    return function () {
+        controller.abort();
+        if (modalRoot) modalRoot.innerHTML = '';
+        document.body.classList.remove('account-modal-open');
+    };
+    }
+
+    if (window.AdminShell && typeof window.AdminShell.register === 'function') {
+        window.AdminShell.register('admins', { init: init });
+    } else if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () { init(document); });
+    } else {
+        init(document);
+    }
 })();
