@@ -1,6 +1,24 @@
 (function () {
     'use strict';
 
+    function init(root) {
+    root = root || document;
+    var shellOn = window.AdminShell && typeof window.AdminShell.on === 'function'
+        ? function (target, eventName, selectorOrHandler, handler, options) {
+            return window.AdminShell.on(root, target, eventName, selectorOrHandler, handler, options);
+        }
+        : function (target, eventName, selectorOrHandler, handler, options) {
+            var listener = typeof selectorOrHandler === 'function'
+                ? selectorOrHandler
+                : function (event) {
+                    var matched = event.target && event.target.closest ? event.target.closest(selectorOrHandler) : null;
+                    if (!matched || (target !== document && target !== window && !target.contains(matched))) return;
+                    handler.call(matched, event, matched);
+                };
+            target.addEventListener(eventName, listener, options || false);
+            return function () { target.removeEventListener(eventName, listener, options || false); };
+        };
+
     /* ── DOM refs ──────────────────────────────────────────── */
     var modalBg = document.getElementById('reviewModal');
     var modalBody = document.getElementById('modalBody');
@@ -172,7 +190,11 @@
                 }
 
                 if (window.location.href !== url) {
-                    window.history.pushState(null, '', url);
+                    if (window.AdminShell && typeof window.AdminShell.updateHistory === 'function') {
+                        window.AdminShell.updateHistory(url);
+                    } else {
+                        window.history.pushState(null, '', url);
+                    }
                 }
 
                 if (selectAll) {
@@ -193,9 +215,11 @@
             });
     }
 
-    window.addEventListener('popstate', function () {
-        loadPage(window.location.href);
-    });
+    if (!window.AdminShell) {
+        window.addEventListener('popstate', function () {
+            loadPage(window.location.href);
+        });
+    }
 
     /* ══════════════════════════════════════════════════
        SECTION 1 — Universal Confirm Dialog
@@ -382,7 +406,7 @@
     modalBg.addEventListener('click', function (e) {
         if (e.target === modalBg && statusChangeWrap.style.display === 'none') closeModal();
     });
-    document.addEventListener('keydown', function (e) {
+    shellOn(document, 'keydown', function (e) {
         if (e.key === 'Escape') {
             if (confirmBg.classList.contains('open')) { hideConfirm(); return; }
             if (modalBg.classList.contains('open')) { closeModal(); }
@@ -752,7 +776,7 @@
             smartChkMenu.classList.toggle('open');
         });
 
-        document.addEventListener('click', function () {
+        shellOn(document, 'click', function () {
             if (smartChkMenu) smartChkMenu.classList.remove('open');
         });
 
@@ -1011,5 +1035,22 @@
     function siteUrl(path) {
         var base = window.APP_BASE_URL || window.location.origin;
         return base.replace(/\/$/, '') + '/' + path;
+    }
+
+    return function () {
+        if (modalBg) modalBg.classList.remove('open');
+        if (confirmBg) confirmBg.classList.remove('open');
+        if (statusPickerMenu) statusPickerMenu.classList.remove('open');
+        document.body.classList.remove('modal-open');
+        currentId = null;
+        confirmCb = null;
+        currentAppData = null;
+    };
+    }
+
+    if (window.AdminShell && typeof window.AdminShell.register === 'function') {
+        window.AdminShell.register('applications', { init: init });
+    } else {
+        document.addEventListener('DOMContentLoaded', function () { init(document); });
     }
 })();

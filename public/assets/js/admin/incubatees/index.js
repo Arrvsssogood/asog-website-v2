@@ -1,5 +1,23 @@
-document.addEventListener('DOMContentLoaded', function () {
-    var configEl = document.getElementById('incubateesConfig');
+(function () {
+function init(root) {
+    root = root || document;
+    var on = window.AdminShell && typeof window.AdminShell.on === 'function'
+        ? function (target, eventName, selectorOrHandler, handler, options) {
+            return window.AdminShell.on(root, target, eventName, selectorOrHandler, handler, options);
+        }
+        : function (target, eventName, selectorOrHandler, handler, options) {
+            var listener = typeof selectorOrHandler === 'function'
+                ? selectorOrHandler
+                : function (event) {
+                    var matched = event.target && event.target.closest ? event.target.closest(selectorOrHandler) : null;
+                    if (!matched || (target !== document && target !== window && !target.contains(matched))) return;
+                    handler.call(matched, event, matched);
+                };
+            target.addEventListener(eventName, listener, options || false);
+            return function () { target.removeEventListener(eventName, listener, options || false); };
+        };
+
+    var configEl = root.querySelector('#incubateesConfig');
     if (!configEl) {
         return;
     }
@@ -10,15 +28,15 @@ document.addEventListener('DOMContentLoaded', function () {
     var csrfName = configEl.dataset.csrfTokenName || '';
     var csrfValue = configEl.dataset.csrfTokenValue || '';
 
-    var cmOverlay = document.getElementById('cmOverlay');
-    var cmManageBtn = document.getElementById('cmManageBtn');
-    var cmCloseBtn = document.getElementById('cmCloseBtn');
-    var cmAddBtn = document.getElementById('cmAddBtn');
-    var cmBody = document.getElementById('cmBody');
-    var cmTotal = document.getElementById('cmTotal');
+    var cmOverlay = root.querySelector('#cmOverlay');
+    var cmManageBtn = root.querySelector('#cmManageBtn');
+    var cmCloseBtn = root.querySelector('#cmCloseBtn');
+    var cmAddBtn = root.querySelector('#cmAddBtn');
+    var cmBody = root.querySelector('#cmBody');
+    var cmTotal = root.querySelector('#cmTotal');
 
     function getCohortCount() {
-        return document.querySelectorAll('#cmBody tr[data-id]').length;
+        return root.querySelectorAll('#cmBody tr[data-id]').length;
     }
 
     function updateCohortCount() {
@@ -40,22 +58,22 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (cmManageBtn) {
-        cmManageBtn.addEventListener('click', openCohortModal);
+        on(cmManageBtn, 'click', openCohortModal);
     }
 
     if (cmCloseBtn) {
-        cmCloseBtn.addEventListener('click', closeCohortModal);
+        on(cmCloseBtn, 'click', closeCohortModal);
     }
 
     if (cmOverlay) {
-        cmOverlay.addEventListener('click', function (event) {
+        on(cmOverlay, 'click', function (event) {
             if (event.target === cmOverlay) {
                 closeCohortModal();
             }
         });
     }
 
-    document.addEventListener('keydown', function (event) {
+    on(document, 'keydown', function (event) {
         if (event.key === 'Escape') {
             closeCohortModal();
         }
@@ -96,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
-            var emptyState = document.getElementById('cmEmptyState');
+            var emptyState = root.querySelector('#cmEmptyState');
             if (emptyState) {
                 emptyState.remove();
             }
@@ -181,8 +199,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 updateCohortCount();
 
                 if (getCohortCount() === 0) {
-                    var body = document.querySelector('.cm-modal-body');
-                    if (body && !document.getElementById('cmEmptyState')) {
+                    var body = root.querySelector('.cm-modal-body');
+                    if (body && !root.querySelector('#cmEmptyState')) {
                         var empty = document.createElement('div');
                         empty.className = 'cm-empty-state';
                         empty.id = 'cmEmptyState';
@@ -198,11 +216,11 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     if (cmAddBtn) {
-        cmAddBtn.addEventListener('click', addCohort);
+        on(cmAddBtn, 'click', addCohort);
     }
 
     if (cmBody) {
-        cmBody.addEventListener('click', function (event) {
+        on(cmBody, 'click', function (event) {
             var btn = event.target.closest('.cm-del-btn');
             if (!btn || btn.disabled) return;
 
@@ -213,9 +231,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    var table = document.getElementById('incubateeTable');
-    var filterButtons = document.querySelectorAll('#cohortFilterBtns .filter-btn');
-    var reorderBtn = document.getElementById('incReorderBtn');
+    var table = root.querySelector('#incubateeTable');
+    var filterButtons = root.querySelectorAll('#cohortFilterBtns .filter-btn');
+    var reorderBtn = root.querySelector('#incReorderBtn');
 
     if (!table) {
         return;
@@ -501,7 +519,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (matches) visibleCount++;
         });
 
-        var emptyState = document.getElementById('cohortEmptyState');
+        var emptyState = root.querySelector('#cohortEmptyState');
         if (emptyState) {
             emptyState.style.display = visibleCount === 0 ? '' : 'none';
         }
@@ -510,7 +528,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     filterButtons.forEach(function (button) {
-        button.addEventListener('click', function () {
+        on(button, 'click', function () {
             if (isReorderMode) {
                 return;
             }
@@ -523,7 +541,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     if (reorderBtn) {
-        reorderBtn.addEventListener('click', function () {
+        on(reorderBtn, 'click', function () {
             if (reorderBtn.disabled) return;
 
             if (!isReorderMode) {
@@ -551,14 +569,14 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    body.addEventListener('pointerdown', function (event) {
+    on(body, 'pointerdown', function (event) {
         var row = event.target.closest('tr.drag-row');
         if (!row) return;
         if (!event.target.closest('.drag-handle') && isInteractiveTarget(event.target)) return;
         startPointerDrag(event, row);
     });
 
-    body.addEventListener('dragstart', function (event) {
+    on(body, 'dragstart', function (event) {
         var row = event.target.closest('tr.drag-row');
         if (!isReorderMode || !row || !row.classList.contains('is-reorderable')) {
             event.preventDefault();
@@ -578,11 +596,11 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    body.addEventListener('dragend', function () {
+    on(body, 'dragend', function () {
         clearDragState(false);
     });
 
-    body.addEventListener('dragover', function (event) {
+    on(body, 'dragover', function (event) {
         if (!isReorderMode || !draggedRow || !dragPlaceholder) return;
         event.preventDefault();
         var targetRow = event.target.closest('tr.drag-row');
@@ -603,11 +621,30 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    body.addEventListener('drop', function (event) {
+    on(body, 'drop', function (event) {
         if (!isReorderMode || !draggedRow) return;
         event.preventDefault();
         clearDragState(true);
     });
 
     applyFilter('all');
-});
+
+    return function () {
+        closeCohortModal();
+        if (isReorderMode) {
+            setReorderMode(false);
+        }
+        clearDragState(false);
+        document.removeEventListener('pointermove', onPointerMove);
+        document.removeEventListener('pointerup', onPointerUp);
+        document.removeEventListener('pointercancel', onPointerCancel);
+        document.body.style.overflow = '';
+    };
+}
+
+if (window.AdminShell && typeof window.AdminShell.register === 'function') {
+    window.AdminShell.register('incubatees', { init: init });
+} else {
+    document.addEventListener('DOMContentLoaded', function () { init(document); });
+}
+})();

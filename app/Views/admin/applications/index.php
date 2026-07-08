@@ -366,4 +366,3 @@ $baseUrl = site_url('admin/applications') . '?' . http_build_query([
 
 <?= jsBaseUrl() ?>
 <div class="toast" id="appToast"></div>
-<script src="<?= site_url('assets/js/admin/applications/index.js') ?>"></script>

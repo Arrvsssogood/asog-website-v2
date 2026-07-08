@@ -60,8 +60,6 @@
     </div>
 </div>
 
-<script src="<?= base_url('assets/js/admin/incubatees/index.js') ?>"></script>
-
 <div class="inc-admin-toolbar">
     <div>
         <span class="inc-admin-count"><?= count($incubatees ?? []) ?> incubatees</span>
