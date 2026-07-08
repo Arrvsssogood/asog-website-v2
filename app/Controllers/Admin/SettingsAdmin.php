@@ -3,6 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Libraries\DocumentUpload;
 use App\Models\LandingSettingModel;
 
 class SettingsAdmin extends BaseController
@@ -53,6 +54,7 @@ class SettingsAdmin extends BaseController
             ''
         )) ?? '';
         $applicationWindowStatus = $this->applicationWindowStatus($applicationStartDate, $applicationEndDate);
+        $leanCanvasTemplate = $this->resolveLeanCanvasTemplate($settingModel);
         $gmailConfig = config('GmailApi');
         $recaptchaConfig = config('Recaptcha');
         $gmailReady = ! empty($gmailConfig->enabled)
@@ -80,6 +82,7 @@ class SettingsAdmin extends BaseController
             'applicationStartDate'  => $applicationStartDate,
             'applicationEndDate'    => $applicationEndDate,
             'applicationWindowStatus' => $applicationWindowStatus,
+            'leanCanvasTemplate'    => $leanCanvasTemplate,
             'gmailStatus' => [
                 'label'       => $gmailReady ? 'Ready' : 'Not configured',
                 'state'       => $gmailReady ? 'ready' : 'off',
@@ -208,6 +211,92 @@ class SettingsAdmin extends BaseController
         return redirect()->to(site_url('admin/settings'));
     }
 
+    /**
+     * Upload (or replace) the Lean Canvas template applicants download from the form.
+     */
+    public function uploadLeanCanvasTemplate()
+    {
+        $file = $this->request->getFile('leanCanvasTemplate');
+
+        if ($file === null || ! $file->isValid()) {
+            setToast('error', 'No valid file was uploaded.');
+            return redirect()->to(site_url('admin/settings'));
+        }
+
+        $uploader = new DocumentUpload();
+        $path = $uploader->upload($file, 'templates');
+
+        if ($path === null) {
+            setToast('error', $uploader->getError());
+            return redirect()->to(site_url('admin/settings'));
+        }
+
+        $settingModel = new LandingSettingModel();
+
+        // Remove the previous template file (if any) before storing the new path.
+        $previousPath = trim((string) $settingModel->getValue(LandingSettingModel::KEY_APPLY_LEAN_CANVAS_TEMPLATE, ''));
+        if ($previousPath !== '' && $previousPath !== $path) {
+            $uploader->delete($previousPath);
+        }
+
+        if (! $settingModel->setValue(LandingSettingModel::KEY_APPLY_LEAN_CANVAS_TEMPLATE, $path)) {
+            setToast('error', 'Template uploaded but the setting could not be saved.');
+            return redirect()->to(site_url('admin/settings'));
+        }
+
+        setToast('success', 'Lean Canvas template updated.');
+        return redirect()->to(site_url('admin/settings'));
+    }
+
+    /**
+     * Delete the current Lean Canvas template.
+     */
+    public function deleteLeanCanvasTemplate()
+    {
+        $settingModel = new LandingSettingModel();
+        $relativePath = trim((string) $settingModel->getValue(LandingSettingModel::KEY_APPLY_LEAN_CANVAS_TEMPLATE, ''));
+
+        if ($relativePath === '') {
+            setToast('error', 'There is no Lean Canvas template to delete.');
+            return redirect()->to(site_url('admin/settings'));
+        }
+
+        (new DocumentUpload())->delete($relativePath);
+
+        if (! $settingModel->setValue(LandingSettingModel::KEY_APPLY_LEAN_CANVAS_TEMPLATE, '')) {
+            setToast('error', 'Template file removed but the setting could not be cleared.');
+            return redirect()->to(site_url('admin/settings'));
+        }
+
+        setToast('success', 'Lean Canvas template deleted.');
+        return redirect()->to(site_url('admin/settings'));
+    }
+
+    /**
+     * Return metadata for the current Lean Canvas template so the Preview modal
+     * can render it (PDF inline via iframe, DOCX as a download link).
+     */
+    public function leanCanvasTemplatePreview()
+    {
+        $settingModel = new LandingSettingModel();
+        $template = $this->resolveLeanCanvasTemplate($settingModel);
+
+        if ($template['path'] === '') {
+            return $this->response->setStatusCode(404)->setJSON([
+                'ok'     => false,
+                'message' => 'No Lean Canvas template is currently uploaded.',
+            ]);
+        }
+
+        return $this->response->setJSON([
+            'ok'   => true,
+            'url'  => $template['url'],
+            'name' => $template['name'],
+            'mime' => $template['mime'],
+            'isPdf' => $template['isPdf'],
+        ]);
+    }
+
     public function updateSiteExperience()
     {
         $settingModel = new LandingSettingModel();
@@ -315,5 +404,52 @@ class SettingsAdmin extends BaseController
     private function formatDateLabel(string $date): string
     {
         return (new \DateTimeImmutable($date))->format('F j, Y');
+    }
+
+    /**
+     * Resolve the current Lean Canvas template into display-ready metadata.
+     */
+    private function resolveLeanCanvasTemplate(LandingSettingModel $settingModel): array
+    {
+        $uploader = new DocumentUpload();
+        $relativePath = trim((string) $settingModel->getValue(LandingSettingModel::KEY_APPLY_LEAN_CANVAS_TEMPLATE, ''));
+
+        if ($relativePath === '') {
+            return [
+                'path'  => '',
+                'url'   => '',
+                'name'  => '',
+                'mime'  => '',
+                'isPdf' => false,
+            ];
+        }
+
+        // Only report a template if the underlying file still exists.
+        $fullPath = WRITEPATH . 'uploads' . DIRECTORY_SEPARATOR
+            . ltrim(str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $relativePath), DIRECTORY_SEPARATOR);
+
+        if (! is_file($fullPath)) {
+            return [
+                'path'  => '',
+                'url'   => '',
+                'name'  => '',
+                'mime'  => '',
+                'isPdf' => false,
+            ];
+        }
+
+        try {
+            $mime = (new \CodeIgniter\Files\File($fullPath))->getMimeType() ?: 'application/octet-stream';
+        } catch (\Throwable $e) {
+            $mime = 'application/octet-stream';
+        }
+
+        return [
+            'path'  => $relativePath,
+            'url'   => $uploader->publicUrl($relativePath),
+            'name'  => basename($relativePath),
+            'mime'  => $mime,
+            'isPdf' => $mime === 'application/pdf',
+        ];
     }
 }

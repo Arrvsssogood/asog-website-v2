@@ -30,6 +30,8 @@
             $recaptcha = config('Recaptcha');
             $recaptchaEnabled = $recaptcha->enabled && $recaptcha->siteKey !== '';
             $recaptchaAction = $isRevalidation ? 'application_revalidate' : 'application_submit';
+            $leanCanvasTemplateUrl = (string) ($leanCanvasTemplateUrl ?? '');
+            $leanCanvasTemplateName = (string) ($leanCanvasTemplateName ?? '');
         ?>
 
         <?php if ($formError): ?>
@@ -308,16 +310,28 @@
                         <p class="text-[.75rem] text-black leading-[1.7] mt-2 mb-0">
                             Download the Lean Canvas template, complete it, then upload the finished PDF or DOCX file below.
                         </p>
-                        <a href="<?= base_url('assets/file/ASOG%20TBI%20Startup%20-%20Lean%20Canvas.docx') ?>"
-                            download="ASOG TBI Startup - Lean Canvas.docx"
-                            class="inline-flex items-center gap-1.5 mt-3 text-[.6rem] font-bold tracking-[.12em] uppercase text-navy no-underline border border-navy/20 px-4 py-2 rounded-sm transition-all duration-200 hover:bg-navy hover:text-white hover:border-navy">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                            Download Lean Canvas Template
-                        </a>
+                        <?php if ($leanCanvasTemplateUrl !== ''): ?>
+                            <a href="<?= esc($leanCanvasTemplateUrl) ?>"
+                                download="<?= esc($leanCanvasTemplateName) ?>"
+                                class="inline-flex items-center gap-1.5 mt-3 text-[.6rem] font-bold tracking-[.12em] uppercase text-navy no-underline border border-navy/20 px-4 py-2 rounded-sm transition-all duration-200 hover:bg-navy hover:text-white hover:border-navy">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Download Lean Canvas Template
+                            </a>
+                        <?php else: ?>
+                            <span class="inline-flex items-center gap-1.5 mt-3 text-[.6rem] font-bold tracking-[.12em] uppercase text-navy/30 no-underline border border-navy/10 px-4 py-2 rounded-sm cursor-not-allowed">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Template Not Yet Available
+                            </span>
+                            <p class="text-[.62rem] text-navy/40 mt-1.5">Template is not available yet. Please check back later.</p>
+                        <?php endif; ?>
                     </div>
 
                     <!-- Upload row -->
