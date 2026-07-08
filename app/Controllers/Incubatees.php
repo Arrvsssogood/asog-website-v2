@@ -289,7 +289,12 @@ class Incubatees extends BaseController
         }
 
         // Save application
-        if ($applicationModel->insert($data)) {
+        $applicationId = $applicationModel->insert($data);
+        if ($applicationId) {
+            $notificationData = $data;
+            $notificationData['id'] = (int) $applicationId;
+            $this->notifyNewApplication($notificationData);
+
             // Send a copy of their responses via email
             $this->sendConfirmationEmail($data);
 
@@ -493,6 +498,10 @@ class Incubatees extends BaseController
         $updateData['revalidatedAt'] = date('Y-m-d H:i:s');
 
         if ($applicationModel->update((int) $app['id'], $updateData)) {
+            $notificationData = $updateData;
+            $notificationData['id'] = (int) $app['id'];
+            $this->notifyRevalidationResubmitted($notificationData);
+
             $this->sendConfirmationEmail($data, true);
 
             return redirect()->to(site_url('apply/form/thank-you'))
@@ -508,6 +517,24 @@ class Incubatees extends BaseController
     // ──────────────────────────────────────────────
     // EMAIL — send applicant a copy of their responses
     // ──────────────────────────────────────────────
+    private function notifyNewApplication(array $application): void
+    {
+        try {
+            $this->adminNotificationModel->createNewApplication($application);
+        } catch (\Throwable $e) {
+            log_message('error', '[Incubatees] createNewApplication notification failed: ' . $e->getMessage());
+        }
+    }
+
+    private function notifyRevalidationResubmitted(array $application): void
+    {
+        try {
+            $this->adminNotificationModel->createRevalidationResubmitted($application);
+        } catch (\Throwable $e) {
+            log_message('error', '[Incubatees] createRevalidationResubmitted notification failed: ' . $e->getMessage());
+        }
+    }
+
     private function sendConfirmationEmail(array $data, bool $isUpdate = false): void
     {
         $body = view('emails/application_confirmation', [

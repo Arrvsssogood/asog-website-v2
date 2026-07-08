@@ -191,6 +191,12 @@ button {
   color: #1e293b;
 }
 
+.bar-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .bar-date {
   font-size: 0.62rem;
   font-weight: 600;
@@ -198,6 +204,198 @@ button {
   text-transform: uppercase;
   color: #94a3b8;
   white-space: nowrap;
+}
+
+.admin-notifications {
+  position: relative;
+}
+
+.admin-notifications-trigger {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e4e2dd;
+  border-radius: 0.35rem;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.admin-notifications-trigger:hover,
+.admin-notifications-trigger[aria-expanded="true"] {
+  color: #03558c;
+  border-color: #c7ddeb;
+  background: #f5fafe;
+}
+
+.admin-notifications-trigger svg {
+  width: 17px;
+  height: 17px;
+}
+
+.admin-notifications-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  background: #f8af21;
+  color: #1e293b;
+  font-size: 0.52rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.admin-notifications-menu {
+  position: absolute;
+  top: calc(100% + 0.55rem);
+  right: 0;
+  width: min(92vw, 360px);
+  display: none;
+  overflow: hidden;
+  border: 1px solid #e4e2dd;
+  border-radius: 0.45rem;
+  background: #fff;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
+  z-index: 100;
+}
+
+.admin-notifications.is-open .admin-notifications-menu {
+  display: block;
+}
+
+.admin-notifications-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0.95rem;
+  border-bottom: 1px solid #eceae6;
+  background: #fafaf9;
+}
+
+.admin-notifications-head strong {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.admin-notifications-head span {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.admin-notifications-head button {
+  border: none;
+  background: transparent;
+  color: #03558c;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.admin-notifications-list {
+  max-height: 370px;
+  overflow-y: auto;
+}
+
+.admin-notifications-empty {
+  padding: 1rem;
+  font-size: 0.74rem;
+  color: #94a3b8;
+}
+
+.admin-notification-item {
+  display: grid;
+  grid-template-columns: 9px minmax(0, 1fr);
+  gap: 0.65rem;
+  padding: 0.85rem 0.95rem;
+  border-bottom: 1px solid #f1efeb;
+  transition: background 0.15s;
+}
+
+.admin-notification-item:last-child {
+  border-bottom: none;
+}
+
+.admin-notification-item:hover {
+  background: #f8fafc;
+}
+
+.admin-notification-item.is-unread {
+  background: #f7fbff;
+}
+
+.admin-notification-dot {
+  width: 9px;
+  height: 9px;
+  margin-top: 0.28rem;
+  border-radius: 999px;
+  background: #94a3b8;
+}
+
+.admin-notification-dot.type-new_application {
+  background: #03558c;
+}
+
+.admin-notification-dot.type-revalidation_resubmitted {
+  background: #f8af21;
+}
+
+.admin-notification-dot.type-system_update {
+  background: #64748b;
+}
+
+.admin-notification-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.admin-notification-copy strong {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.25;
+}
+
+.admin-notification-copy span {
+  font-size: 0.68rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.admin-notification-copy small {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #b0ada7;
+}
+
+.admin-notification-item.is-read .admin-notification-dot {
+  opacity: 0.35;
+}
+
+.admin-notification-item.is-read .admin-notification-copy {
+  opacity: 0.72;
 }
 
 .bar-r a {

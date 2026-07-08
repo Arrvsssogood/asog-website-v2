@@ -204,6 +204,12 @@ class SettingsAdmin extends BaseController
             return redirect()->to(site_url('admin/settings'))->withInput();
         }
 
+        $this->notifySystemUpdate(
+            'Application settings updated',
+            'Public application availability or submission rules were changed.',
+            site_url('admin/settings')
+        );
+
         setToast('success', 'Application settings updated.');
         return redirect()->to(site_url('admin/settings'));
     }
@@ -217,6 +223,12 @@ class SettingsAdmin extends BaseController
             setToast('error', 'Unable to save site experience setting.');
             return redirect()->to(site_url('admin/settings'));
         }
+
+        $this->notifySystemUpdate(
+            'Site experience updated',
+            'Homepage experience settings were changed.',
+            site_url('admin/settings')
+        );
 
         setToast('success', 'Site experience settings updated.');
         return redirect()->to(site_url('admin/settings'));
@@ -273,6 +285,15 @@ class SettingsAdmin extends BaseController
         }
 
         return $value;
+    }
+
+    private function notifySystemUpdate(string $title, string $body, ?string $link = null): void
+    {
+        try {
+            $this->adminNotificationModel->createSystemUpdate($title, $body, $link, 'high');
+        } catch (\Throwable $e) {
+            log_message('error', '[SettingsAdmin] createSystemUpdate notification failed: ' . $e->getMessage());
+        }
     }
 
     private function applicationWindowStatus(string $startDate, string $endDate): array
