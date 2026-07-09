@@ -22,6 +22,9 @@
         lastFocused = document.activeElement;
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
+        
+        modal.setAttribute('tabindex', '-1'); 
+        
         document.body.classList.add('admin-discard-confirm-open');
         window.setTimeout(function () { okBtn.focus(); }, 30);
 
@@ -33,6 +36,7 @@
     function close(result) {
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
+        modal.removeAttribute('tabindex');
         document.body.classList.remove('admin-discard-confirm-open');
 
         var resolver = activeResolver;
@@ -109,7 +113,9 @@
         } catch (e) {
             return;
         }
-        if (url.origin !== window.location.origin) return; // external site
+        
+        // Skip mailto:, tel:, javascript:, or external links
+        if (url.origin !== window.location.origin || url.origin === 'null') return; 
 
         if (!hasUnsavedWork()) return;
 
@@ -120,5 +126,5 @@
 
             window.location.href = link.href;
         });
-    }, true);
+    });
 })();
