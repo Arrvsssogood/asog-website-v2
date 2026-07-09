@@ -111,6 +111,8 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
     $routes->get('settings', 'Admin\SettingsAdmin::index');
     $routes->post('settings/password', 'Admin\SettingsAdmin::updatePassword');
     $routes->get('sidebar/status', 'Admin\Dashboard::sidebarStatus');
+    $routes->put('notifications/(:num)/read', 'Admin\NotificationsAdmin::markRead/$1');
+    $routes->put('notifications/read-all', 'Admin\NotificationsAdmin::markAllRead');
 
     // ── editor + admin + superadmin ──────────────────────────────────────
     $routes->group('', ['filter' => 'role:editor'], function ($routes) {
@@ -161,10 +163,6 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
         $routes->put('applications/(:num)/remark', 'Admin\ApplicationsAdmin::updateRemark/$1');
         $routes->put('applications/(:num)/toggle-archive', 'Admin\ApplicationsAdmin::toggleArchive/$1');
         $routes->post('applications/bulk', 'Admin\ApplicationsAdmin::bulk');
-
-        // Admin Notifications
-        $routes->put('notifications/(:num)/read', 'Admin\NotificationsAdmin::markRead/$1');
-        $routes->put('notifications/read-all', 'Admin\NotificationsAdmin::markAllRead');
 
         // Contact Messages
         $routes->get('messages', 'Admin\MessagesAdmin::index');

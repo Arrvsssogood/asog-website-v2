@@ -1,4 +1,8 @@
 /* Messages admin page */
+.page[data-admin-page="messages"].is-admin-shell-loading{
+  max-height:calc(100vh - 52px);
+  overflow:clip;
+}
 .grid-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.85rem;margin-bottom:1.8rem}
 .stat{background:#fff;border:1px solid #eceae6;border-radius:.4rem;padding:1.1rem 1.2rem}
 .stat .n{font-family:'DM Serif Display',serif;font-size:1.6rem;color:#03558C;line-height:1}

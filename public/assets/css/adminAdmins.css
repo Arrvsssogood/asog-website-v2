@@ -1144,6 +1144,15 @@
     color: #1e293b;
 }
 
+.tbl td .tag-linked,
+.tbl td .tag-unlinked,
+.tbl td .tag-role,
+.tbl td .tag-active,
+.tbl td .tag-inactive {
+    letter-spacing: 0;
+    text-transform: none;
+}
+
 .tbl tr:last-child td {
     border-bottom: none;
 }

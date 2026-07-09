@@ -250,6 +250,12 @@ class SettingsAdmin extends BaseController
             return redirect()->to(site_url('admin/settings'));
         }
 
+        $this->notifySystemUpdate(
+            'Lean Canvas template updated',
+            'The applicant download template was replaced.',
+            site_url('admin/settings')
+        );
+
         setToast('success', 'Lean Canvas template updated.');
         return redirect()->to(site_url('admin/settings'));
     }
@@ -273,6 +279,12 @@ class SettingsAdmin extends BaseController
             setToast('error', 'Template file removed but the setting could not be cleared.');
             return redirect()->to(site_url('admin/settings'));
         }
+
+        $this->notifySystemUpdate(
+            'Lean Canvas template deleted',
+            'Applicants no longer have a Lean Canvas template download from settings.',
+            site_url('admin/settings')
+        );
 
         setToast('success', 'Lean Canvas template deleted.');
         return redirect()->to(site_url('admin/settings'));
@@ -354,7 +366,14 @@ class SettingsAdmin extends BaseController
     private function notifySystemUpdate(string $title, string $body, ?string $link = null): void
     {
         try {
-            $this->adminNotificationModel->createSystemUpdate($title, $body, $link, 'high');
+            $this->adminNotificationModel->createSystemUpdate(
+                $title,
+                $body,
+                $link,
+                'high',
+                'superadmin',
+                (int) session()->get('admin_id')
+            );
         } catch (\Throwable $e) {
             log_message('error', '[SettingsAdmin] createSystemUpdate notification failed: ' . $e->getMessage());
         }

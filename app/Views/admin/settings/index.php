@@ -54,7 +54,6 @@ $hasLeanCanvasTemplate = $leanCanvasTemplateName !== '';
     <?php if ($canManageSiteSettings): ?>
     <section class="settings-group" aria-labelledby="public-application-settings-title">
         <div class="settings-group-head">
-            <p class="settings-kicker">Applications</p>
             <h2 id="public-application-settings-title">Public Application Settings</h2>
             <p class="settings-copy">Manage when applications open and how applicant emails are handled.</p>
         </div>
@@ -216,7 +215,6 @@ $hasLeanCanvasTemplate = $leanCanvasTemplateName !== '';
 
     <section class="settings-group" aria-labelledby="landing-display-title">
         <div class="settings-group-head">
-            <p class="settings-kicker">Public Website</p>
             <h2 id="landing-display-title">Landing Page Display</h2>
             <p class="settings-copy">Choose what appears on the public homepage and Organization page.</p>
         </div>
@@ -294,7 +292,6 @@ $hasLeanCanvasTemplate = $leanCanvasTemplateName !== '';
 
     <section class="settings-group" aria-labelledby="game-visibility-title">
         <div class="settings-group-head">
-            <p class="settings-kicker">Interactive</p>
             <h2 id="game-visibility-title">Game Visibility</h2>
             <p class="settings-copy">Control whether visitors can see and play Guess the Startup.</p>
         </div>
@@ -360,7 +357,6 @@ $hasLeanCanvasTemplate = $leanCanvasTemplateName !== '';
 
     <section class="settings-group" aria-labelledby="integrations-title">
         <div class="settings-group-head">
-            <p class="settings-kicker">Integrations</p>
             <h2 id="integrations-title">Email &amp; Security Integrations</h2>
             <p class="settings-copy">Quick status checks for email sending and form spam protection.</p>
         </div>
@@ -395,7 +391,6 @@ $hasLeanCanvasTemplate = $leanCanvasTemplateName !== '';
 
     <section class="settings-group" aria-labelledby="site-experience-title">
         <div class="settings-group-head">
-            <p class="settings-kicker">Experience</p>
             <h2 id="site-experience-title">Homepage Experience</h2>
             <p class="settings-copy">Control the intro animation visitors see on the homepage.</p>
         </div>
@@ -440,8 +435,7 @@ $hasLeanCanvasTemplate = $leanCanvasTemplateName !== '';
 
     <section class="settings-group" aria-labelledby="google-account-settings-title">
         <div class="settings-group-head">
-            <p class="settings-kicker">Your Account</p>
-            <h2 id="google-account-settings-title">Account Security</h2>
+            <h2 id="google-account-settings-title">Sign-in Options</h2>
             <p class="settings-copy">Manage your password and Google sign-in.</p>
         </div>
 

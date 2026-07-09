@@ -121,12 +121,12 @@
             </h1>
             <div class="bar-tools">
                 <?php
-                    $canViewNotifications = in_array($sessionRole ?? '', ['admin', 'superadmin'], true);
+                    $canViewNotifications = in_array($sessionRole ?? '', ['editor', 'admin', 'superadmin'], true);
                     $notifications = $adminNotifications ?? [];
                     $unreadNotifications = (int) ($adminUnreadNotificationCount ?? 0);
                 ?>
                 <?php if ($canViewNotifications): ?>
-                <div class="admin-notifications" data-admin-notifications>
+                <div class="admin-notifications" data-admin-notifications data-read-all-url="<?= site_url('admin/notifications/read-all') ?>">
                     <button type="button"
                         class="admin-notifications-trigger"
                         data-admin-notifications-trigger
@@ -161,7 +161,7 @@
                                 <?php foreach ($notifications as $notification): ?>
                                     <?php
                                         $notificationId = (int) ($notification['id'] ?? 0);
-                                        $isRead = ! empty($notification['isRead']);
+                                        $isRead = ! empty($notification['userReadAt']) || ! empty($notification['isRead']);
                                         $type = (string) ($notification['type'] ?? 'system_update');
                                         $href = (string) ($notification['link'] ?? site_url('admin'));
                                         $created = (string) ($notification['createdAt'] ?? '');

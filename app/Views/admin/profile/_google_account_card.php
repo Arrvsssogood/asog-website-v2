@@ -8,7 +8,6 @@ $isLinked = $googleEmail !== '' || $googleSub !== '';
 <div class="admin-profile-shell">
     <section class="admin-profile-card">
         <div class="admin-profile-head">
-            <p>Account security</p>
             <h2>Google Account</h2>
             <span>Choose the Google account you want to use when signing in.</span>
         </div>
