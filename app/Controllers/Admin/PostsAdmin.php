@@ -20,12 +20,16 @@ class PostsAdmin extends BaseController
      */
     public function index()
     {
-        $perPage    = 10;
+        $perPage    = 5;
+        $search     = trim((string) ($this->request->getGet('search') ?? ''));
+        $status     = trim((string) ($this->request->getGet('status') ?? 'all'));
+        $status     = in_array($status, ['all', 'published', 'draft', 'featured'], true) ? $status : 'all';
+        $category   = trim((string) ($this->request->getGet('category') ?? 'all'));
+        $category   = in_array($category, ['all', 'news', 'events', 'features'], true) ? $category : 'all';
+        $sort       = trim((string) ($this->request->getGet('sort') ?? 'default'));
+        $sort       = in_array($sort, ['default', 'date_desc', 'date_asc'], true) ? $sort : 'default';
         $page       = max(1, (int) ($this->request->getGet('page') ?? 1));
-        $total      = $this->postModel->countAllResults();
-        $totalPages = $total > 0 ? (int) ceil($total / $perPage) : 1;
-        $page       = min($page, $totalPages);
-        $offset     = ($page - 1) * $perPage;
+        $result     = $this->postModel->getAdminPage($search, $status, $category, $perPage, $page, $sort);
 
         $featuredStories = $this->postModel->where('isFeatured', 1);
         if ($this->postModel->supportsSortOrder()) {
@@ -37,12 +41,16 @@ class PostsAdmin extends BaseController
             'pageTitle'         => 'Posts',
             'activePage'        => 'posts',
             'supportsSortOrder' => $this->postModel->supportsSortOrder(),
-            'posts'             => $this->postModel->getAdminList($perPage, $offset),
+            'posts'             => $result['posts'],
             'featuredStories'   => $featuredStories,
-            'currentPage'       => $page,
-            'totalPages'        => $totalPages,
-            'total'             => $total,
-            'perPage'           => $perPage,
+            'currentPage'       => $result['currentPage'],
+            'totalPages'        => $result['totalPages'],
+            'total'             => $result['total'],
+            'perPage'           => $result['perPage'],
+            'search'            => $search,
+            'status'            => $status,
+            'category'          => $category,
+            'sort'              => $sort,
         ];
 
         return view('admin/layout/header', $data)

@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="<?= base_url('assets/vendor/quill/quill.snow.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/adminLayout.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/adminCustomSelect.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/css/adminPosts.css') ?>">
 </head>
 <body
     data-admin-sidebar-status-url="<?= site_url('admin/sidebar/status') ?>"
