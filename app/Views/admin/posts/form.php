@@ -16,11 +16,19 @@ $formUrl = $isEdit
 
 <link rel="stylesheet" href="<?= base_url('assets/css/adminPostForm.css') ?>">
 
-<form action="<?= $formUrl ?>" method="POST" enctype="multipart/form-data" id="postForm" data-dirty-check data-dirty-btn=".form-actions button.btn-o[type=submit]">
+<form action="<?= $formUrl ?>" method="POST" enctype="multipart/form-data" id="postForm">
     <?= csrf_field() ?>
     <?php if ($isEdit): ?>
     <input type="hidden" name="_method" value="PUT" />
     <?php endif; ?>
+<div class="edit-tabs" role="tablist">
+    <button type="button" role="tab" aria-selected="true" aria-controls="editPanel" id="editTab" class="edit-tab active">Edit</button>
+    <?php if ($isEdit): ?>
+    <button type="button" role="tab" aria-selected="false" aria-controls="previewPanel" id="previewTab" class="edit-tab">Preview</button>
+    <?php endif; ?>
+</div>
+
+<div class="tab-panel" id="editPanel" role="tabpanel" aria-labelledby="editTab">
     <div class="form-card">
         <div class="form-grid">
 
@@ -155,9 +163,31 @@ $formUrl = $isEdit
                     </button>
 
                 <?php endif; ?>
+
             </div>
+            <div id="previewError" class="preview-error-msg" style="display:none; color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; text-align: right;"></div>
         </div>
     </div>
+</div>
+
+<?php if ($isEdit): ?>
+<div class="tab-panel" id="previewPanel" role="tabpanel" aria-labelledby="previewTab" hidden>
+    <div class="preview-card">
+        <div class="preview-header">
+            <h3>Post Preview</h3>
+            <a href="<?= site_url('admin/posts/' . $post['id'] . '/preview') ?>" target="_blank" class="btn-o" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">
+                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+                Open in New Tab
+            </a>
+        </div>
+        <div class="preview-content">
+            <iframe id="previewIframe" data-preview-url="<?= site_url('admin/posts/' . $post['id'] . '/preview') ?>"></iframe>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 </form>
 
 <div class="ql-image-dialog-overlay" id="qlImageDialogOverlay" hidden>

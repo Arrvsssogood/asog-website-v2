@@ -121,8 +121,11 @@ $routes->group('admin', ['filter' => 'auth'], function ($routes) {
         $routes->get('posts/create', 'Admin\PostsAdmin::create');
         $routes->post('posts', 'Admin\PostsAdmin::store');
         $routes->post('posts/upload-image', 'Admin\PostsAdmin::uploadImage');
+        $routes->get('posts/(:num)/preview', 'Admin\PostsAdmin::previewById/$1');
+        $routes->post('posts/(:num)/preview', 'Admin\PostsAdmin::previewById/$1');
         $routes->post('posts/featured-order', 'Admin\PostsAdmin::saveFeaturedOrder');
         $routes->get('posts/(:num)/edit', 'Admin\PostsAdmin::edit/$1');
+        $routes->post('posts/(:num)', 'Admin\PostsAdmin::update/$1');
         $routes->put('posts/(:num)', 'Admin\PostsAdmin::update/$1');
         $routes->delete('posts/(:num)', 'Admin\PostsAdmin::delete/$1');
 

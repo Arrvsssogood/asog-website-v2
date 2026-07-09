@@ -1,4 +1,32 @@
-/* ── Form card ──────────────────────────── */
+/* ── Edit / Preview tabs ────────────── */
+.edit-tabs {
+    display: flex;
+    gap: 0.25rem;
+    border-bottom: 1px solid #eceae6;
+    margin-bottom: 1rem;
+}
+
+.edit-tab {
+    background: none;
+    border: none;
+    padding: 0.6rem 1.1rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #94a3b8;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+}
+
+.edit-tab.active {
+    color: #03558C;
+    border-bottom-color: #03558C;
+}
+
+.tab-panel[hidden] {
+    display: none;
+}
+
 .form-card {
     background: #fff;
     border: 1px solid #eceae6;
@@ -15,6 +43,38 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1rem
+}
+
+/* ── Preview card ─────────────────────── */
+.preview-card {
+    background: #fff;
+    border: 1px solid #eceae6;
+    border-radius: .4rem;
+    overflow: hidden;
+    min-height: 600px;
+}
+
+.preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .75rem;
+    padding: 1rem 1.1rem;
+    border-bottom: 1px solid #eceae6;
+}
+
+.preview-content {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.preview-content iframe {
+    width: 100%;
+    min-height: 620px;
+    height: calc(100vh - 220px);
+    border: 0;
+    background: #fff;
 }
 
 /* ── Fields ────────────────────────────── */
@@ -443,4 +503,63 @@
 
 .form-actions .btn-g:hover {
     background: #e9a210
+}
+
+/* ── Preview panel ───────────────────── */
+.preview-card {
+    background: #fff;
+    border: 1px solid #eceae6;
+    border-radius: .4rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 70vh;
+    overflow: hidden;
+}
+
+.preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem 1.4rem;
+    border-bottom: 1px solid #eceae6;
+    background: #fafaf9;
+}
+
+.preview-header h3 {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem;
+    border-radius: 0.2rem;
+    transition: color 0.15s, background 0.15s;
+}
+
+.btn-close:hover {
+    color: #ef4444;
+    background: #fee2e2;
+}
+
+.preview-content {
+    flex: 1;
+    min-height: 0;
+    background: #f8fafc;
+}
+
+.preview-content iframe {
+    width: 100%;
+    height: 100%;
+    min-height: 65vh;
+    border: none;
+    display: block;
 }

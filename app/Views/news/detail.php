@@ -34,8 +34,14 @@
 
         <!-- Cover image -->
         <?php if (! empty($post['imagePath'])): ?>
+        <?php 
+            $imgSrc = $post['imagePath'];
+            if (!str_starts_with($imgSrc, 'http://') && !str_starts_with($imgSrc, 'https://') && !str_starts_with($imgSrc, 'data:')) {
+                $imgSrc = site_url($imgSrc);
+            }
+        ?>
         <div class="rounded-lg overflow-hidden mb-10 border border-dark/[.06]">
-            <img src="<?= site_url($post['imagePath']) ?>" alt="<?= esc($post['title']) ?>"
+            <img src="<?= esc($imgSrc, 'attr') ?>" alt="<?= esc($post['title']) ?>"
                 class="w-full max-h-[440px] object-cover" />
         </div>
         <?php endif; ?>
@@ -57,11 +63,20 @@
 
         <?php
             $postCategory = strtolower((string) ($post['category'] ?? ''));
-            $showStoryShare = true;
+            $showStoryShare = !($isPreview ?? false);
             $shareUrl = current_url();
             $shareTitle = trim((string) ($post['title'] ?? '')) . ' | ASOG TBI';
             $shareDescription = trim(preg_replace('/\s+/', ' ', strip_tags(html_entity_decode((string) ($post['content'] ?? ''), ENT_QUOTES, 'UTF-8'))));
-            $shareImage = ! empty($post['imagePath']) ? site_url($post['imagePath']) : '';
+            
+            $shareImage = '';
+            if (! empty($post['imagePath'])) {
+                $imgSrc = $post['imagePath'];
+                if (!str_starts_with($imgSrc, 'http://') && !str_starts_with($imgSrc, 'https://') && !str_starts_with($imgSrc, 'data:')) {
+                    $imgSrc = site_url($imgSrc);
+                }
+                $shareImage = $imgSrc;
+            }
+
             $encodedUrl = rawurlencode($shareUrl);
             $encodedTitle = rawurlencode($shareTitle);
         ?>
@@ -117,7 +132,7 @@
             }));
             $relatedPosts = array_slice($relatedPosts, 0, 3);
         ?>
-        <?php if (! empty($relatedPosts)): ?>
+        <?php if (! empty($relatedPosts) && !($isPreview ?? false)): ?>
         <div>
             <h3 class="font-display text-lg text-dark mb-5">More from <em class="italic text-gold">News &amp;
                     Insights</em></h3>
