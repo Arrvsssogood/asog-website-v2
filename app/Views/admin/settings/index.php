@@ -65,7 +65,7 @@ $hasLeanCanvasTemplate = $leanCanvasTemplateName !== '';
                 <p class="settings-copy">Set the dates when visitors can send a new application.</p>
             </div>
 
-            <form method="POST" action="<?= site_url('admin/settings/applications') ?>" class="settings-form" data-toggle-form>
+            <form method="POST" action="<?= site_url('admin/settings/applications') ?>" class="settings-form" data-toggle-form data-dirty-check data-dirty-btn=".btn-p">
                 <?= csrf_field() ?>
 
                 <div class="settings-notice settings-notice-<?= esc((string) ($windowStatus['state'] ?? 'open')) ?>">
@@ -227,7 +227,7 @@ $hasLeanCanvasTemplate = $leanCanvasTemplateName !== '';
                     <p class="settings-copy">Choose which incubatees appear on the landing page.</p>
                 </div>
 
-                <form method="POST" action="<?= site_url('admin/settings/homepage-incubatees-filter') ?>" class="settings-form">
+                <form method="POST" action="<?= site_url('admin/settings/homepage-incubatees-filter') ?>" class="settings-form" data-dirty-check data-dirty-btn=".btn-p">
                     <?= csrf_field() ?>
                     <div class="settings-control-row">
                         <div class="settings-control-copy">
@@ -259,7 +259,7 @@ $hasLeanCanvasTemplate = $leanCanvasTemplateName !== '';
                     <p class="settings-copy">Show or hide interns on the public Organization page.</p>
                 </div>
 
-                <form method="POST" action="<?= site_url('admin/settings/interns-visibility') ?>" class="settings-form" data-toggle-form>
+                <form method="POST" action="<?= site_url('admin/settings/interns-visibility') ?>" class="settings-form" data-toggle-form data-dirty-check data-dirty-btn=".btn-p">
                     <?= csrf_field() ?>
 
                     <div class="settings-toggle-row">
@@ -303,7 +303,7 @@ $hasLeanCanvasTemplate = $leanCanvasTemplateName !== '';
                 <p class="settings-copy">Set game access and landing page visibility.</p>
             </div>
 
-            <form method="POST" action="<?= site_url('admin/settings/guess-startup/availability') ?>" class="settings-form" data-toggle-form>
+            <form method="POST" action="<?= site_url('admin/settings/guess-startup/availability') ?>" class="settings-form" data-toggle-form data-dirty-check data-dirty-btn=".btn-p">
                 <?= csrf_field() ?>
 
                 <div class="settings-toggle-row">
@@ -402,7 +402,7 @@ $hasLeanCanvasTemplate = $leanCanvasTemplateName !== '';
                 <p class="settings-copy">Show or skip the ASOG loader before the landing page.</p>
             </div>
 
-            <form method="POST" action="<?= site_url('admin/settings/site-experience') ?>" class="settings-form" data-toggle-form>
+            <form method="POST" action="<?= site_url('admin/settings/site-experience') ?>" class="settings-form" data-toggle-form data-dirty-check data-dirty-btn=".btn-p">
                 <?= csrf_field() ?>
 
                 <div class="settings-toggle-row">

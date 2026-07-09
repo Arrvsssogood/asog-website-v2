@@ -16,8 +16,7 @@ $formUrl = $isEdit
 
 <link rel="stylesheet" href="<?= base_url('assets/css/adminPostForm.css') ?>">
 
-<form action="<?= $formUrl ?>" method="POST" enctype="multipart/form-data" id="postForm">
-    <?= csrf_field() ?>
+<form action="<?= $formUrl ?>" method="POST" enctype="multipart/form-data" id="postForm" data-dirty-check data-dirty-btn=".form-actions button.btn-o[type=submit]">    <?= csrf_field() ?>
     <?php if ($isEdit): ?>
     <input type="hidden" name="_method" value="PUT" />
     <?php endif; ?>

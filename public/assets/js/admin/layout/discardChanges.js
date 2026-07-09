@@ -22,6 +22,9 @@
         lastFocused = document.activeElement;
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
+        
+        modal.setAttribute('tabindex', '-1'); 
+        
         document.body.classList.add('admin-discard-confirm-open');
         window.setTimeout(function () { okBtn.focus(); }, 30);
 
@@ -33,6 +36,7 @@
     function close(result) {
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
+        modal.removeAttribute('tabindex');
         document.body.classList.remove('admin-discard-confirm-open');
 
         var resolver = activeResolver;
@@ -83,6 +87,13 @@
         event.returnValue = '';
     });
 
+    // Form submission is an intentional save — don't warn on the resulting navigation
+    document.addEventListener('submit', function (event) {
+        if (!event.defaultPrevented) {
+            isConfirmedNavigation = true;
+        }
+    });
+
     // In-app link navigation (clicking to another admin section).
     document.addEventListener('click', function (event) {
         if (event.defaultPrevented || event.button !== 0) return;
@@ -102,7 +113,9 @@
         } catch (e) {
             return;
         }
-        if (url.origin !== window.location.origin) return; // external site
+        
+        // Skip mailto:, tel:, javascript:, or external links
+        if (url.origin !== window.location.origin || url.origin === 'null') return; 
 
         if (!hasUnsavedWork()) return;
 
@@ -113,5 +126,5 @@
 
             window.location.href = link.href;
         });
-    }, true);
+    });
 })();
