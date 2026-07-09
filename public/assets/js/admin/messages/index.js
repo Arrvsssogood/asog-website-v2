@@ -13,6 +13,14 @@
         var smartCaretBtn = null;
         var smartChkMenu = null;
 
+        function lockListScroll() {
+            document.documentElement.classList.add('admin-messages-list-lock');
+        }
+
+        function unlockListScroll() {
+            document.documentElement.classList.remove('admin-messages-list-lock');
+        }
+
         function refreshRefs() {
             selectAll = document.getElementById('selectAll');
             smartCaretBtn = document.getElementById('smartCaretBtn');
@@ -360,6 +368,7 @@
 
                     document.getElementById('inbox').style.display = 'none';
                     document.getElementById('reader').classList.add('open');
+                    unlockListScroll();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
         }
@@ -369,6 +378,7 @@
             var inbox = document.getElementById('inbox');
             if (reader) reader.classList.remove('open');
             if (inbox) inbox.style.display = '';
+            lockListScroll();
             currentMsg = null;
             getRows().forEach(function (row) { row.classList.remove('active'); });
         }
@@ -452,6 +462,7 @@
 
         bindStaticControls();
         bindInboxEvents();
+        lockListScroll();
 
         window.bulkDo = bulkDo;
         window.openMsg = openMsg;
@@ -462,6 +473,7 @@
 
         return function () {
             controller.abort();
+            unlockListScroll();
             delete window.bulkDo;
             delete window.openMsg;
             delete window.backToInbox;

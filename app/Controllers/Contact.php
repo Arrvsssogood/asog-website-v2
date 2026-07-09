@@ -76,12 +76,16 @@ class Contact extends BaseController
             return redirect()->back()->withInput();
         }
 
-        if (! $this->contactModel->insert($data)) {
+        $messageId = $this->contactModel->insert($data, true);
+        if (! $messageId) {
             log_message('error', 'Contact message DB insert failed.');
             setToast('error', 'Something went wrong. Please try again.');
             return redirect()->back()->withInput();
         }
 
+        $notificationData = $data;
+        $notificationData['id'] = (int) $messageId;
+        $this->notifyDashboard($notificationData);
         $this->notifyAdmin($data);
 
         setToast('success', 'Your message has been sent! We\'ll get back to you soon.');
@@ -116,6 +120,15 @@ class Contact extends BaseController
             log_message('error', 'Contact notification email failed via Gmail API.');
         } else {
             log_message('info', 'Contact notification sent for: ' . $data['email']);
+        }
+    }
+
+    private function notifyDashboard(array $data): void
+    {
+        try {
+            $this->adminNotificationModel->createContactMessage($data);
+        } catch (\Throwable $e) {
+            log_message('error', '[Contact] createContactMessage notification failed: ' . $e->getMessage());
         }
     }
 }

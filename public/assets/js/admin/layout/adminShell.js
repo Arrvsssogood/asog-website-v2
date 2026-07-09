@@ -52,6 +52,12 @@
     return !!ajaxEnabledPages[pageFromUrl(url)];
   }
 
+  function isCurrentShellUrl(url) {
+    if (!url || url.origin !== window.location.origin) return false;
+    return normalizePath(url.pathname) === normalizePath(window.location.pathname)
+      && url.search === window.location.search;
+  }
+
   function shouldInterceptLink(event, link) {
     if (!link || event.defaultPrevented) return false;
     if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return false;
@@ -70,8 +76,7 @@
       return false;
     }
 
-    if (!isSafeShellUrl(url)) return false;
-    return normalizePath(url.pathname) !== normalizePath(window.location.pathname) || url.search !== window.location.search;
+    return isSafeShellUrl(url);
   }
 
   function listen(root, target, eventName, selectorOrHandler, handler, options) {
@@ -421,6 +426,12 @@
     options = options || {};
     if (isLoading) return Promise.resolve(false);
     isLoading = true;
+    var requestedUrl = new URL(url, window.location.href);
+    var targetPage = pageFromUrl(requestedUrl);
+    if (targetPage) {
+      document.body.setAttribute('data-admin-shell-target-page', targetPage);
+      document.documentElement.classList.toggle('admin-shell-lock-scroll', targetPage === 'messages');
+    }
     setLoading(true);
     var swappedMain = null;
 
@@ -443,8 +454,13 @@
       })
       .then(function (html) {
         var doc = new DOMParser().parseFromString(html, 'text/html');
+        var nextMain = doc.querySelector('[data-admin-main]');
+        var resolvedTargetPage = getMainPage(nextMain);
+        if (resolvedTargetPage) {
+          document.body.setAttribute('data-admin-shell-target-page', resolvedTargetPage);
+          document.documentElement.classList.toggle('admin-shell-lock-scroll', resolvedTargetPage === 'messages');
+        }
         return ensurePageStyles(doc).then(function () {
-          var nextMain = doc.querySelector('[data-admin-main]');
           prepareSkeleton(nextMain);
           swappedMain = replaceMain(doc);
 
@@ -470,6 +486,8 @@
       })
       .finally(function () {
         isLoading = false;
+        document.body.removeAttribute('data-admin-shell-target-page');
+        document.documentElement.classList.remove('admin-shell-lock-scroll');
         if (!swappedMain) {
           setLoading(false);
         }
@@ -480,6 +498,8 @@
     var link = event.target.closest && event.target.closest('a[href]');
     if (!shouldInterceptLink(event, link)) return;
     event.preventDefault();
+    var url = new URL(link.href, window.location.href);
+    if (isCurrentShellUrl(url)) return;
     load(link.href);
   }
 
@@ -592,6 +612,12 @@
         }
         var unreadLabel = document.querySelector('[data-admin-notifications-unread-label]');
         if (unreadLabel) unreadLabel.textContent = notificationCount + ' unread';
+        if (window.AdminNotifications && typeof window.AdminNotifications.render === 'function') {
+          window.AdminNotifications.render(data.notifications || {
+            items: [],
+            unreadCount: notificationCount
+          });
+        }
         if (data.nav && data.nav.allowed) {
           syncAllowedNavigation(data.nav.allowed);
         }
@@ -601,7 +627,7 @@
 
   function startSidebarPolling() {
     refreshSidebarStatus();
-    statusTimer = window.setInterval(refreshSidebarStatus, 60000);
+    statusTimer = window.setInterval(refreshSidebarStatus, 15000);
     document.addEventListener('visibilitychange', function () {
       if (!document.hidden) refreshSidebarStatus();
     });
@@ -621,6 +647,13 @@
   window.AdminShell = window.AdminShell || {};
   window.AdminShell.register = register;
   window.AdminShell.load = load;
+  window.AdminShell.canLoad = function (href) {
+    try {
+      return isSafeShellUrl(new URL(href, window.location.href));
+    } catch (error) {
+      return false;
+    }
+  };
   window.AdminShell.on = listen;
   window.AdminShell.updateHistory = updateHistory;
   window.AdminShell.refresh = function () {

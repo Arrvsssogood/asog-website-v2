@@ -250,6 +250,11 @@ class AdminsManagement extends BaseController
         }
 
         if ($this->adminModel->delete($id)) {
+            $this->notifyAccountManaged(
+                'Admin account deleted',
+                (string) ($admin['fullName'] ?? 'An admin account') . ' was removed from dashboard access.',
+                $id
+            );
             setToast('success', 'Admin account deleted.');
         } else {
             setToast('error', 'Failed to delete admin account.');
@@ -294,6 +299,11 @@ class AdminsManagement extends BaseController
         }
 
         $accountId = (int) $this->adminModel->getInsertID();
+        $this->notifyAccountManaged(
+            'Admin account created',
+            $fullName . ' was added as ' . $this->roleLabel($role) . '.',
+            $accountId
+        );
 
         if (! $sendWelcomeEmail) {
             return [
@@ -354,6 +364,37 @@ class AdminsManagement extends BaseController
             return ['ok' => false, 'message' => 'Error: ' . implode(', ', $this->adminModel->errors())];
         }
 
+        $changes = [];
+        if ((string) ($admin['role'] ?? '') !== $role) {
+            $changes['role'] = [(string) ($admin['role'] ?? ''), $role];
+        }
+        if ((int) ($admin['isActive'] ?? 0) !== ($isActive ? 1 : 0)) {
+            $changes['active'] = [(int) ($admin['isActive'] ?? 0), $isActive ? 1 : 0];
+        }
+
+        if ($changes !== []) {
+            $updatedAdmin = $admin;
+            $updatedAdmin['id'] = $id;
+            $updatedAdmin['role'] = $role;
+            $updatedAdmin['isActive'] = $isActive ? 1 : 0;
+            $this->notifyAccountAccessChanged($updatedAdmin, $changes);
+
+            $summary = [];
+            if (isset($changes['role'])) {
+                $summary[] = 'role changed from ' . $this->roleLabel((string) $changes['role'][0]) . ' to ' . $this->roleLabel((string) $changes['role'][1]);
+            }
+            if (isset($changes['active'])) {
+                $summary[] = $isActive ? 'access activated' : 'access deactivated';
+            }
+            if ((int) session()->get('admin_id') !== $id) {
+                $this->notifyAccountManaged(
+                    'Admin account access updated',
+                    $fullName . ': ' . implode('; ', $summary) . '.',
+                    $id
+                );
+            }
+        }
+
         return [
             'ok' => true,
             'message' => 'Account updated.',
@@ -365,6 +406,42 @@ class AdminsManagement extends BaseController
     {
         $role = trim($role);
         return in_array($role, ['superadmin', 'admin', 'editor'], true) ? $role : 'superadmin';
+    }
+
+    private function notifyAccountAccessChanged(array $admin, array $changes): void
+    {
+        try {
+            $this->adminNotificationModel->createAccountAccessChanged(
+                $admin,
+                $changes,
+                (int) session()->get('admin_id')
+            );
+        } catch (\Throwable $e) {
+            log_message('error', '[AdminsManagement] createAccountAccessChanged notification failed: ' . $e->getMessage());
+        }
+    }
+
+    private function notifyAccountManaged(string $title, string $body, int $sourceId): void
+    {
+        try {
+            $this->adminNotificationModel->createAccountManaged(
+                $title,
+                $body,
+                $sourceId,
+                (int) session()->get('admin_id')
+            );
+        } catch (\Throwable $e) {
+            log_message('error', '[AdminsManagement] createAccountManaged notification failed: ' . $e->getMessage());
+        }
+    }
+
+    private function roleLabel(string $role): string
+    {
+        return [
+            'superadmin' => 'Super Admin',
+            'admin' => 'Admin',
+            'editor' => 'Editor',
+        ][$role] ?? ucfirst($role);
     }
 
     private function sendWelcomeSetPasswordEmail(string $email, string $fullName, string $role, string $token): bool

@@ -430,6 +430,14 @@ body.is-admin-shell-loading .body::before {
   background: #64748b;
 }
 
+.admin-notification-dot.type-contact_message {
+  background: #0f766e;
+}
+
+.admin-notification-dot.type-account_update {
+  background: #b45309;
+}
+
 .admin-notification-copy {
   min-width: 0;
   display: flex;
@@ -495,6 +503,17 @@ body.is-admin-shell-loading .body::before {
   pointer-events: none;
 }
 
+body.is-admin-shell-loading[data-admin-shell-target-page="messages"] {
+  overflow-y: hidden;
+}
+
+html.admin-shell-lock-scroll,
+html.admin-shell-lock-scroll body,
+html.admin-messages-list-lock,
+html.admin-messages-list-lock body {
+  overflow-y: hidden !important;
+}
+
 [data-admin-shell-skeleton-surface] {
   position: relative;
   overflow: hidden;
@@ -558,7 +577,6 @@ th[data-admin-shell-skeleton-item] {
 .page.is-admin-shell-entering {
   opacity: 0;
   filter: saturate(0.94);
-  transform: translateY(3px);
 }
 
 .page.is-admin-shell-revealing {
@@ -569,12 +587,10 @@ th[data-admin-shell-skeleton-item] {
   from {
     opacity: 0.88;
     filter: saturate(0.96);
-    transform: translateY(2px);
   }
   to {
     opacity: 1;
     filter: none;
-    transform: translateY(0);
   }
 }
 

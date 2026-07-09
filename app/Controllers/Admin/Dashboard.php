@@ -51,6 +51,7 @@ class Dashboard extends BaseController
     public function sidebarStatus()
     {
         $role = (string) session()->get('admin_role');
+        $adminId = (int) session()->get('admin_id');
         $roleLabel = [
             'superadmin' => 'Super Admin',
             'admin'      => 'Admin',
@@ -61,12 +62,31 @@ class Dashboard extends BaseController
             ? $this->contactModel->countUnread()
             : 0;
         $unreadNotifications = 0;
+        $notifications = [];
 
-        if (in_array($role, ['admin', 'superadmin'], true)) {
+        if ($adminId > 0 && in_array($role, ['editor', 'admin', 'superadmin'], true)) {
             try {
-                $unreadNotifications = $this->adminNotificationModel->countUnread();
+                $unreadNotifications = $this->adminNotificationModel->countUnreadForAdmin($adminId, $role);
+                $notifications = array_map(static function (array $notification): array {
+                    $notificationId = (int) ($notification['id'] ?? 0);
+                    $created = (string) ($notification['createdAt'] ?? '');
+
+                    return [
+                        'id'        => $notificationId,
+                        'type'      => (string) ($notification['type'] ?? 'system_update'),
+                        'title'     => (string) ($notification['title'] ?? 'Notification'),
+                        'body'      => (string) ($notification['body'] ?? ''),
+                        'link'      => (string) ($notification['link'] ?? site_url('admin')),
+                        'isRead'    => ! empty($notification['userReadAt']),
+                        'timeLabel' => $created !== '' && strtotime($created) !== false
+                            ? date('M j, g:i A', strtotime($created))
+                            : '',
+                        'readUrl'   => site_url('admin/notifications/' . $notificationId . '/read'),
+                    ];
+                }, $this->adminNotificationModel->getLatestForAdmin($adminId, $role, 8));
             } catch (\Throwable $e) {
                 $unreadNotifications = 0;
+                $notifications = [];
             }
         }
 
@@ -93,6 +113,10 @@ class Dashboard extends BaseController
                 'counts' => [
                     'unreadMessages'      => $unreadMessages,
                     'unreadNotifications' => $unreadNotifications,
+                ],
+                'notifications' => [
+                    'items'       => $notifications,
+                    'unreadCount' => $unreadNotifications,
                 ],
                 'nav' => [
                     'allowed' => $nav,

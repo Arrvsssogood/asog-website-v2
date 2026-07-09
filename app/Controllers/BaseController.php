@@ -77,10 +77,11 @@ abstract class BaseController extends Controller
         if ($seg1 === 'admin') {
             $sharedData['adminUnreadMessageCount'] = $this->contactModel->countUnread();
             $role = (string) session()->get('admin_role');
-            if (in_array($role, ['admin', 'superadmin'], true)) {
+            $adminId = (int) session()->get('admin_id');
+            if ($adminId > 0 && in_array($role, ['editor', 'admin', 'superadmin'], true)) {
                 try {
-                    $sharedData['adminUnreadNotificationCount'] = $this->adminNotificationModel->countUnread();
-                    $sharedData['adminNotifications'] = $this->adminNotificationModel->getLatest(8);
+                    $sharedData['adminUnreadNotificationCount'] = $this->adminNotificationModel->countUnreadForAdmin($adminId, $role);
+                    $sharedData['adminNotifications'] = $this->adminNotificationModel->getLatestForAdmin($adminId, $role, 8);
                 } catch (\Throwable $e) {
                     $sharedData['adminUnreadNotificationCount'] = 0;
                     $sharedData['adminNotifications'] = [];

@@ -167,13 +167,41 @@
       }
     }
 
+    function waitForRowImages(root) {
+      if (!root) return Promise.resolve();
+      var images = Array.from(root.querySelectorAll('.posts-tbl tbody img'));
+      if (!images.length) return Promise.resolve();
+
+      return Promise.all(images.map(function (img) {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+
+        return new Promise(function (resolve) {
+          var settled = false;
+          function done() {
+            if (settled) return;
+            settled = true;
+            img.removeEventListener('load', done);
+            img.removeEventListener('error', done);
+            resolve();
+          }
+
+          img.addEventListener('load', done, { once: true });
+          img.addEventListener('error', done, { once: true });
+          window.setTimeout(done, 1200);
+        });
+      })).then(function () {});
+    }
+
     function loadPage(url, options) {
       options = options || {};
       if (isFetchingPage) return Promise.resolve();
       isFetchingPage = true;
 
       var content = document.querySelector('.posts-admin-content');
-      if (content) {
+      var tableBody = document.querySelector('.posts-tbl tbody');
+      if (options.contentOnly && tableBody) {
+        tableBody.classList.add('is-posts-page-loading');
+      } else if (content) {
         content.style.transition = 'opacity 0.15s ease';
         content.style.opacity = '0.5';
         content.style.pointerEvents = 'none';
@@ -187,9 +215,17 @@
           var doc = parser.parseFromString(htmlText, 'text/html');
 
           return ensurePostsStyles(doc).then(function () {
-            swapNode(doc, '.posts-admin-toolbar');
-            swapNode(doc, '.posts-admin-filter');
-            swapNode(doc, '#featureOrderModal');
+            var nextContent = doc.querySelector('.posts-admin-content');
+            var nextTableBody = nextContent ? nextContent.querySelector('.posts-tbl tbody') : null;
+            if (options.contentOnly && nextTableBody) {
+              nextTableBody.classList.add('is-posts-page-loading');
+            }
+
+            if (!options.contentOnly) {
+              swapNode(doc, '.posts-admin-toolbar');
+              swapNode(doc, '.posts-admin-filter');
+              swapNode(doc, '#featureOrderModal');
+            }
             swapNode(doc, '.posts-admin-content');
 
             if (!options.skipHistory) {
@@ -200,12 +236,27 @@
               }
             }
 
-            bindFeatureOrder();
-            bindFilters();
+            if (!options.contentOnly) {
+              bindFeatureOrder();
+              bindFilters();
+            }
+
+            if (options.contentOnly) {
+              var swappedContent = document.querySelector('.posts-admin-content');
+              var swappedTableBody = swappedContent ? swappedContent.querySelector('.posts-tbl tbody') : null;
+              return waitForRowImages(swappedContent).then(function () {
+                if (swappedTableBody) {
+                  swappedTableBody.classList.remove('is-posts-page-loading');
+                }
+              });
+            }
           });
         })
         .catch(function () {
           isFetchingPage = false;
+          if (tableBody) {
+            tableBody.classList.remove('is-posts-page-loading');
+          }
           if (content) {
             content.style.opacity = '1';
             content.style.pointerEvents = 'auto';
@@ -234,8 +285,8 @@
       var href = pageLink.getAttribute('href');
       if (!href || href === '#') return;
       event.preventDefault();
-      loadPage(href);
-    }, { signal: signal });
+      loadPage(href, { contentOnly: !!pageLink.closest('.tbl-pagination') });
+    }, { signal: signal, capture: true });
 
     document.addEventListener('keydown', function (event) {
       var modal = document.querySelector('#featureOrderModal');

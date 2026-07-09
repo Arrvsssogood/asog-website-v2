@@ -1,7 +1,6 @@
 <div class="admin-profile-shell">
     <section class="admin-profile-card">
         <div class="admin-profile-head">
-            <p>Account security</p>
             <h2>Password</h2>
             <span>Update the password used for email and password sign-in.</span>
         </div>
