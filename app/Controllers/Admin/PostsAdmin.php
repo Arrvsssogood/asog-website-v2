@@ -211,6 +211,12 @@ class PostsAdmin extends BaseController
         $post = $this->postModel->find($id);
 
         if (! $post) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setStatusCode(404)->setJSON([
+                    'error' => 'Post not found.',
+                    'csrf' => csrf_hash()
+                ]);
+            }
             setToast('error', 'Post not found.');
             return redirect()->to(site_url('admin/posts'));
         }
@@ -260,11 +266,23 @@ class PostsAdmin extends BaseController
                 // A file was submitted — check if PHP accepted it
                 if (! $file->isValid()) {
                     $phpError = $file->getErrorString();
+                    if ($this->request->isAJAX()) {
+                        return $this->response->setStatusCode(422)->setJSON([
+                            'error' => 'Image upload failed: ' . $phpError,
+                            'csrf' => csrf_hash()
+                        ]);
+                    }
                     setToast('error', 'Image upload failed: ' . $phpError);
                     return redirect()->back()->withInput();
                 }
 
                 if ($file->hasMoved()) {
+                    if ($this->request->isAJAX()) {
+                        return $this->response->setStatusCode(422)->setJSON([
+                            'error' => 'Image upload error: file was already processed.',
+                            'csrf' => csrf_hash()
+                        ]);
+                    }
                     setToast('error', 'Image upload error: file was already processed.');
                     return redirect()->back()->withInput();
                 }
@@ -280,18 +298,43 @@ class PostsAdmin extends BaseController
                     $data['imagePath'] = $path;
 
                 } else {
+                    if ($this->request->isAJAX()) {
+                        return $this->response->setStatusCode(422)->setJSON([
+                            'error' => 'Image upload failed: ' . $uploader->getError(),
+                            'csrf' => csrf_hash()
+                        ]);
+                    }
                     setToast('error', 'Image upload failed: ' . $uploader->getError());
                     return redirect()->back()->withInput();
                 }
             }
         } catch (\Throwable $e) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setStatusCode(422)->setJSON([
+                    'error' => 'Image upload error: ' . $e->getMessage(),
+                    'csrf' => csrf_hash()
+                ]);
+            }
             setToast('error', 'Image upload error: ' . $e->getMessage());
             return redirect()->back()->withInput();
         }
 
         if (! $this->postModel->updateWithSlugHistory($id, $data, (string) ($post['slug'] ?? ''))) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setStatusCode(422)->setJSON([
+                    'error' => 'Validation failed: ' . implode(', ', $this->postModel->errors()),
+                    'csrf' => csrf_hash()
+                ]);
+            }
             setToast('error', 'Validation failed: ' . implode(', ', $this->postModel->errors()));
             return redirect()->back()->withInput();
+        }
+
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON([
+                'success' => true,
+                'csrf' => csrf_hash()
+            ]);
         }
 
         setToast(
@@ -383,6 +426,60 @@ class PostsAdmin extends BaseController
 
         setToast('success', 'Featured stories order updated.');
         return redirect()->to(site_url('admin/posts'));
+    }
+
+    /**
+     * Render the post using the public detail layout
+     * Used for previewing drafts/published posts inside the iframe
+     */
+    public function previewById(int $id)
+    {
+        $post = $this->postModel->find($id);
+
+        if (! $post) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Post not found");
+        }
+
+        $previewPost = $post;
+        if ($this->request->is('post')) {
+            $previewPost = array_merge($post, [
+                'title'            => trim((string) $this->request->getPost('title')) !== '' ? $this->request->getPost('title') : $post['title'],
+                'slug'             => trim((string) $this->request->getPost('slug')) !== '' ? $this->request->getPost('slug') : ($post['slug'] ?? ''),
+                'shortDescription' => $this->request->getPost('shortDescription') ?? $post['shortDescription'],
+                'content'          => $this->request->getPost('content') ?? $post['content'],
+                'category'         => $this->request->getPost('category') ?? $post['category'],
+                'authorName'       => trim((string) $this->request->getPost('authorName')) !== '' ? $this->request->getPost('authorName') : ($post['authorName'] ?? 'ASOG TBI'),
+                'imagePath'        => $post['imagePath'] ?? null,
+            ]);
+        }
+
+        $plainContent = trim(preg_replace('/\s+/', ' ', strip_tags(html_entity_decode($previewPost['content'], ENT_QUOTES, 'UTF-8'))));
+        $metaDescription = $plainContent !== ''
+            ? (mb_strlen($plainContent) > 160 ? mb_substr($plainContent, 0, 160) . '…' : $plainContent)
+            : 'Preview mode.';
+
+        $data = [
+            'title'       => $previewPost['title'] . ' - ASOG TBI (Preview)',
+            'post'        => $previewPost,
+            'latestPosts' => [],
+            'metaDescription' => $metaDescription,
+            'metaImage'       => '',
+            'metaImageAlt'    => '',
+            'metaType'        => 'article',
+            'canonical'       => '',
+            
+            // Flags for view logic
+            'isPreview'       => true,
+            'isDraft'         => !(bool) $previewPost['isPublished']
+        ];
+
+        $html = view('templates/header', $data)
+            . view('news/detail', $data)
+            . view('templates/footer');
+
+        return $this->response
+            ->setHeader('X-CSRF-TOKEN', csrf_hash())
+            ->setBody($html);
     }
 
 }

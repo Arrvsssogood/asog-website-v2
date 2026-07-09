@@ -109,7 +109,7 @@
     <?php endif; ?>
 </head>
 
-<?php $bodyClass = trim('font-body bg-dark text-off overflow-x-hidden ' . (string) ($bodyClass ?? '')); ?>
+<?php $bodyClass = trim('font-body bg-dark text-off overflow-x-hidden ' . (string) ($bodyClass ?? '') . (! empty($isPreview) ? ' has-preview-banner' : '')); ?>
 
 <body class="<?= esc($bodyClass) ?>">
     <?php
@@ -156,6 +156,31 @@
     $activeClass = static fn(bool $isActive): string => $isActive ? ' is-active' : '';
     ?>
     <a class="sr-only focus:not-sr-only" href="#main">Skip to content</a>
+
+    <?php if (! empty($isPreview)): ?>
+    <link rel="stylesheet" href="<?= base_url('assets/css/previewBanner.css') ?>">
+    <?php endif; ?>
+
+    <?php if (! empty($isPreview) && empty($hideSiteHeader)): ?>
+    <div class="preview-banner <?= ($isDraft ?? false) ? 'draft' : 'published' ?>" id="previewBanner">
+        <?php if ($isDraft ?? false): ?>
+            Preview Mode — This post is currently a draft and has not been published yet.
+        <?php else: ?>
+            Preview Mode 
+        <?php endif; ?>
+    </div>
+    <script>
+        (function () {
+            var banner = document.getElementById('previewBanner');
+            if (!banner) return;
+            function setOffset() {
+                document.documentElement.style.setProperty('--preview-banner-height', banner.offsetHeight + 'px');
+            }
+            setOffset();
+            window.addEventListener('resize', setOffset);
+        })();
+    </script>
+    <?php endif; ?>
 
     <?php if ($isLandingPage && ! $hideSiteHeader && $showAsogLoader): ?>
         <?= view('components/asog_loader') ?>

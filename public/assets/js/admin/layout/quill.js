@@ -395,6 +395,11 @@ document.addEventListener('DOMContentLoaded', function () {
       form.addEventListener('submit', function () {
         syncHiddenInput(quill, hiddenInput);
       });
+      form.addEventListener('quill:sync', function () {
+        if (hiddenInput) {
+          hiddenInput.value = quill.root.innerHTML;
+        }
+      });
     }
   });
 });

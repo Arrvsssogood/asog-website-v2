@@ -80,13 +80,119 @@
 
     var postForm = document.getElementById('postForm');
     if (postForm && window.DirtyCheck) {
-
         var saveButtons = Array.prototype.slice.call(
             postForm.querySelectorAll('.form-actions button.btn-o[type="submit"]')
         );
 
         var tracker = window.DirtyCheck.watch(postForm, { buttons: saveButtons });
-
         tracker.baseline();
     }
+
+    /* ── Preview functionality ───────────── */
+    var editTab = document.getElementById('editTab');
+    var previewTab = document.getElementById('previewTab');
+    var editPanel = document.getElementById('editPanel');
+    var previewPanel = document.getElementById('previewPanel');
+    var previewIframe = document.getElementById('previewIframe');
+    var previewError = document.getElementById('previewError');
+    var form = document.getElementById('postForm');
+    var previewLoaded = false;
+
+    if (!previewTab || !form) return;
+
+    var CSRF_FIELD_NAME = 'csrf_test_name';
+
+    function showError(msg) {
+        if (previewError) {
+            previewError.textContent = msg;
+            previewError.style.display = 'block';
+        }
+    }
+
+    function hideError() {
+        if (previewError) {
+            previewError.style.display = 'none';
+        }
+    }
+
+    function updateCsrf(hash) {
+        if (!hash) return;
+        var input = form.querySelector('input[name="' + CSRF_FIELD_NAME + '"]');
+        if (input) input.value = hash;
+        var meta = document.querySelector('meta[name="X-CSRF-TOKEN"]');
+        if (meta) meta.setAttribute('content', hash);
+    }
+
+    function syncEditorContent() {
+        var editorEl = form.querySelector('.quill-editor');
+        var hiddenInput = form.querySelector('input.quill-content');
+
+        if (!editorEl || !hiddenInput) return;
+
+        var editorRoot = editorEl.querySelector('.ql-editor');
+        hiddenInput.value = editorRoot ? editorRoot.innerHTML : editorEl.innerHTML;
+    }
+
+    function loadPreviewFromForm() {
+        if (!previewIframe || !previewIframe.dataset.previewUrl) return;
+
+        syncEditorContent();
+        form.dispatchEvent(new CustomEvent('quill:sync'));
+
+        var formData = new FormData(form);
+        formData.delete('_method');
+        formData.set('action', 'draft');
+
+        fetch(previewIframe.dataset.previewUrl, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'text/html'
+            }
+        })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error('Preview failed (' + response.status + ')');
+            }
+
+            var freshToken = response.headers.get('X-CSRF-TOKEN');
+            if (freshToken) updateCsrf(freshToken);
+
+            return response.text();
+        })
+        .then(function (html) {
+            hideError();
+            previewIframe.srcdoc = html;
+            previewLoaded = true;
+        })
+        .catch(function (err) {
+            showError('Preview couldn\'t load your latest changes — showing the last saved version.');
+            console.warn(err);
+            previewIframe.src = previewIframe.dataset.previewUrl + '?t=' + Date.now();
+            previewLoaded = true;
+        });
+    }
+
+    function activateTab(tabToShow) {
+        if (!editTab || !previewTab || !editPanel || !previewPanel) return;
+
+        var showingPreview = tabToShow === previewTab;
+        editTab.classList.toggle('active', !showingPreview);
+        previewTab.classList.toggle('active', showingPreview);
+        editTab.setAttribute('aria-selected', String(!showingPreview));
+        previewTab.setAttribute('aria-selected', String(showingPreview));
+        editPanel.hidden = showingPreview;
+        previewPanel.hidden = !showingPreview;
+    }
+
+    editTab.addEventListener('click', function () {
+        activateTab(editTab);
+    });
+
+    previewTab.addEventListener('click', function () {
+        activateTab(previewTab);
+        hideError();
+        loadPreviewFromForm();
+    });
 })();
