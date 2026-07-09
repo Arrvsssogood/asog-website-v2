@@ -106,12 +106,14 @@ $formUrl = $isEdit
 
             <!-- Toggles -->
             <div class="switch-row">
-                <label class="switch">
-                    <input type="checkbox" name="isFeatured" value="1"
-                        <?= ($isEdit && ! empty($post['isFeatured'])) ? 'checked' : '' ?>>
-                    <span class="track"></span>
-                    Featured <span style="font-size:.65rem;color:#94a3b8;font-weight:400">(up to 5 show in hero)</span>
-                </label>
+                <div class="switch">
+                    <label>
+                        <input type="checkbox" name="isFeatured" value="1"
+                            <?= ($isEdit && ! empty($post['isFeatured'])) ? 'checked' : '' ?>>
+                        <span class="track"></span>
+                    </label>
+                    <span>Featured <span style="font-size:.65rem;color:#94a3b8;font-weight:400">(up to 5 show in hero)</span></span>
+                </div>
             </div>
 
             <div class="form-actions">
