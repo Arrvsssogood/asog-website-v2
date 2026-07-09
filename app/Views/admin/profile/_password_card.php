@@ -5,8 +5,7 @@
             <span>Update the password used for email and password sign-in.</span>
         </div>
 
-        <form method="POST" action="<?= site_url('admin/settings/password') ?>" class="admin-profile-password-form">
-            <?= csrf_field() ?>
+        <form method="POST" action="<?= site_url('admin/settings/password') ?>" class="admin-profile-password-form" data-dirty-check data-dirty-btn=".btn-p">            <?= csrf_field() ?>
 
             <label class="admin-profile-field">
                 <span>Current password</span>

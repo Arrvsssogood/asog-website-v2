@@ -83,6 +83,13 @@
         event.returnValue = '';
     });
 
+    // Form submission is an intentional save — don't warn on the resulting navigation
+    document.addEventListener('submit', function (event) {
+        if (!event.defaultPrevented) {
+            isConfirmedNavigation = true;
+        }
+    });
+
     // In-app link navigation (clicking to another admin section).
     document.addEventListener('click', function (event) {
         if (event.defaultPrevented || event.button !== 0) return;
