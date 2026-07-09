@@ -19,6 +19,8 @@
     settings: true
   };
   var statusTimer = null;
+  var lastKnownUrl = window.location.href;
+
 
   function getMain() {
     return document.querySelector('[data-admin-main]');
@@ -415,6 +417,7 @@
     } else {
       history.pushState({ adminShell: true }, '', url);
     }
+    lastKnownUrl = url;
   }
 
   function load(url, options) {
@@ -490,6 +493,18 @@
       fallback(url);
       return;
     }
+
+    if (window.DirtyCheck && window.DirtyCheck.isAnyDirty() && window.AdminUnsavedChanges) {
+      var returnUrl = lastKnownUrl;
+      history.pushState({ adminShell: true }, '', returnUrl);
+      window.AdminUnsavedChanges.ask().then(function (confirmed) {
+        if (!confirmed) return;
+        history.pushState({ adminShell: true }, '', url);
+        load(url, { replaceHistory: true });
+      });
+      return;
+    }
+
     load(url, { replaceHistory: true });
   }
 

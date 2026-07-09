@@ -3,6 +3,7 @@
 </div>
 
 <?= view('admin/components/delete_confirm_modal') ?>
+<?= view('admin/components/discard_changes_modal') ?>
 
 <script src="<?= base_url('assets/vendor/quill/quill.min.js') ?>"></script>
 <script id="adminQuillBootstrap"
@@ -22,5 +23,6 @@
 <script src="<?= base_url('assets/js/admin/messages/index.js') ?>" defer></script>
 <script src="<?= base_url('assets/js/admin/admins/index.js') ?>" defer></script>
 <script src="<?= base_url('assets/js/admin/layout/dirtyCheck.js') ?>" defer></script>
+<script src="<?= base_url('assets/js/admin/layout/discardChanges.js') ?>"></script>
 </body>
 </html>

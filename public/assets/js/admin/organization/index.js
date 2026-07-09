@@ -36,6 +36,7 @@
     let dragOffsetY = 0;
     let activePointerId = null;
     let isReorderMode = false;
+    let activeModalTracker = null;
     const changedContainers = new Set();
 
     const saveOrder = (container) => {
@@ -313,6 +314,17 @@
     const closeModal = () => {
         modalRoot.innerHTML = '';
         document.body.classList.remove('org-modal-open');
+        activeModalTracker = null;
+    };
+
+    const requestModalClose = () => {
+        if (!activeModalTracker || !activeModalTracker.isDirty() || !window.AdminUnsavedChanges) {
+            closeModal();
+            return;
+        }
+        window.AdminUnsavedChanges.ask().then((confirmed) => {
+            if (confirmed) closeModal();
+        });
     };
 
     const cacheModal = (memberId, updatedAt, html) => {
@@ -504,12 +516,13 @@
         if (!form) return;
         
         // Dirty check
+        activeModalTracker = null;
         if (window.DirtyCheck) {
             const saveBtn = form.querySelector('.btn-p');
             if (saveBtn) {
-                const tracker = window.DirtyCheck.watch(form, { buttons: [saveBtn] });
+                activeModalTracker = window.DirtyCheck.watch(form, { buttons: [saveBtn] });
                 requestAnimationFrame(function () {
-                    setTimeout(function () { tracker.baseline(); }, 50);
+                    setTimeout(function () { activeModalTracker.baseline(); }, 50);
                 });
             }
         }
@@ -627,13 +640,13 @@
     shellOn(document, 'click', (event) => {
         if (event.target.closest('[data-org-modal-close]')) {
             event.preventDefault();
-            closeModal();
+            requestModalClose();
         }
     });
 
     shellOn(document, 'keydown', (event) => {
         if (event.key === 'Escape' && modalRoot.querySelector('[data-org-modal]')) {
-            closeModal();
+            requestModalClose();
         }
     });
 
