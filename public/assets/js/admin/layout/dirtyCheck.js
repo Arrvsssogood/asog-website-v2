@@ -1,6 +1,8 @@
 (function (global) {
     'use strict';
 
+    var registry = [];
+
     function serializeForm(form) {
         var parts = [];
         var elements = form.elements;
@@ -38,7 +40,7 @@
         }
 
         function check() {
-            if (baselineState === null) return;
+            if (baselineState === null) return; // baseline() not called yet
             applyButtonState(serializeForm(form) !== baselineState);
         }
 
@@ -55,16 +57,25 @@
             new MutationObserver(check).observe(container, { childList: true, subtree: true });
         });
 
-        return {
+        var api = {
+            form: form,
             baseline: baseline,
             check: check,
             isDirty: function () {
                 return baselineState !== null && serializeForm(form) !== baselineState;
             }
         };
+
+        registry.push(api);
+        return api;
     }
 
-    global.DirtyCheck = { watch: watch };
+    function isAnyDirty() {
+        registry = registry.filter(function (t) { return document.contains(t.form); });
+        return registry.some(function (t) { return t.isDirty(); });
+    }
+
+    global.DirtyCheck = { watch: watch, isAnyDirty: isAnyDirty };
 
     // Auto-init for static forms with data-dirty-check attribute
     function autoInit() {

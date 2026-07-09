@@ -10,6 +10,8 @@
     var modalRoot = scope.querySelector('#adminAccountModalRoot');
     var baseUrl = configNode ? configNode.getAttribute('data-base-url') : '';
     var isFetchingPage = false;
+    var activeModalTracker = null;
+
 
     function bindTableEvents() {
         document.querySelectorAll('.tbl th.sortable a').forEach(function (link) {
@@ -167,6 +169,17 @@
         }
         document.body.classList.remove('account-modal-open');
         clearModalQuery();
+        activeModalTracker = null;
+    }
+
+    function requestModalClose() {
+        if (!activeModalTracker || !activeModalTracker.isDirty() || !window.AdminUnsavedChanges) {
+            closeModal();
+            return;
+        }
+        window.AdminUnsavedChanges.ask().then(function (confirmed) {
+            if (confirmed) closeModal();
+        });
     }
 
     function clearModalQuery() {
@@ -191,15 +204,16 @@
         bindStatusAction(modal);
 
         // Dirty check
+        activeModalTracker = null;
         var modalForm = modal.querySelector('form[data-account-modal-form]');
         if (modalForm && window.DirtyCheck) {
             var saveBtn = modalForm.querySelector('button[type="submit"]');
             if (saveBtn) {
-                var tracker = window.DirtyCheck.watch(modalForm, {
+                activeModalTracker = window.DirtyCheck.watch(modalForm, {
                     buttons: [saveBtn],
                 });
                 requestAnimationFrame(function () {
-                    setTimeout(function () { tracker.baseline(); }, 50);
+                    setTimeout(function () { activeModalTracker.baseline(); }, 50);
                 });
             }
         }
@@ -448,7 +462,7 @@
         var closeTrigger = event.target.closest('[data-account-modal-close]');
         if (closeTrigger) {
             event.preventDefault();
-            closeModal();
+            requestModalClose();
             return;
         }
 
@@ -460,7 +474,7 @@
 
     document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape' && modalRoot && modalRoot.querySelector('[data-account-modal]')) {
-            closeModal();
+            requestModalClose();
         }
     }, { signal: signal });
 
